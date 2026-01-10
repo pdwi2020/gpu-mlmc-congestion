@@ -1,0 +1,37 @@
+# Core numerical computing
+numpy>=1.24.0
+scipy>=1.10.0
+
+# Network analysis
+networkx>=3.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Data handling
+pandas>=2.0.0
+h5py>=3.8.0
+
+# GPU computing
+pycuda>=2022.2
+numba>=0.57.0
+
+# Development and analysis
+jupyter>=1.0.0
+ipykernel>=6.20.0
+
+# Testing
+pytest>=7.3.0
+pytest-cov>=4.0.0
+
+# Utilities
+tqdm>=4.65.0
+click>=8.1.0
+
+# Documentation
+sphinx>=6.0.0
+sphinx-rtd-theme>=1.2.0
+
+# Dataset processing (optional - for MAWI PCAP processing)
+# scapy>=2.5.0  # Uncomment if doing packet-level analysis

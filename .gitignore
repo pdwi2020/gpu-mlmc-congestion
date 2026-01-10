@@ -1,0 +1,108 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Datasets (large files)
+datasets/*.txt
+datasets/*.gz
+datasets/*.bz2
+datasets/*.pcap
+datasets/*.pcap.gz
+datasets/snap/*.txt
+datasets/caida/*.txt
+datasets/caida/*.bz2
+datasets/mawi/*.pcap
+datasets/mawi/*.pcap.gz
+
+# Keep directory structure but ignore data
+!datasets/.gitkeep
+!datasets/snap/.gitkeep
+!datasets/caida/.gitkeep
+!datasets/mawi/.gitkeep
+!datasets/synthetic/.gitkeep
+
+# Results and outputs
+results/figures/*.pdf
+results/figures/*.png
+results/tables/*.csv
+results/logs/*.log
+results/logs/*.txt
+
+# Keep results directory structure
+!results/figures/.gitkeep
+!results/tables/.gitkeep
+!results/logs/.gitkeep
+
+# Documentation builds
+docs/_build/
+docs/api/_build/
+docs/report/*.aux
+docs/report/*.log
+docs/report/*.out
+docs/report/*.synctex.gz
+docs/report/*.fdb_latexmk
+docs/report/*.fls
+docs/report/*.pdf
+
+# GPU profiling
+*.nvvp
+*.nvprof
+
+# Temporary files
+*.tmp
+*.bak
+*.orig
+
+# Environment variables
+.env
+.env.local
+
+# Data caches
+*.h5
+*.hdf5
+cache/
