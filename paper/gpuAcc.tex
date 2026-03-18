@@ -488,12 +488,14 @@ P95 / P99 Delay & No & No & Expensive & Moderate & Efficient \\
 Coupled Propagation & No & Yes & Limited & Limited & Yes \\
 Real-topology Subgraph & Limited & Yes & Expensive & Moderate & Validated \\
 Real-time UQ & No & No & No & No & Near-real-time$^*$ \\
+\midrule
+Time ($n{=}500$, $\varepsilon{=}0.02$) & $<1$\,s & $\gg\!10^3$\,s & $>10^2$\,s$^\dagger$ & $\sim\!30$\,s$^\ddagger$ & \textbf{1.1\,s}$^\S$ \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-\par\noindent\footnotesize $^*$Peak GPU-MC throughput of 65,715 samples/s measured on synthetic 100-node networks ($n\!=\!100$, $\varepsilon=0.1$, computed as $N_{\text{MC}}/t_{\text{run}}$); 500-node networks yield up to 12,345 samples/s; Internet-scale latency requires further study.\normalsize
+\par\noindent\footnotesize $^*$Peak GPU-MC throughput of 65,715 samples/s measured on synthetic 100-node networks ($n\!=\!100$, $\varepsilon=0.1$, computed as $N_{\text{MC}}/t_{\text{run}}$); 500-node networks yield up to 12,345 samples/s; Internet-scale latency requires further study. $^\dagger$Estimated from 8-core CPU throughput of 1,400 paths/s (Tab.~\ref{tab:cpu_baselines}) over GPU-equivalent MC work. $^\ddagger$CPU-MLMC with same MLMC cost (42,435 timestep-path units from Tab.~\ref{tab:gpu_gpu_a100}) at 1,400 paths/s. $^\S$GPU-MLMC measured on NVIDIA A100 80GB PCIe (Tab.~\ref{tab:gpu_gpu_a100}, synthetic $n{=}499$, $\varepsilon{=}0.02$).\normalsize
 
 \subsection{Network Size Scalability}
 \label{subsec:scaling}
@@ -556,6 +558,27 @@ on a semi-log scale, extracted from the Exp.~1 MLMC convergence run
 with $\alpha=1.86$ confirms near-optimal MLMC variance reduction across
 levels, consistent with the $\alpha \geq 1$ requirement for
 $\mathcal{O}(\varepsilon^{-2})$ complexity \cite{giles2015multilevel}.
+Table~\ref{tab:mlmc_convergence_params} extends this analysis across topologies.
+
+\begin{table}[!t]
+\caption{Measured MLMC Convergence Parameters by Topology}
+\label{tab:mlmc_convergence_params}
+\centering
+\begin{tabular}{@{}l c c c@{}}
+\toprule
+Topology & $n$ & $\alpha$ (var.\ decay) & Complexity \\
+\midrule
+Synthetic ER & 100 & 1.86 & $\mathcal{O}(\varepsilon^{-2})$ \\
+Synthetic ER & 500 & 0.86 & $\mathcal{O}(\varepsilon^{-2}(\log\varepsilon)^2)$ \\
+CAIDA AS-rel2 & 500 & $\approx$0.9$^\dagger$ & $\mathcal{O}(\varepsilon^{-2}(\log\varepsilon)^2)$ \\
+\bottomrule
+\end{tabular}
+\par\smallskip\footnotesize
+$^\dagger$Extrapolated from CAIDA empirical slopes (Fig.~\ref{fig:slope_bars}).
+For $\alpha \geq 1$: $\mathcal{O}(\varepsilon^{-2})$; for $\alpha \in (0,1)$: $\mathcal{O}(\varepsilon^{-2}(\log\varepsilon)^2)$
+\cite{giles2015multilevel}. Both are substantially better than standard
+MC cost $\mathcal{O}(\varepsilon^{-3})$.
+\end{table}
 
 \begin{figure}[htbp]
 \centering
