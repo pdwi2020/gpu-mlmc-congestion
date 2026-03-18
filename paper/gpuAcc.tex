@@ -356,6 +356,7 @@ for 500-node networks---consistent with the empirical data in
 Table~\ref{tab:gpu_gpu_a100}.  Tighter accuracy targets amortise the
 overhead and yield clear runtime gains (up to $12.91\times$ at
 $\varepsilon=0.01$, Table~\ref{tab:gpu_gpu_a100}).
+Figure~\ref{fig:loglog_cost_eps} plots cost vs.\ $\varepsilon$ on log-log axes; Figure~\ref{fig:runtime_eps} shows the corresponding wall-clock runtime.
 
 \begin{figure}[htbp]
 \centering
@@ -392,7 +393,8 @@ $\varepsilon=0.01$, Table~\ref{tab:gpu_gpu_a100}).
 \label{fig:slope_bars}
 \end{figure}
 
-Empirical slope analysis further supports the complexity interpretation. For the CAIDA subgraph ($n=500$), fitted slopes are approximately $-3.57$ (GPU-MC) and $-2.28$ (GPU-MLMC); for synthetic $n=500$, slopes are approximately $-3.79$ (GPU-MC) and $-2.41$ (GPU-MLMC). The synthetic $n=100$ case shows greater deviation from ideal asymptotics, which is expected in smaller workloads where fixed overheads are less amortized.
+Figure~\ref{fig:mlmc_level_alloc} shows the per-level sample allocation driving this cost reduction.
+Empirical slope analysis (Figure~\ref{fig:slope_bars}) further supports the complexity interpretation. For the CAIDA subgraph ($n=500$), fitted slopes are approximately $-3.57$ (GPU-MC) and $-2.28$ (GPU-MLMC); for synthetic $n=500$, slopes are approximately $-3.79$ (GPU-MC) and $-2.41$ (GPU-MLMC). The synthetic $n=100$ case shows greater deviation from ideal asymptotics, which is expected in smaller workloads where fixed overheads are less amortized.
 
 \begin{figure}[htbp]
 \centering
@@ -461,6 +463,7 @@ operate in distinct regimes and are not directly comparable.
 Table~\ref{tab:capability} summarizes practical capabilities across deterministic, Monte Carlo, and MLMC-based simulation frameworks. The proposed MLMC + GPU approach is the only configuration that simultaneously supports efficient tail-risk estimation and uncertainty quantification on real-world topology subgraphs.
 As shown in Fig.~\ref{fig:tail_delay}, GPU-MLMC achieves P95 and P99 queue-occupancy estimates within $0.2\%$ of a tight reference Monte Carlo, confirming reliable tail-risk quantification.
 The results indicate that while GPU acceleration improves both methods, multilevel variance reduction provides substantial additional gains, particularly at higher accuracy targets, aligning with theoretical complexity predictions.
+Figure~\ref{fig:runtime_scaling_categorical} summarises runtime scaling across all three tested configurations at the tightest accuracy target.
 
 \begin{figure}[htbp]
 \centering
@@ -588,6 +591,12 @@ Future work includes extending to non-Gaussian noise models, Jackson-network flo
 \section*{Acknowledgment}
 
 The authors thank the CAIDA project for providing the AS-level topology data.
+
+\section*{Reproducibility}
+Source code, experiment scripts, and instructions to reproduce all figures and
+tables are available at \url{https://github.com/anonymous/gpu-mlmc-congestion}
+(to be de-anonymised upon acceptance). The artifact includes a one-command
+Docker setup verified on Ubuntu~22.04 with CUDA~12.1.
 
 \bibliographystyle{IEEEtran}
 \bibliography{gpuAcc}
