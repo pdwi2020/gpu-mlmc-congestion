@@ -281,7 +281,8 @@ class GPUMLMCSimulator:
                              level: int,
                              n_samples: int,
                              T: float,
-                             base_dt: float) -> Tuple[np.ndarray, np.ndarray]:
+                             base_dt: float,
+                             metric: str = 'mean_queue') -> Tuple[np.ndarray, np.ndarray]:
         """
         Run coupled paths for MLMC level on GPU.
 
@@ -292,6 +293,7 @@ class GPUMLMCSimulator:
             n_samples: Number of samples
             T: Simulation duration
             base_dt: Base time step
+            metric: Metric to compute
 
         Returns:
             Tuple of (Y_fine, Y_coarse) arrays
@@ -313,7 +315,7 @@ class GPUMLMCSimulator:
                 service_rate=service_rate,
                 noise_intensity=0.2,
                 dt=dt_fine,
-                metric='mean'
+                metric=metric.replace('_queue', '')
             )
 
             Y_coarse = np.zeros_like(Y_fine)  # Y_{-1} = 0
@@ -331,7 +333,8 @@ class GPUMLMCSimulator:
                 service_rate=service_rate,
                 noise_intensity=0.2,
                 dt_fine=dt_fine,
-                dt_coarse=dt_coarse
+                dt_coarse=dt_coarse,
+                metric=metric.replace('_queue', '')
             )
 
         return Y_fine, Y_coarse
@@ -343,6 +346,7 @@ class GPUMLMCSimulator:
                          L_max: int,
                          T: float = 10.0,
                          base_dt: float = 0.1,
+                         metric: str = 'mean_queue',
                          pilot_samples: int = 100,
                          confidence_level: float = 0.95,
                          verbose: bool = True) -> MLMCResult:
@@ -356,6 +360,7 @@ class GPUMLMCSimulator:
             L_max: Maximum level
             T: Simulation duration
             base_dt: Base time step
+            metric: Metric to estimate
             pilot_samples: Pilot samples for variance estimation
             confidence_level: Confidence level
             verbose: Print progress
@@ -378,7 +383,7 @@ class GPUMLMCSimulator:
 
         for l in range(L_max + 1):
             Y_fine, Y_coarse = self.run_coupled_paths_gpu(
-                network, traffic, l, pilot_samples, T, base_dt
+                network, traffic, l, pilot_samples, T, base_dt, metric
             )
 
             diffs = Y_fine - Y_coarse
@@ -424,7 +429,7 @@ class GPUMLMCSimulator:
 
         for l in range(L_max + 1):
             Y_fine, Y_coarse = self.run_coupled_paths_gpu(
-                network, traffic, l, optimal_N[l], T, base_dt
+                network, traffic, l, optimal_N[l], T, base_dt, metric
             )
 
             diffs = Y_fine - Y_coarse
@@ -460,7 +465,9 @@ class GPUMLMCSimulator:
         variance = sum([stats.var_diff / stats.n_samples for stats in level_stats])
 
         dt_finest = get_timestep(L_max, base_dt, self.refinement_factor)
-        bias_estimate = dt_finest
+        # Reflected SDE has weak order 0.5 (not 1) due to boundary condition
+        # Must match CPU implementation in mlmc.py for consistent results
+        bias_estimate = np.sqrt(dt_finest)
         mse = variance + bias_estimate ** 2
 
         # CI
@@ -487,6 +494,7 @@ class GPUMLMCSimulator:
             metadata={
                 'T': T,
                 'base_dt': base_dt,
+                'metric': metric,
                 'refinement_factor': self.refinement_factor,
                 'gpu_time_seconds': elapsed_time,
                 'device': 'GPU'
@@ -498,6 +506,193 @@ class GPUMLMCSimulator:
             logger.info(f"GPU time: {elapsed_time:.2f}s")
 
         return result
+
+
+class GPUCoupledPropagationMLMC:
+    """
+    GPU-accelerated MLMC for the coupled CongestionPropagationSDE.
+
+    Uses PyTorch tensor operations so it runs on GPU without PyCUDA:
+      - influence matrix-vector multiply:  torch.mv(influence_gpu, c)
+      - noise generation:                  torch.randn(...)
+      - reflection:                        torch.clamp_min(c, 0)
+
+    Falls back to NumPy if CUDA is unavailable (CPU mode).
+    """
+
+    def __init__(self,
+                 adjacency_matrix: "np.ndarray",
+                 influence_strength: float = 0.1,
+                 decay_rate: float = 0.5,
+                 noise_intensity: float = 0.1,
+                 refinement_factor: int = 2,
+                 seed: Optional[int] = None):
+        import torch
+        self._torch = torch
+        self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if seed is not None:
+            torch.manual_seed(seed)
+            if torch.cuda.is_available():
+                torch.cuda.manual_seed_all(seed)
+
+        self.n_nodes = adjacency_matrix.shape[0]
+        self.decay_rate = decay_rate
+        self.noise_intensity = noise_intensity
+        self.refinement_factor = refinement_factor
+
+        # Degree-normalised influence matrix (n_nodes x n_nodes) on GPU
+        degrees = adjacency_matrix.sum(axis=1).clip(min=1)
+        influence_np = (adjacency_matrix / degrees[:, None]) * influence_strength
+        self._influence = torch.tensor(
+            influence_np, dtype=torch.float32, device=self._device
+        )
+
+    # ------------------------------------------------------------------
+    # Internal: one vectorised Euler-Maruyama step for N paths in parallel
+    # c_batch: (n_nodes, N_paths) tensor
+    # dw:      (n_nodes, N_paths) noise tensor (pre-scaled by sqrt(dt))
+    # ------------------------------------------------------------------
+    def _em_step(self, c_batch, dt, dw):
+        t = self._torch
+        # drift: (n_nodes, N_paths) = influence @ c_batch - decay * c_batch
+        drift = t.mm(self._influence, c_batch) - self.decay_rate * c_batch
+        c_new = c_batch + drift * dt + self.noise_intensity * dw
+        return t.clamp_min(c_new, 0.0)
+
+    def run_level(self,
+                  level: int,
+                  n_samples: int,
+                  T: float,
+                  base_dt: float,
+                  metric: str = 'mean_congestion') -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Run N_samples coupled (fine, coarse) paths for MLMC level `level`.
+
+        Returns:
+            (Y_fine, Y_coarse): shape (n_samples,) each; Y_coarse=0 at level 0.
+        """
+        t = self._torch
+        dev = self._device
+
+        dt_fine = base_dt / (self.refinement_factor ** level)
+        n_steps_fine = int(T / dt_fine)
+
+        if level == 0:
+            c = t.zeros(self.n_nodes, n_samples, device=dev, dtype=t.float32)
+            for _ in range(n_steps_fine):
+                dw = t.randn(self.n_nodes, n_samples, device=dev) * (dt_fine ** 0.5)
+                c = self._em_step(c, dt_fine, dw)
+            Y_fine = self._extract_metric(c, metric)
+            Y_coarse = np.zeros(n_samples, dtype=np.float32)
+        else:
+            M = self.refinement_factor
+            dt_coarse = dt_fine * M
+            n_steps_coarse = int(T / dt_coarse)
+
+            c_fine = t.zeros(self.n_nodes, n_samples, device=dev, dtype=t.float32)
+            c_coarse = t.zeros(self.n_nodes, n_samples, device=dev, dtype=t.float32)
+
+            for i_c in range(n_steps_coarse):
+                # Generate M fine-level increments, aggregate for coarse
+                dw_sum = t.zeros(self.n_nodes, n_samples, device=dev, dtype=t.float32)
+                for _ in range(M):
+                    dw_f = t.randn(self.n_nodes, n_samples, device=dev) * (dt_fine ** 0.5)
+                    c_fine = self._em_step(c_fine, dt_fine, dw_f)
+                    dw_sum = dw_sum + dw_f
+                # Coarse step with aggregated increment (same Brownian path)
+                c_coarse = self._em_step(c_coarse, dt_coarse, dw_sum)
+
+            Y_fine = self._extract_metric(c_fine, metric)
+            Y_coarse = self._extract_metric(c_coarse, metric)
+
+        return Y_fine, Y_coarse
+
+    def _extract_metric(self, c_batch, metric: str) -> np.ndarray:
+        """Extract scalar metric from final congestion state (n_nodes, N_paths)."""
+        if metric in ('mean_congestion', 'mean'):
+            vals = c_batch.mean(dim=0)
+        elif metric in ('max_congestion', 'max'):
+            vals = c_batch.max(dim=0).values
+        elif metric in ('sum_congestion', 'sum'):
+            vals = c_batch.sum(dim=0)
+        else:
+            raise ValueError(f"Unknown metric: {metric}")
+        return vals.cpu().numpy()
+
+    def mlmc_estimate(self,
+                      epsilon: float,
+                      T: float,
+                      base_dt: float,
+                      L_max: int = 6,
+                      pilot_samples: int = 100,
+                      metric: str = 'mean_congestion',
+                      verbose: bool = True) -> Dict:
+        """
+        Run GPU-MLMC for the coupled propagation SDE.
+
+        Returns:
+            dict with keys: estimate, variance, ci_lower, ci_upper,
+                            total_cost, level_stats, epsilon
+        """
+        variances, costs, mean_diffs_pilot, pilot_diffs_store = [], [], [], []
+
+        for l in range(L_max + 1):
+            Yf, Yc = self.run_level(l, pilot_samples, T, base_dt, metric)
+            diffs = Yf - Yc
+            mean_diffs_pilot.append(float(np.mean(diffs)))
+            variances.append(float(np.var(diffs, ddof=1)))
+            dt_l = base_dt / (self.refinement_factor ** l)
+            costs.append(float(T / dt_l))
+            pilot_diffs_store.append(diffs)
+            if verbose:
+                logger.info(f"  Level {l}: V={variances[-1]:.4e}, C={costs[-1]:.2e}")
+
+        # Optimal allocation
+        sum_vc = float(np.sum([np.sqrt(v * c) for v, c in zip(variances, costs)]))
+        optimal_N = []
+        for l in range(L_max + 1):
+            if variances[l] <= 0:
+                optimal_N.append(1)
+            else:
+                Nl = max(1, int(np.ceil((2.0 / epsilon ** 2) *
+                                        np.sqrt(variances[l] / costs[l]) * sum_vc)))
+                optimal_N.append(Nl)
+
+        # Full sampling
+        level_stats = []
+        total_cost = 0.0
+        for l in range(L_max + 1):
+            n_add = max(0, optimal_N[l] - pilot_samples)
+            diffs = list(pilot_diffs_store[l])
+            if n_add > 0:
+                Yf, Yc = self.run_level(l, n_add, T, base_dt, metric)
+                diffs.extend(list(Yf - Yc))
+            diffs = np.array(diffs)
+            md = float(np.mean(diffs))
+            vd = float(np.var(diffs, ddof=1))
+            dt_l = base_dt / (self.refinement_factor ** l)
+            cp = T / dt_l
+            level_stats.append({
+                'level': l, 'n_samples': len(diffs),
+                'mean_diff': md, 'var_diff': vd, 'cost_per_sample': cp
+            })
+            total_cost += cp * len(diffs)
+
+        estimate = float(sum(s['mean_diff'] for s in level_stats))
+        variance = float(sum(s['var_diff'] / s['n_samples'] for s in level_stats))
+        from scipy import stats as sp_stats
+        z = float(sp_stats.norm.ppf(0.975))
+        margin = z * float(np.sqrt(variance))
+
+        return {
+            'estimate': estimate,
+            'variance': variance,
+            'ci_lower': estimate - margin,
+            'ci_upper': estimate + margin,
+            'total_cost': total_cost,
+            'level_stats': level_stats,
+            'epsilon': epsilon,
+        }
 
 
 if __name__ == "__main__":

@@ -57,20 +57,10 @@ except ImportError:
     MAWI_AVAILABLE = False
     logging.warning("MAWI loader not available")
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+from config import ExperimentConfig, parse_args, setup_logging, setup_output_dirs
+
 logger = logging.getLogger(__name__)
 
-# Results directory
-RESULTS_DIR = Path(__file__).parent.parent / "results"
-RESULTS_DIR.mkdir(exist_ok=True)
-FIGURES_DIR = RESULTS_DIR / "figures"
-FIGURES_DIR.mkdir(exist_ok=True)
-TABLES_DIR = RESULTS_DIR / "tables"
-TABLES_DIR.mkdir(exist_ok=True)
 DATASETS_DIR = Path(__file__).parent.parent / "datasets"
 
 
@@ -318,24 +308,35 @@ def identify_congestion_hotspots(
 
     congestion_analyzer = CongestionAnalyzer(network, congestion_threshold=0.8)
 
-    # Create synthetic queue states for demonstration
-    # In practice, these would come from detailed simulation
+    # Create synthetic queue states for hotspot identification demonstration
+    # Note: For full per-node simulation on Internet-scale networks (70K+ nodes),
+    # the computational cost would be prohibitive. Instead, we use:
+    # 1. MLMC to estimate the mean queue behavior efficiently
+    # 2. Synthetic spatial variation to demonstrate hotspot analysis methodology
+    #
+    # In production deployment, options include:
+    # - Running detailed SDE simulation on a subgraph of interest
+    # - Using queue-theoretic approximations for steady-state node queues
+    # - Calibrating synthetic distributions from empirical traffic measurements
     n_timesteps = 100
     n_nodes = network.n_nodes
     times = np.linspace(0, 10, n_timesteps)
 
-    # Base queue from MLMC
+    # Base queue from MLMC provides the aggregate network behavior
     base_queue = mlmc_results['result'].mean
 
-    # Add spatial variation (some ASes more congested)
+    # Generate synthetic per-node queue states with realistic properties:
+    # - Exponential distribution matches M/M/1 steady-state queue length
+    # - High-degree nodes (network hubs) experience higher congestion
     np.random.seed(42)
     queue_states = np.zeros((n_timesteps, n_nodes))
 
     for t in range(n_timesteps):
-        # Most nodes near base queue
+        # Most nodes: exponential distribution around base queue (M/M/1-like)
         queue_states[t] = np.random.exponential(scale=base_queue, size=n_nodes)
 
-        # Create hotspots (highly connected nodes)
+        # Network hubs (high-degree nodes) experience additional congestion
+        # This reflects the realistic observation that core routers carry more traffic
         degrees = dict(network.graph.degree())
         high_degree_nodes = sorted(degrees, key=degrees.get, reverse=True)[:10]
 
@@ -526,8 +527,18 @@ def print_summary(
     print("=" * 80)
 
 
-def main():
-    """Main experiment runner."""
+def main(config: ExperimentConfig = None):
+    """Main experiment runner.
+
+    Args:
+        config: Experiment configuration. If None, uses defaults.
+    """
+    if config is None:
+        config = ExperimentConfig()
+
+    # Setup logging and output directories
+    setup_logging(config)
+    results_dir, figures_dir, tables_dir = setup_output_dirs(config)
 
     print("=" * 80)
     print("EXPERIMENT 4: REAL-WORLD VALIDATION")
@@ -555,12 +566,12 @@ def main():
     print(f"Network loaded: {network_info['n_nodes']} nodes, {network_info['n_edges']} edges")
     print(f"Traffic model: {traffic}")
 
-    # Parameters
-    epsilon = 0.05
-    L_max = 4
-    T = 10.0
-    base_dt = 0.2
-    seed = 42
+    # Parameters from config
+    epsilon = config.target_epsilons[1] if len(config.target_epsilons) > 1 else 0.05
+    L_max = config.L_max - 1  # Fewer levels for real-world
+    T = config.T
+    base_dt = config.dt * 2
+    seed = config.seed
 
     # ============================================================================
     # MLMC Simulation
@@ -594,7 +605,7 @@ def main():
         delay_analysis,
         hotspot_analysis,
         uncertainty_analysis,
-        TABLES_DIR
+        tables_dir
     )
 
     # ============================================================================
@@ -609,15 +620,11 @@ def main():
     )
 
     print("\nResults saved to:")
-    print(f"  {TABLES_DIR / 'exp4_realworld_validation_results.json'}")
-
-    print("\nNext steps:")
-    print("  - Generate AS-level congestion heatmap")
-    print("  - Visualize delay distribution across paths")
-    print("  - Compare with real BGP data (if available)")
+    print(f"  {tables_dir / 'exp4_realworld_validation_results.json'}")
 
     print("\n" + "=" * 80)
 
 
 if __name__ == "__main__":
-    main()
+    config = parse_args(description="Real-World Validation Experiment")
+    main(config)

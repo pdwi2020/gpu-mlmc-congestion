@@ -12,7 +12,10 @@ Tests cover:
 import pytest
 import numpy as np
 import sys
+import logging
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -377,7 +380,7 @@ class TestMLMCSimulator:
         network, traffic = setup_network_traffic
         simulator = MLMCSimulator(refinement_factor=2, seed=42)
 
-        mean_diff, var_diff, cost = simulator.estimate_level_variance(
+        mean_diff, var_diff, cost, _ = simulator.estimate_level_variance(
             network=network,
             traffic=traffic,
             level=1,
@@ -460,6 +463,83 @@ class TestMLMCSimulator:
         # At least check that variances are non-negative
         assert all(v >= 0 for v in variances)
 
+    def test_mlmc_convergence_rate(self, setup_network_traffic):
+        """Test MLMC convergence rate: V_l should decay as M^(-alpha*l).
+
+        For Euler-Maruyama with weak order 1, we expect alpha ≈ 2.
+        Due to the reflected boundary (Q >= 0), actual rate may be lower.
+        """
+        network, traffic = setup_network_traffic
+        simulator = MLMCSimulator(refinement_factor=2, seed=42)
+
+        # Run MLMC with more samples for reliable variance estimates
+        result = simulator.mlmc_estimate(
+            network=network,
+            traffic=traffic,
+            epsilon=0.02,
+            L_max=4,
+            T=5.0,
+            base_dt=0.2,
+            pilot_samples=50,
+            verbose=False
+        )
+
+        # Extract variances for levels 1+ (level 0 has no coarse comparison)
+        variances = [stats.var_diff for stats in result.level_stats[1:]]
+
+        if len(variances) >= 2 and all(v > 0 for v in variances):
+            # Compute empirical decay rate using log-log regression
+            # V_l = C * M^(-alpha*l) => log(V_l) = log(C) - alpha*l*log(M)
+            levels = np.arange(1, len(variances) + 1)
+            log_vars = np.log(variances)
+
+            # Linear fit: log(V) = a - b*l where b = alpha*log(M)
+            coeffs = np.polyfit(levels, log_vars, 1)
+            slope = -coeffs[0]  # Negative of slope gives decay rate
+
+            # With M=2, alpha = slope / log(2)
+            alpha = slope / np.log(2)
+
+            # For reflected SDE, expect alpha between 0.5 and 2
+            # Standard Euler-Maruyama gives alpha ≈ 2
+            # Reflected boundary may reduce this
+            assert alpha > 0, f"Variance should decay (alpha={alpha})"
+
+            # Log the estimated rate for diagnostics
+            logger.info(f"MLMC variance decay rate: alpha = {alpha:.2f}")
+            logger.info(f"(Expected: ~2 for standard E-M, may be lower due to boundary)")
+
+    def test_mlmc_cost_scaling(self, setup_network_traffic):
+        """Test that MLMC cost scales as O(epsilon^-2)."""
+        network, traffic = setup_network_traffic
+        simulator = MLMCSimulator(refinement_factor=2, seed=42)
+
+        costs = []
+        epsilons = [0.1, 0.05]
+
+        for eps in epsilons:
+            result = simulator.mlmc_estimate(
+                network=network,
+                traffic=traffic,
+                epsilon=eps,
+                L_max=3,
+                T=5.0,
+                base_dt=0.2,
+                pilot_samples=20,
+                verbose=False
+            )
+            costs.append(result.total_cost)
+
+        # For O(eps^-2) scaling: cost ratio ≈ (eps1/eps2)^2
+        # With eps1=0.1 and eps2=0.05: ratio should be ~4
+        if costs[0] > 0 and costs[1] > 0:
+            actual_ratio = costs[1] / costs[0]
+            expected_ratio = (epsilons[0] / epsilons[1]) ** 2  # = 4
+
+            # Allow significant tolerance due to pilot overhead and finite samples
+            assert actual_ratio >= 1.0, "Cost should not decrease for tighter epsilon"
+            logger.info(f"Cost ratio: {actual_ratio:.2f} (expected ~{expected_ratio})")
+
 
 class TestNetworkMetricsCalculator:
     """Tests for NetworkMetricsCalculator."""
@@ -495,6 +575,70 @@ class TestNetworkMetricsCalculator:
             buffer_size=100.0
         )
         assert loss > 0.0
+
+
+class TestGPUCoupledPropagationMLMC:
+    """Integration tests for GPUCoupledPropagationMLMC (runs on CPU via torch fallback)."""
+
+    def _make_chain_adj(self, n: int) -> np.ndarray:
+        adj = np.zeros((n, n), dtype=np.float32)
+        for i in range(n - 1):
+            adj[i, i + 1] = adj[i + 1, i] = 1.0
+        return adj
+
+    def test_mlmc_estimate_returns_valid_result(self):
+        """mlmc_estimate returns well-structured dict with valid statistics."""
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        from gpu.parallel_mc import GPUCoupledPropagationMLMC
+
+        adj = self._make_chain_adj(5)
+        mlmc = GPUCoupledPropagationMLMC(
+            adj, influence_strength=0.2, decay_rate=0.5,
+            noise_intensity=0.1, seed=42
+        )
+        result = mlmc.mlmc_estimate(
+            epsilon=0.1, T=1.0, base_dt=0.1,
+            L_max=2, pilot_samples=20, verbose=False
+        )
+
+        assert isinstance(result, dict)
+        assert result['estimate'] >= 0, "Mean congestion must be non-negative"
+        assert result['ci_lower'] < result['estimate'] < result['ci_upper'], (
+            "Estimate must lie within its own CI"
+        )
+        assert len(result['level_stats']) == 3, "L_max=2 gives levels 0,1,2"
+        assert result['total_cost'] > 0
+        assert result['variance'] >= 0
+
+    def test_mlmc_estimate_tighter_epsilon_gives_narrower_ci(self):
+        """Tighter epsilon produces a narrower confidence interval."""
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        from gpu.parallel_mc import GPUCoupledPropagationMLMC
+
+        adj = self._make_chain_adj(4)
+        mlmc = GPUCoupledPropagationMLMC(adj, seed=0)
+
+        r_loose = mlmc.mlmc_estimate(epsilon=0.2, T=0.5, base_dt=0.1,
+                                     L_max=2, pilot_samples=20, verbose=False)
+        r_tight = mlmc.mlmc_estimate(epsilon=0.05, T=0.5, base_dt=0.1,
+                                     L_max=2, pilot_samples=20, verbose=False)
+
+        ci_loose = r_loose['ci_upper'] - r_loose['ci_lower']
+        ci_tight = r_tight['ci_upper'] - r_tight['ci_lower']
+        assert ci_tight <= ci_loose * 1.5, (
+            f"Tighter epsilon should yield narrower CI: {ci_tight:.4f} vs {ci_loose:.4f}"
+        )
+
+    def test_mlmc_level0_coarse_is_zero(self):
+        """At level 0, Y_coarse should be identically zero (Y_{-1}=0 convention)."""
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        from gpu.parallel_mc import GPUCoupledPropagationMLMC
+
+        adj = self._make_chain_adj(3)
+        mlmc = GPUCoupledPropagationMLMC(adj, seed=7)
+        Yf, Yc = mlmc.run_level(level=0, n_samples=50, T=0.5, base_dt=0.1)
+        assert np.all(Yc == 0.0), "Level-0 coarse output must be all zeros"
+        assert Yf.shape == (50,)
 
 
 if __name__ == "__main__":

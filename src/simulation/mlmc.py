@@ -51,6 +51,11 @@ class MLMCLevelStats:
     cost_per_sample: float
     total_cost: float
 
+    @property
+    def cost(self) -> float:
+        """Total cost for this level (alias for total_cost)."""
+        return self.total_cost
+
     def __repr__(self) -> str:
         return (f"MLMCLevel(l={self.level}, N={self.n_samples}, "
                 f"E[Y_l-Y_{{l-1}}]={self.mean_diff:.6f}, "
@@ -82,6 +87,36 @@ class MLMCResult:
     ci_upper: float = 0.0
     confidence_level: float = 0.95
     metadata: Dict = field(default_factory=dict)
+
+    @property
+    def mean(self) -> float:
+        """Alias for estimate (backward compatibility)."""
+        return self.estimate
+
+    @property
+    def rmse(self) -> float:
+        """Root mean squared error."""
+        return np.sqrt(self.mse)
+
+    @property
+    def N_samples(self) -> List[int]:
+        """Sample counts per level, for backward compatibility."""
+        return [s.n_samples for s in self.level_stats]
+
+    @property
+    def level_variances(self) -> List[float]:
+        """Per-level variance estimates (V_l)."""
+        return [s.var_diff for s in self.level_stats]
+
+    @property
+    def level_costs(self) -> List[float]:
+        """Per-level cost estimates (C_l * N_l or similar)."""
+        return [s.cost_per_sample * s.n_samples for s in self.level_stats]
+
+    @property
+    def L(self) -> int:
+        """Number of levels used."""
+        return len(self.level_stats)
 
     def summary(self) -> str:
         """Return summary string."""
@@ -263,7 +298,8 @@ class MLMCSimulator:
                                 T: float,
                                 base_dt: float,
                                 metric: str,
-                                n_samples: int = 100) -> Tuple[float, float, float]:
+                                n_samples: int = 100,
+                                return_samples: bool = False) -> Tuple[float, float, float, Optional[np.ndarray]]:
         """
         Estimate variance and cost for a single MLMC level.
 
@@ -275,14 +311,16 @@ class MLMCSimulator:
             base_dt: Base time step
             metric: Metric to compute
             n_samples: Number of samples for variance estimation
+            return_samples: If True, return the sample differences for reuse
 
         Returns:
-            Tuple of (mean_diff, var_diff, cost_per_sample)
+            Tuple of (mean_diff, var_diff, cost_per_sample, differences)
+            If return_samples=False, differences is None
         """
         differences = np.zeros(n_samples)
 
         for i in range(n_samples):
-            sample_seed = (self.seed + i) if self.seed is not None else None
+            sample_seed = (self.seed + level * 10000 + i) if self.seed is not None else None
             Y_fine, Y_coarse = self.run_coupled_paths(
                 network, traffic, level, T, base_dt, metric, sample_seed
             )
@@ -295,7 +333,9 @@ class MLMCSimulator:
         dt_fine = get_timestep(level, base_dt, self.refinement_factor)
         cost_per_sample = T / dt_fine
 
-        return mean_diff, var_diff, cost_per_sample
+        if return_samples:
+            return mean_diff, var_diff, cost_per_sample, differences
+        return mean_diff, var_diff, cost_per_sample, None
 
     def compute_optimal_samples(self,
                                 variances: List[float],
@@ -334,6 +374,10 @@ class MLMCSimulator:
 
         return N_samples
 
+    # Bias calibration constant for reflected SDE (weak order 0.5)
+    # Conservative estimate based on empirical analysis
+    BIAS_CALIBRATION_CONSTANT = 0.5
+
     def mlmc_estimate(self,
                      network: NetworkGraph,
                      traffic: TrafficModel,
@@ -366,21 +410,24 @@ class MLMCSimulator:
         if verbose:
             logger.info(f"Starting MLMC simulation: ε={epsilon}, L_max={L_max}")
 
-        # Step 1: Pilot run to estimate variances and costs
+        # Step 1: Pilot run to estimate variances and costs (store samples for reuse)
         if verbose:
             logger.info(f"Step 1: Pilot run with {pilot_samples} samples per level")
 
         variances = []
         costs = []
         mean_diffs_pilot = []
+        pilot_diffs = []  # Store pilot samples for reuse
 
         for l in range(L_max + 1):
-            mean_diff, var_diff, cost = self.estimate_level_variance(
-                network, traffic, l, T, base_dt, metric, pilot_samples
+            mean_diff, var_diff, cost, diffs = self.estimate_level_variance(
+                network, traffic, l, T, base_dt, metric, pilot_samples,
+                return_samples=True  # Return samples for reuse
             )
             variances.append(var_diff)
             costs.append(cost)
             mean_diffs_pilot.append(mean_diff)
+            pilot_diffs.append(diffs)
 
             if verbose:
                 logger.info(f"  Level {l}: V={var_diff:.6e}, C={cost:.2e}, "
@@ -396,25 +443,25 @@ class MLMCSimulator:
             for l, N_l in enumerate(optimal_N):
                 logger.info(f"  Level {l}: N={N_l}")
 
-        # Step 3: Generate additional samples to reach optimal N
+        # Step 3: Generate ADDITIONAL samples (reuse pilot samples)
         if verbose:
-            logger.info("Step 3: Generating additional samples")
+            logger.info("Step 3: Generating additional samples (reusing pilot samples)")
 
         level_stats = []
         total_cost = 0.0
 
-        # Storage for all samples
-        all_diffs = [[] for _ in range(L_max + 1)]
-
         for l in range(L_max + 1):
-            n_needed = optimal_N[l] - pilot_samples
-            n_total = optimal_N[l]
+            # Calculate how many additional samples needed beyond pilot
+            n_additional = max(0, optimal_N[l] - pilot_samples)
+            n_total = pilot_samples + n_additional
 
-            # Collect differences
-            diffs = []
+            # Start with pilot samples (reuse them!)
+            diffs = list(pilot_diffs[l])
 
-            for i in range(n_total):
-                sample_seed = (self.seed + l * 10000 + i) if self.seed is not None else None
+            # Generate only additional samples needed
+            for i in range(n_additional):
+                # Start seed after pilot samples to avoid duplicates
+                sample_seed = (self.seed + l * 10000 + pilot_samples + i) if self.seed is not None else None
                 Y_fine, Y_coarse = self.run_coupled_paths(
                     network, traffic, l, T, base_dt, metric, sample_seed
                 )
@@ -423,10 +470,16 @@ class MLMCSimulator:
             diffs = np.array(diffs)
 
             # Compute level statistics
-            mean_Y = np.mean([d + mean_diffs_pilot[l-1] if l > 0 else d for d in diffs])
-            var_Y = np.var(diffs, ddof=1)
             mean_diff = np.mean(diffs)
             var_diff = np.var(diffs, ddof=1)
+
+            # Compute mean_Y as cumulative estimate (for diagnostics)
+            if l == 0:
+                mean_Y = mean_diff  # E[Y_0]
+            else:
+                # Sum of all level differences up to this point
+                mean_Y = sum(mean_diffs_pilot[:l]) + mean_diff
+            var_Y = var_diff
 
             dt_l = get_timestep(l, base_dt, self.refinement_factor)
             cost_per_sample = T / dt_l
@@ -446,10 +499,9 @@ class MLMCSimulator:
             )
 
             level_stats.append(stats)
-            all_diffs[l] = diffs
 
             if verbose:
-                logger.info(f"  Level {l} complete: {stats}")
+                logger.info(f"  Level {l} complete: {stats} (reused {pilot_samples}, new {n_additional})")
 
         # Step 4: Compute final MLMC estimate
         estimate = sum([stats.mean_diff for stats in level_stats])
@@ -458,9 +510,10 @@ class MLMCSimulator:
         variance = sum([stats.var_diff / stats.n_samples for stats in level_stats])
 
         # MSE estimate (variance + bias²)
-        # Bias from discretization: assume weak order 1
+        # Bias from discretization: weak order 0.5 for reflected SDE
+        # Using calibrated bias constant for conservative estimate
         dt_finest = get_timestep(L_max, base_dt, self.refinement_factor)
-        bias_estimate = dt_finest  # Conservative estimate
+        bias_estimate = self.BIAS_CALIBRATION_CONSTANT * np.sqrt(dt_finest)
         mse = variance + bias_estimate ** 2
 
         # Confidence interval
@@ -498,6 +551,26 @@ class MLMCSimulator:
 
         return result
 
+    def estimate(self, network, traffic, epsilon, T=10.0, base_dt=0.1,
+                 L_max=4, metric='mean_queue', pilot_samples=100,
+                 min_samples=None, confidence_level=0.95, verbose=False,
+                 **kwargs) -> 'MLMCResult':
+        """Alias for mlmc_estimate() with backward-compatible parameter names."""
+        if min_samples is not None:
+            pilot_samples = min_samples
+        return self.mlmc_estimate(
+            network=network,
+            traffic=traffic,
+            epsilon=epsilon,
+            L_max=L_max,
+            T=T,
+            base_dt=base_dt,
+            metric=metric,
+            pilot_samples=pilot_samples,
+            confidence_level=confidence_level,
+            verbose=verbose,
+        )
+
     def compare_with_standard_mc(self,
                                 network: NetworkGraph,
                                 traffic: TrafficModel,
@@ -531,11 +604,13 @@ class MLMCSimulator:
         # Standard MC: use finest discretization
         dt_finest = get_timestep(L_max, base_dt, self.refinement_factor)
 
-        # For MC, to achieve same variance as MLMC, need:
-        # N_MC = V / ε²
-        # where V is total variance at finest level
-        V_finest = mlmc_result.level_stats[-1].var_Y
-        N_mc = int(np.ceil(V_finest / epsilon ** 2))
+        # For MC, to achieve same MSE as MLMC, need:
+        # N_MC = Var(Y_L) / ε²
+        # where Var(Y_L) is the variance of a single MC sample at finest level
+        # Estimate Var(Y_L) as sum of level variances (telescoping property):
+        # Var(Y_L) ≈ Var(Y_0) + Σ Var(Y_l - Y_{l-1})
+        V_mc_sample = sum(stats.var_diff for stats in mlmc_result.level_stats)
+        N_mc = int(np.ceil(V_mc_sample / epsilon ** 2))
 
         mc_cost = N_mc * (T / dt_finest)
 

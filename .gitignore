@@ -106,3 +106,18 @@ docs/report/*.pdf
 *.h5
 *.hdf5
 cache/
+
+# Generated results and experiment outputs
+results/*.json
+results/*.zip
+results/results/
+tmp/
+
+# LaTeX build artifacts
+texput.log
+paper/*.aux
+paper/*.log
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls

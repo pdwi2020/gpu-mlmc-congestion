@@ -275,7 +275,8 @@ class DelayCalculator:
         # Get shortest path (cached)
         cache_key = (source, destination)
         if cache_key not in self._path_cache:
-            path = self.network.compute_shortest_path(source, destination)
+            paths_from_source = self.network.compute_shortest_paths(source)
+            path = paths_from_source.get(destination, None)
             self._path_cache[cache_key] = path
         else:
             path = self._path_cache[cache_key]

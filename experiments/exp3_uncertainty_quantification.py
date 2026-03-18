@@ -27,8 +27,11 @@ from pathlib import Path
 import numpy as np
 import time
 import logging
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 import json
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 # Add paths
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -38,25 +41,24 @@ from network.topology import TopologyGenerator
 from network.traffic import BurstyTraffic
 from network.sde import QueueDynamicsSDE
 from simulation.monte_carlo import MonteCarloSimulator
+from simulation.mlmc import MLMCSimulator
+from simulation.discretization import get_timestep
 from metrics.delay import DelayCalculator
 from metrics.congestion import CongestionAnalyzer
 from metrics.uncertainty import UncertaintyQuantifier
 from datasets.synthetic.generator import SyntheticBenchmarkGenerator
+from config import ExperimentConfig, parse_args, setup_logging, setup_output_dirs
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+try:
+    from gpu.parallel_mc import GPUMonteCarloSimulator, GPUMLMCSimulator, PYCUDA_AVAILABLE
+    GPU_AVAILABLE = PYCUDA_AVAILABLE
+except ImportError:
+    GPUMonteCarloSimulator = None
+    GPUMLMCSimulator = None
+    GPU_AVAILABLE = False
+    logging.warning("GPU modules not available - using CPU-only mode")
+
 logger = logging.getLogger(__name__)
-
-# Results directory
-RESULTS_DIR = Path(__file__).parent.parent / "results"
-RESULTS_DIR.mkdir(exist_ok=True)
-FIGURES_DIR = RESULTS_DIR / "figures"
-FIGURES_DIR.mkdir(exist_ok=True)
-TABLES_DIR = RESULTS_DIR / "tables"
-TABLES_DIR.mkdir(exist_ok=True)
 
 
 def run_stochastic_simulation(
@@ -104,25 +106,24 @@ def run_stochastic_simulation(
     logger.info("Generating sample trajectories...")
 
     n_timesteps = int(T / dt)
-    sample_trajectories = np.zeros((n_samples, n_timesteps))
+    sample_trajectories = np.zeros((n_samples, n_timesteps + 1))
 
     # Simple queue dynamics for each sample
     sde = QueueDynamicsSDE(
-        arrival_rate=traffic.rate if hasattr(traffic, 'rate') else 100.0,
+        arrival_rate=getattr(traffic, 'rate', getattr(traffic, 'effective_rate', 100.0)),
         service_rate=120.0,
-        noise_intensity=0.5,
-        seed=seed
+        noise_intensity=0.5
     )
 
     for i in range(n_samples):
-        trajectory = sde.simulate_path(T=T, dt=dt, q0=0.0, seed=seed+i)
+        _, trajectory = sde.simulate_path(T=T, dt=dt, q0=0.0, seed=seed + i)
         sample_trajectories[i] = trajectory
 
     return {
         'result': result,
         'runtime': runtime,
         'sample_trajectories': sample_trajectories,
-        'times': np.linspace(0, T, n_timesteps)
+        'times': np.linspace(0, T, n_timesteps + 1)
     }
 
 
@@ -378,6 +379,404 @@ def compare_with_deterministic(
     }
 
 
+def _set_seaborn_whitegrid_style():
+    """Use seaborn whitegrid styling without requiring seaborn."""
+    for style_name in ('seaborn-v0_8-whitegrid', 'seaborn-whitegrid'):
+        try:
+            plt.style.use(style_name)
+            return
+        except OSError:
+            continue
+
+
+def _compute_distribution_stats(samples: np.ndarray) -> Dict[str, float]:
+    """Compute tail statistics for a one-dimensional sample distribution."""
+    return {
+        'mean': float(np.mean(samples)),
+        'p95': float(np.percentile(samples, 95)),
+        'p99': float(np.percentile(samples, 99))
+    }
+
+
+def _compute_ecdf(samples: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """Build empirical CDF coordinates."""
+    x = np.sort(np.asarray(samples, dtype=float))
+    y = np.arange(1, x.size + 1, dtype=float) / x.size
+    return x, y
+
+
+def _build_tail_delay_testbed(seed: int) -> Tuple:
+    """Create the synthetic ER n=500 validation setup."""
+    generator = TopologyGenerator(seed=seed)
+    network = generator.generate_erdos_renyi(n_nodes=500, p=0.02, directed=False)
+    network.set_link_properties(
+        bandwidth_range=(1e9, 10e9),
+        delay_range=(0.001, 0.01),
+        capacity_range=(500, 2000),
+        seed=seed
+    )
+
+    traffic = BurstyTraffic(
+        on_rate=150.0,
+        mean_on_duration=1.0,
+        mean_off_duration=0.5,
+        seed=seed
+    )
+
+    return network, traffic
+
+
+def _get_gpu_mc_simulator(seed: int) -> Optional[object]:
+    """Create a GPU MC simulator if available."""
+    if not GPU_AVAILABLE:
+        return None
+
+    try:
+        return GPUMonteCarloSimulator(seed=seed)
+    except Exception as exc:
+        logger.warning(f"GPU Monte Carlo unavailable, falling back to CPU: {exc}")
+        return None
+
+
+def _get_gpu_mlmc_simulator(
+    refinement_factor: int,
+    seed: int
+) -> Optional[object]:
+    """Create a GPU MLMC simulator if available."""
+    if not GPU_AVAILABLE:
+        return None
+
+    try:
+        return GPUMLMCSimulator(refinement_factor=refinement_factor, seed=seed)
+    except Exception as exc:
+        logger.warning(f"GPU MLMC unavailable, falling back to CPU: {exc}")
+        return None
+
+
+def _collect_cpu_mlmc_level_samples(
+    simulator: MLMCSimulator,
+    network,
+    traffic,
+    level: int,
+    n_samples: int,
+    T: float,
+    base_dt: float,
+    seed: int
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Collect coupled MLMC fine/coarse samples on CPU for one level."""
+    Y_fine = np.zeros(n_samples)
+    Y_coarse = np.zeros(n_samples)
+
+    for i in range(n_samples):
+        sample_seed = seed + level * 10000 + i
+        Y_fine[i], Y_coarse[i] = simulator.run_coupled_paths(
+            network=network,
+            traffic=traffic,
+            level=level,
+            T=T,
+            base_dt=base_dt,
+            metric='final_queue',
+            seed=sample_seed
+        )
+
+    return Y_fine, Y_coarse
+
+
+def _collect_mlmc_final_queue_distribution(
+    network,
+    traffic,
+    epsilon: float,
+    L_max: int,
+    T: float,
+    base_dt: float,
+    refinement_factor: int,
+    seed: int,
+    use_gpu: bool,
+    pilot_samples: int = 100
+) -> Dict:
+    """Collect the final queue distribution implied by MLMC path allocations."""
+    cpu_simulator = MLMCSimulator(refinement_factor=refinement_factor, seed=seed)
+    gpu_simulator = _get_gpu_mlmc_simulator(refinement_factor, seed) if use_gpu else None
+    backend = 'GPU' if gpu_simulator is not None else 'CPU'
+
+    logger.info(
+        f"Collecting MLMC final-queue distribution ({backend}, epsilon={epsilon}, L_max={L_max})"
+    )
+
+    start_time = time.time()
+    variances = []
+    costs = []
+    level_samples = []
+
+    for level in range(L_max + 1):
+        if gpu_simulator is not None:
+            Y_fine, Y_coarse = gpu_simulator.run_coupled_paths_gpu(
+                network=network,
+                traffic=traffic,
+                level=level,
+                n_samples=pilot_samples,
+                T=T,
+                base_dt=base_dt,
+                metric='final_queue'
+            )
+        else:
+            Y_fine, Y_coarse = _collect_cpu_mlmc_level_samples(
+                simulator=cpu_simulator,
+                network=network,
+                traffic=traffic,
+                level=level,
+                n_samples=pilot_samples,
+                T=T,
+                base_dt=base_dt,
+                seed=seed
+            )
+
+        diffs = Y_fine - Y_coarse
+        variances.append(max(float(np.var(diffs, ddof=1)), 1e-12))
+        costs.append(T / get_timestep(level, base_dt, refinement_factor))
+        level_samples.append([np.asarray(Y_fine, dtype=float)])
+
+    optimal_counts = cpu_simulator.compute_optimal_samples(variances, costs, epsilon)
+    actual_counts = [max(pilot_samples, n) for n in optimal_counts]
+
+    for level, n_total in enumerate(actual_counts):
+        n_additional = n_total - pilot_samples
+        if n_additional <= 0:
+            continue
+
+        if gpu_simulator is not None:
+            Y_fine_add, _ = gpu_simulator.run_coupled_paths_gpu(
+                network=network,
+                traffic=traffic,
+                level=level,
+                n_samples=n_additional,
+                T=T,
+                base_dt=base_dt,
+                metric='final_queue'
+            )
+        else:
+            Y_fine_add, _ = _collect_cpu_mlmc_level_samples(
+                simulator=cpu_simulator,
+                network=network,
+                traffic=traffic,
+                level=level,
+                n_samples=n_additional,
+                T=T,
+                base_dt=base_dt,
+                seed=seed + pilot_samples
+            )
+
+        level_samples[level].append(np.asarray(Y_fine_add, dtype=float))
+
+    samples = np.concatenate([
+        np.concatenate(level_parts) for level_parts in level_samples
+    ])
+    runtime = time.time() - start_time
+
+    logger.info(f"MLMC sample counts by level: {actual_counts}")
+    logger.info(f"Collected {len(samples)} MLMC final-queue samples in {runtime:.2f}s")
+
+    return {
+        'samples': samples,
+        'stats': _compute_distribution_stats(samples),
+        'runtime': runtime,
+        'backend': backend,
+        'epsilon': epsilon,
+        'pilot_samples': pilot_samples,
+        'n_samples_per_level': actual_counts
+    }
+
+
+def _run_reference_mc_distribution(
+    network,
+    traffic,
+    epsilon: float,
+    T: float,
+    dt: float,
+    seed: int,
+    use_gpu: bool,
+    pilot_samples: int = 1000
+) -> Dict:
+    """Run the tight-reference MC distribution at a target epsilon."""
+    gpu_simulator = _get_gpu_mc_simulator(seed) if use_gpu else None
+    backend = 'GPU' if gpu_simulator is not None else 'CPU'
+    simulator = gpu_simulator if gpu_simulator is not None else MonteCarloSimulator(seed=seed)
+
+    logger.info(f"Running reference MC distribution ({backend}, epsilon={epsilon})")
+
+    pilot_result = simulator.estimate(
+        network=network,
+        traffic=traffic,
+        n_samples=pilot_samples,
+        T=T,
+        dt=dt,
+        metric='final_queue',
+        verbose=False
+    )
+
+    estimated_variance = max(float(pilot_result.variance), 1e-12)
+    n_required = max(100, int(np.ceil(estimated_variance / (epsilon ** 2))))
+
+    start_time = time.time()
+    result = simulator.estimate(
+        network=network,
+        traffic=traffic,
+        n_samples=n_required,
+        T=T,
+        dt=dt,
+        metric='final_queue',
+        verbose=False
+    )
+    runtime = time.time() - start_time
+
+    logger.info(
+        f"Reference MC collected {n_required} samples with pilot variance {estimated_variance:.6e}"
+    )
+
+    return {
+        'samples': result.samples,
+        'stats': _compute_distribution_stats(result.samples),
+        'runtime': runtime,
+        'backend': backend,
+        'epsilon': epsilon,
+        'n_samples': n_required
+    }
+
+
+def _save_tail_delay_validation_figure(
+    mlmc_results: Dict,
+    mc_results: Dict,
+    output_path: Path
+):
+    """Save the MLMC vs reference MC tail distribution comparison figure."""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    _set_seaborn_whitegrid_style()
+
+    fig, ax = plt.subplots(figsize=(10, 6), dpi=150)
+
+    ref_x, ref_y = _compute_ecdf(mc_results['samples'])
+    mlmc_x, mlmc_y = _compute_ecdf(mlmc_results['samples'])
+
+    ax.plot(ref_x, ref_y, linewidth=2.0, color='tab:blue', label='GPU-MC (ref)')
+    ax.plot(mlmc_x, mlmc_y, linewidth=2.0, color='tab:orange', label='GPU-MLMC')
+
+    ax.axvline(
+        mc_results['stats']['p95'],
+        color='tab:blue',
+        linestyle='--',
+        linewidth=1.5,
+        alpha=0.8,
+        label='GPU-MC P95'
+    )
+    ax.axvline(
+        mc_results['stats']['p99'],
+        color='tab:blue',
+        linestyle=':',
+        linewidth=1.5,
+        alpha=0.8,
+        label='GPU-MC P99'
+    )
+    ax.axvline(
+        mlmc_results['stats']['p95'],
+        color='tab:orange',
+        linestyle='--',
+        linewidth=1.5,
+        alpha=0.8,
+        label='GPU-MLMC P95'
+    )
+    ax.axvline(
+        mlmc_results['stats']['p99'],
+        color='tab:orange',
+        linestyle=':',
+        linewidth=1.5,
+        alpha=0.8,
+        label='GPU-MLMC P99'
+    )
+
+    ax.set_xlabel("Queue Length Q(T)")
+    ax.set_ylabel("CDF")
+    ax.set_title("Tail Delay Distribution: GPU-MLMC vs Reference MC")
+    ax.set_ylim(0.0, 1.01)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=150)
+    plt.close(fig)
+
+
+def run_tail_delay_validation(config: ExperimentConfig = None) -> Dict:
+    """Run P95/P99 tail-delay validation against a tight MC reference."""
+    if config is None:
+        config = ExperimentConfig()
+
+    seed = config.seed
+    T = config.T * 2
+    base_dt = config.dt
+    epsilon_mlmc = 0.02
+    epsilon_mc = 0.005
+    L_max = config.L_max
+    refinement_factor = config.refinement_factor
+    figure_path = Path(__file__).parent.parent / "paper" / "figures" / "tail_delay_validation_a100.png"
+
+    network, traffic = _build_tail_delay_testbed(seed)
+
+    mlmc_results = _collect_mlmc_final_queue_distribution(
+        network=network,
+        traffic=traffic,
+        epsilon=epsilon_mlmc,
+        L_max=L_max,
+        T=T,
+        base_dt=base_dt,
+        refinement_factor=refinement_factor,
+        seed=seed,
+        use_gpu=config.use_gpu
+    )
+
+    mc_results = _run_reference_mc_distribution(
+        network=network,
+        traffic=traffic,
+        epsilon=epsilon_mc,
+        T=T,
+        dt=base_dt,
+        seed=seed,
+        use_gpu=config.use_gpu
+    )
+
+    _save_tail_delay_validation_figure(
+        mlmc_results=mlmc_results,
+        mc_results=mc_results,
+        output_path=figure_path
+    )
+
+    print("\nTail-delay validation summary:")
+    print("-" * 80)
+    print("Method | ε | Mean | P95 | P99")
+    print(
+        f"GPU-MC (ref) | {epsilon_mc:.3f} | "
+        f"{mc_results['stats']['mean']:.3f} | "
+        f"{mc_results['stats']['p95']:.3f} | "
+        f"{mc_results['stats']['p99']:.3f}"
+    )
+    print(
+        f"GPU-MLMC | {epsilon_mlmc:.2f} | "
+        f"{mlmc_results['stats']['mean']:.3f} | "
+        f"{mlmc_results['stats']['p95']:.3f} | "
+        f"{mlmc_results['stats']['p99']:.3f}"
+    )
+
+    if mlmc_results['backend'] != 'GPU' or mc_results['backend'] != 'GPU':
+        print(
+            "Note: GPU unavailable, one or more validation runs used the CPU fallback."
+        )
+
+    logger.info(f"Saved tail-delay validation figure: {figure_path}")
+
+    return {
+        'mlmc': mlmc_results,
+        'mc_reference': mc_results,
+        'figure_path': figure_path
+    }
+
+
 def save_results(
     stochastic_results: Dict,
     deterministic_results: Dict,
@@ -504,8 +903,18 @@ def print_summary(
     print("=" * 80)
 
 
-def main():
-    """Main experiment runner."""
+def main(config: ExperimentConfig = None):
+    """Main experiment runner.
+
+    Args:
+        config: Experiment configuration. If None, uses defaults.
+    """
+    if config is None:
+        config = ExperimentConfig()
+
+    # Setup logging and output directories
+    setup_logging(config)
+    results_dir, figures_dir, tables_dir = setup_output_dirs(config)
 
     print("=" * 80)
     print("EXPERIMENT 3: UNCERTAINTY QUANTIFICATION")
@@ -518,33 +927,35 @@ def main():
     print("-" * 80)
 
     # Create network
-    generator = TopologyGenerator(seed=42)
+    generator = TopologyGenerator(seed=config.seed)
     network = generator.generate_erdos_renyi(n_nodes=50, p=0.2, directed=False)
     network.set_link_properties(
         bandwidth_range=(1e9, 10e9),
         delay_range=(0.001, 0.01),
         capacity_range=(500, 2000),
-        seed=42
+        seed=config.seed
     )
 
     # Bursty traffic
     traffic = BurstyTraffic(
         on_rate=150.0,
-        off_rate=50.0,
-        burst_duration=1.0,
-        idle_duration=0.5,
-        seed=42
+        mean_on_duration=1.0,
+        mean_off_duration=0.5,
+        seed=config.seed
     )
 
     print(f"Network: {network.n_nodes} nodes, {network.n_edges} edges")
-    print(f"Traffic: Bursty (on={traffic.on_rate}, off={traffic.off_rate})")
+    print(
+        f"Traffic: Bursty (on={traffic.on_rate}, "
+        f"mean_on={traffic.mean_on_duration}, mean_off={traffic.mean_off_duration})"
+    )
 
-    # Parameters
-    n_samples = 1000
-    T = 20.0
-    dt = 0.1
+    # Parameters from config
+    n_samples = config.n_samples
+    T = config.T * 2  # Longer simulation for UQ
+    dt = config.dt
     confidence_level = 0.95
-    seed = 42
+    seed = config.seed
 
     print(f"\nParameters:")
     print(f"  Samples: {n_samples}")
@@ -607,7 +1018,7 @@ def main():
         congestion_analysis,
         uncertainty_band,
         comparison,
-        TABLES_DIR
+        tables_dir
     )
 
     # ============================================================================
@@ -621,17 +1032,16 @@ def main():
         comparison
     )
 
-    print("\nResults saved to:")
-    print(f"  {TABLES_DIR / 'exp3_uncertainty_quantification_results.json'}")
-    print(f"  {TABLES_DIR / 'exp3_uncertainty_band.npz'}")
+    tail_delay_results = run_tail_delay_validation(config)
 
-    print("\nNext steps:")
-    print("  - Generate uncertainty band plots")
-    print("  - Create delay distribution histograms")
-    print("  - Visualize congestion heatmaps")
+    print("\nResults saved to:")
+    print(f"  {tables_dir / 'exp3_uncertainty_quantification_results.json'}")
+    print(f"  {tables_dir / 'exp3_uncertainty_band.npz'}")
+    print(f"  {tail_delay_results['figure_path']}")
 
     print("\n" + "=" * 80)
 
 
 if __name__ == "__main__":
-    main()
+    config = parse_args(description="Uncertainty Quantification Experiment")
+    main(config)

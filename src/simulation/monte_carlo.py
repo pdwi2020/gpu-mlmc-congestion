@@ -325,7 +325,8 @@ class MonteCarloSimulator:
                         T: float,
                         dt: float,
                         metric: str = 'mean_queue',
-                        n_trials: int = 10) -> Dict:
+                        n_trials: int = 10,
+                        verbose: bool = True) -> Dict:
         """
         Test convergence of Monte Carlo estimator as N increases.
 

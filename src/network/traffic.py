@@ -159,6 +159,9 @@ class PoissonTraffic(TrafficModel):
         Returns:
             Array of arrival times
         """
+        if self.rate == 0.0:
+            return np.array([], dtype=np.float64)
+
         # Expected number of arrivals
         expected_arrivals = int(self.rate * duration * 1.2)  # Add buffer
 

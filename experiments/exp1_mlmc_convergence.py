@@ -39,21 +39,9 @@ from simulation.monte_carlo import MonteCarloSimulator
 from simulation.mlmc import MLMCSimulator
 from simulation.discretization import MLMCHierarchy
 from datasets.synthetic.generator import SyntheticBenchmarkGenerator
+from config import ExperimentConfig, parse_args, setup_logging, setup_output_dirs
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
 logger = logging.getLogger(__name__)
-
-# Results directory
-RESULTS_DIR = Path(__file__).parent.parent / "results"
-RESULTS_DIR.mkdir(exist_ok=True)
-FIGURES_DIR = RESULTS_DIR / "figures"
-FIGURES_DIR.mkdir(exist_ok=True)
-TABLES_DIR = RESULTS_DIR / "tables"
-TABLES_DIR.mkdir(exist_ok=True)
 
 
 def run_mc_convergence_test(
@@ -447,8 +435,18 @@ def print_summary(
     print("=" * 80)
 
 
-def main():
-    """Main experiment runner."""
+def main(config: ExperimentConfig = None):
+    """Main experiment runner.
+
+    Args:
+        config: Experiment configuration. If None, uses defaults.
+    """
+    if config is None:
+        config = ExperimentConfig()
+
+    # Setup logging and output directories
+    setup_logging(config)
+    results_dir, figures_dir, tables_dir = setup_output_dirs(config)
 
     print("=" * 80)
     print("EXPERIMENT 1: MLMC CONVERGENCE ANALYSIS")
@@ -461,7 +459,7 @@ def main():
     print("-" * 80)
 
     # Create synthetic benchmark scenario
-    generator = SyntheticBenchmarkGenerator(seed=42)
+    generator = SyntheticBenchmarkGenerator(seed=config.seed)
     scenario = generator.generate_stable_queue_scenario(
         arrival_rate=8.0,
         service_rate=10.0,
@@ -476,13 +474,13 @@ def main():
     print(f"Ground truth utilization: {scenario['ground_truth']['utilization']:.2f}")
     print(f"Expected queue length: {scenario['ground_truth']['expected_queue_length']:.2f}")
 
-    # Experiment parameters
-    target_epsilons = [0.1, 0.05, 0.01, 0.005, 0.001]
-    T = 10.0
-    dt_mc = 0.01
-    base_dt_mlmc = 0.2
-    L_max = 5
-    seed = 42
+    # Experiment parameters from config
+    target_epsilons = config.target_epsilons
+    T = config.T
+    dt_mc = config.dt / 10  # Finer timestep for MC
+    base_dt_mlmc = config.dt * 2  # Coarser base for MLMC
+    L_max = config.L_max
+    seed = config.seed
 
     print(f"\nParameters:")
     print(f"  Target accuracies: {target_epsilons}")
@@ -527,7 +525,7 @@ def main():
         mlmc_results,
         variance_decay,
         convergence_comparison,
-        TABLES_DIR
+        tables_dir
     )
 
     # ============================================================================
@@ -536,16 +534,12 @@ def main():
     print_summary(mc_results, mlmc_results, convergence_comparison)
 
     print("\nResults saved to:")
-    print(f"  {TABLES_DIR / 'exp1_mlmc_convergence_results.json'}")
-    print(f"  {TABLES_DIR / 'exp1_cost_comparison.csv'}")
-
-    print("\nNext steps:")
-    print("  - Generate convergence plots (MSE vs Cost)")
-    print("  - Visualize variance decay across levels")
-    print("  - Compare with theoretical predictions")
+    print(f"  {tables_dir / 'exp1_mlmc_convergence_results.json'}")
+    print(f"  {tables_dir / 'exp1_cost_comparison.csv'}")
 
     print("\n" + "=" * 80)
 
 
 if __name__ == "__main__":
-    main()
+    config = parse_args(description="MLMC Convergence Analysis Experiment")
+    main(config)

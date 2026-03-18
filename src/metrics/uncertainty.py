@@ -493,6 +493,7 @@ class UncertaintyQuantifier:
             numerator = np.sum(
                 (samples[:-k] - mean) * (samples[k:] - mean)
             )
+            # Unbiased autocorrelation estimator: divide by (n-k) for the number of pairs
             autocorr_k = numerator / ((n - k) * var)
 
             # Stop if autocorrelation becomes negligible

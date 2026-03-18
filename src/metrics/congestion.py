@@ -457,7 +457,10 @@ class CongestionAnalyzer:
             else:
                 mean_utilization = np.mean(utilization)
                 max_utilization = np.max(utilization)
-                node_utilization = {i: utilization[i] for i in range(len(utilization))}
+                if np.ndim(utilization) == 0:
+                    node_utilization = {i: float(utilization) for i in range(n_nodes)}
+                else:
+                    node_utilization = {i: utilization[i] for i in range(len(utilization))}
 
             # Identify congested nodes
             congested_nodes = self.identify_congested_nodes(node_utilization)

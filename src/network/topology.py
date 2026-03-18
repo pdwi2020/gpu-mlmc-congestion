@@ -244,7 +244,10 @@ class NetworkGraph:
         }
 
         # Add connectivity info
-        if self.graph.is_directed():
+        if self.graph.number_of_nodes() == 0:
+            stats['connected'] = True
+            stats['n_components'] = 0
+        elif self.graph.is_directed():
             stats['weakly_connected'] = nx.is_weakly_connected(self.graph)
             stats['n_components'] = nx.number_weakly_connected_components(self.graph)
         else:
@@ -253,9 +256,14 @@ class NetworkGraph:
 
         # Degree statistics
         degrees = [d for n, d in self.graph.degree()]
-        stats['avg_degree'] = np.mean(degrees)
-        stats['max_degree'] = np.max(degrees)
-        stats['min_degree'] = np.min(degrees)
+        if degrees:
+            stats['avg_degree'] = np.mean(degrees)
+            stats['max_degree'] = np.max(degrees)
+            stats['min_degree'] = np.min(degrees)
+        else:
+            stats['avg_degree'] = 0.0
+            stats['max_degree'] = 0
+            stats['min_degree'] = 0
 
         return stats
 
@@ -558,6 +566,46 @@ class TopologyGenerator:
                     network.add_edge(parent, node_id)
                     queue.append((node_id, level + 1))
                     node_id += 1
+
+        logger.info(f"Generated graph: {network.n_nodes} nodes, {network.n_edges} edges")
+        return network
+
+    def generate_line_graph(self, n_nodes: int) -> NetworkGraph:
+        """
+        Generate a line (path) graph: nodes 0-1-2-..-(n_nodes-1).
+
+        Args:
+            n_nodes: Number of nodes
+
+        Returns:
+            NetworkGraph object
+        """
+        logger.info(f"Generating line graph: n={n_nodes}")
+
+        nx_graph = nx.path_graph(n_nodes)
+
+        network = NetworkGraph(directed=False)
+        network.graph = nx_graph
+
+        logger.info(f"Generated graph: {network.n_nodes} nodes, {network.n_edges} edges")
+        return network
+
+    def generate_star_graph(self, n_nodes: int) -> NetworkGraph:
+        """
+        Generate a star graph: one central hub connected to all others.
+
+        Args:
+            n_nodes: Total number of nodes (including hub)
+
+        Returns:
+            NetworkGraph object
+        """
+        logger.info(f"Generating star graph: n={n_nodes}")
+
+        nx_graph = nx.star_graph(n_nodes - 1)
+
+        network = NetworkGraph(directed=False)
+        network.graph = nx_graph
 
         logger.info(f"Generated graph: {network.n_nodes} nodes, {network.n_edges} edges")
         return network
