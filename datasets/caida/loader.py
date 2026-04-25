@@ -310,6 +310,173 @@ class CAIDATopologyLoader:
         print("=" * 60)
 
 
+class CAIDAPassiveTraceLoader:
+    """Download and process CAIDA Anonymized Internet Traces (passive backbone PCAP).
+
+    Companion to ``CAIDATopologyLoader``. Targets the gated
+    ``passive-<year>-pcap`` archives. After CAIDA approves a dataset request
+    (typically 2-3 business days), users receive HTTP Basic credentials that
+    must be supplied here either directly or via environment variables
+    ``CAIDA_USER`` / ``CAIDA_PASSWORD``.
+
+    The loader applies the same Range-capped bounded-download strategy as
+    ``MAWITraceProcessor`` so the downloaded prefix stays well below typical
+    laptop / Colab disk budgets, and reuses the MAWI extractor for per-flow
+    arrival binning. Anonymization is prefix-preserving at the IP layer; the
+    pcap timestamps and flow tuples are exposed normally.
+    """
+
+    DEFAULT_BASE_URL = "https://data.caida.org/datasets"
+
+    def __init__(
+        self,
+        data_dir: Optional[Path] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        base_url: Optional[str] = None,
+        max_download_bytes: int = 100 * 1024 * 1024,
+        retries: int = 3,
+    ) -> None:
+        """Initialize the passive trace loader.
+
+        Args:
+            data_dir: Directory to store passive trace caches (defaults to
+                ``datasets/caida/passive``).
+            username: CAIDA-issued HTTP Basic Auth username (or read from
+                ``CAIDA_USER`` env var).
+            password: CAIDA-issued HTTP Basic Auth password (or read from
+                ``CAIDA_PASSWORD`` env var).
+            base_url: Override the dataset root URL.
+            max_download_bytes: Maximum compressed bytes to fetch per trace
+                via HTTP Range. Defaults to 100 MiB; sufficient for tens of
+                seconds of 10 G backbone traffic.
+            retries: Download retry count.
+        """
+        import os
+
+        if data_dir is None:
+            data_dir = Path(__file__).parent / "passive"
+        self.data_dir = Path(data_dir)
+        self.raw_dir = self.data_dir / "raw"
+        self.processed_dir = self.data_dir / "processed"
+        self.raw_dir.mkdir(parents=True, exist_ok=True)
+        self.processed_dir.mkdir(parents=True, exist_ok=True)
+
+        self.username = username or os.environ.get("CAIDA_USER")
+        self.password = password or os.environ.get("CAIDA_PASSWORD")
+        self.base_url = (base_url or self.DEFAULT_BASE_URL).rstrip("/")
+        self.max_download_bytes = int(max_download_bytes)
+        self.retries = int(retries)
+
+        logger.info("CAIDA passive trace cache: %s", self.data_dir)
+
+    def get_trace_url(self, year: int, filename: str) -> str:
+        """Construct the HTTPS URL for a specific passive PCAP filename.
+
+        CAIDA stores anonymized traces under
+        ``<base>/passive-<year>-pcap/<filename>``; consult the
+        approval email for the exact filename you want (e.g.
+        ``equinix-nyc.dirA.20180315-130000.UTC.anon.pcap.gz``).
+        """
+        return f"{self.base_url}/passive-{year}-pcap/{filename}"
+
+    def download_trace(self, year: int, filename: str) -> Path:
+        """Range-capped download of one anonymized PCAP gzip.
+
+        Behaves like ``MAWITraceProcessor.download_trace`` but adds HTTP
+        Basic Auth headers using the loader credentials. Falls back to
+        a full download if the server does not honor Range.
+        """
+        if not self.username or not self.password:
+            raise RuntimeError(
+                "CAIDA passive credentials missing. Set CAIDA_USER + "
+                "CAIDA_PASSWORD env vars, or pass username/password kwargs."
+            )
+
+        out_path = self.raw_dir / filename
+        if out_path.exists():
+            logger.info("Cached passive trace already present: %s", out_path)
+            return out_path
+
+        url = self.get_trace_url(year, filename)
+        logger.info("Downloading passive trace from %s", url)
+        logger.info(
+            "Caching at most %.1f MB of compressed trace data",
+            self.max_download_bytes / (1024 * 1024),
+        )
+
+        import urllib.request as _ur
+
+        # HTTP Basic Auth handler.
+        pwd_mgr = _ur.HTTPPasswordMgrWithDefaultRealm()
+        pwd_mgr.add_password(None, url, self.username, self.password)
+        auth_handler = _ur.HTTPBasicAuthHandler(pwd_mgr)
+        opener = _ur.build_opener(auth_handler)
+
+        tmp_path = out_path.with_suffix(out_path.suffix + ".part")
+        last_err: Optional[Exception] = None
+        for attempt in range(1, self.retries + 1):
+            try:
+                req = _ur.Request(
+                    url,
+                    headers={"Range": f"bytes=0-{self.max_download_bytes - 1}"},
+                )
+                with opener.open(req, timeout=120) as resp, open(tmp_path, "wb") as fh:
+                    written = 0
+                    while True:
+                        chunk = resp.read(1 << 20)
+                        if not chunk:
+                            break
+                        fh.write(chunk)
+                        written += len(chunk)
+                        if written >= self.max_download_bytes:
+                            break
+                    if written == 0:
+                        raise RuntimeError("Empty response from CAIDA")
+                tmp_path.rename(out_path)
+                logger.info(
+                    "Downloaded %.1f MB of %s",
+                    out_path.stat().st_size / (1024 * 1024),
+                    filename,
+                )
+                return out_path
+            except Exception as exc:
+                last_err = exc
+                logger.warning(
+                    "CAIDA passive download attempt %d/%d failed: %s",
+                    attempt, self.retries, exc,
+                )
+        raise RuntimeError(
+            f"Failed to download CAIDA passive trace {url}: {last_err}"
+        )
+
+    def extract_arrival_series(
+        self,
+        pcap_path: Path,
+        bin_seconds: float = 1.0,
+        max_flows: int = 500,
+    ) -> Tuple[Dict[str, "object"], Dict[str, "object"]]:
+        """Delegate to the MAWI extractor; identical PCAP semantics."""
+        # Lazy import to avoid hard dependency at module-load time.
+        from datasets.mawi.loader import MAWITraceProcessor  # type: ignore
+
+        proxy = MAWITraceProcessor(data_dir=self.data_dir)
+        return proxy.extract_arrival_series(
+            pcap_path, bin_seconds=bin_seconds, max_flows=max_flows
+        )
+
+    def to_lambda_series(
+        self,
+        arrival_counts: Dict[str, "object"],
+        scale: float = 1.0,
+    ) -> "object":
+        """Stack per-flow counts into a (T, n_flows) array (delegated)."""
+        from datasets.mawi.loader import MAWITraceProcessor  # type: ignore
+
+        proxy = MAWITraceProcessor(data_dir=self.data_dir)
+        return proxy.to_lambda_series(arrival_counts, scale=scale)
+
+
 if __name__ == "__main__":
     # Example usage
     logging.basicConfig(level=logging.INFO)

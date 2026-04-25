@@ -44,6 +44,24 @@ def _load_mawi(date: str, hhmm: str, max_mb: int, bin_seconds: float, max_flows:
     return ts, f"mawi-samplepoint-F-{date}{hhmm}-{metadata['total_packets']}pkts-{ts.shape[0]}bins-{ts.shape[1]}flows"
 
 
+def _load_caida_passive(year: int, filename: str, max_mb: int, bin_seconds: float, max_flows: int) -> Tuple[np.ndarray, str]:
+    """Load a CAIDA Anonymized Internet Trace via the passive-dataset gateway."""
+    from datasets.caida.loader import CAIDAPassiveTraceLoader
+
+    loader = CAIDAPassiveTraceLoader(
+        data_dir=ROOT / "datasets" / "caida" / "passive",
+        max_download_bytes=max_mb * 1024 * 1024,
+    )
+    path = loader.download_trace(year=year, filename=filename)
+    arrivals_dict, metadata = loader.extract_arrival_series(
+        path, bin_seconds=bin_seconds, max_flows=max_flows
+    )
+    if not arrivals_dict:
+        raise RuntimeError("No arrivals extracted from CAIDA passive trace")
+    ts = loader.to_lambda_series(arrivals_dict, scale=1.0)
+    return ts, f"caida-passive-{year}-{filename}-{metadata['total_packets']}pkts-{ts.shape[0]}bins-{ts.shape[1]}flows"
+
+
 def reflected_sde_paths(arrivals: np.ndarray, mu: float, sigma: float, dt: float, n_paths: int, seed: int) -> np.ndarray:
     """Vectorised reflected-SDE ensemble. Returns peak queue per (path, flow)."""
     rng = np.random.default_rng(seed)
@@ -83,8 +101,14 @@ def des_poisson_paths(arrivals: np.ndarray, mu: float, dt: float, n_paths: int, 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--source", choices=["mawi", "caida-passive"], default="mawi",
+                        help="Data source for the deep validation pipeline.")
     parser.add_argument("--mawi-date", default="20240101")
     parser.add_argument("--mawi-hhmm", default="1400")
+    parser.add_argument("--caida-year", type=int, default=2018)
+    parser.add_argument("--caida-filename", default="",
+                        help="Exact filename from CAIDA approval email, e.g. "
+                             "equinix-nyc.dirA.20180315-130000.UTC.anon.pcap.gz")
     parser.add_argument("--max-mb", type=int, default=200)
     parser.add_argument("--bin-seconds", type=float, default=0.1)
     parser.add_argument("--max-flows", type=int, default=10)
@@ -96,7 +120,13 @@ def main() -> None:
     args.output.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-    arrivals, source = _load_mawi(args.mawi_date, args.mawi_hhmm, args.max_mb, args.bin_seconds, args.max_flows)
+    if args.source == "caida-passive":
+        if not args.caida_filename:
+            raise SystemExit("--caida-filename required when --source=caida-passive")
+        arrivals, source = _load_caida_passive(args.caida_year, args.caida_filename,
+                                               args.max_mb, args.bin_seconds, args.max_flows)
+    else:
+        arrivals, source = _load_mawi(args.mawi_date, args.mawi_hhmm, args.max_mb, args.bin_seconds, args.max_flows)
     arrivals = np.asarray(arrivals, dtype=np.float64)
     if arrivals.ndim == 1:
         arrivals = arrivals[:, None]

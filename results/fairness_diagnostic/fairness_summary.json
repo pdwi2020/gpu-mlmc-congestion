@@ -1,0 +1,49 @@
+{
+  "epsilon": 0.005,
+  "n_nodes": 300,
+  "T": 5.0,
+  "L_max": 4,
+  "pilot_samples": 50,
+  "summary": {
+    "baseline_giles": {
+      "median_per_node_ci": 0.018159180879592896,
+      "mean_per_node_ci": 0.018160492181777954,
+      "p95_per_node_ci": 0.020245837047696114,
+      "p5_per_node_ci": 0.01644500531256199,
+      "n_seeds": 3,
+      "n_nodes": 300
+    },
+    "centrality_only": {
+      "median_per_node_ci": 0.00570442620664835,
+      "mean_per_node_ci": 0.005705108866095543,
+      "p95_per_node_ci": 0.005895067006349564,
+      "p5_per_node_ci": 0.005511767230927944,
+      "n_seeds": 3,
+      "n_nodes": 300
+    },
+    "variance_only": {
+      "median_per_node_ci": 0.005571807734668255,
+      "mean_per_node_ci": 0.005567020736634731,
+      "p95_per_node_ci": 0.005761625245213509,
+      "p5_per_node_ci": 0.005368881858885288,
+      "n_seeds": 3,
+      "n_nodes": 300
+    },
+    "sla_only": {
+      "median_per_node_ci": 0.005688183009624481,
+      "mean_per_node_ci": 0.005683692172169685,
+      "p95_per_node_ci": 0.005873449612408876,
+      "p5_per_node_ci": 0.005502935964614153,
+      "n_seeds": 3,
+      "n_nodes": 300
+    },
+    "default_mix": {
+      "median_per_node_ci": 0.005640747025609016,
+      "mean_per_node_ci": 0.0056420573964715,
+      "p95_per_node_ci": 0.00582734914496541,
+      "p5_per_node_ci": 0.005464913323521614,
+      "n_seeds": 3,
+      "n_nodes": 300
+    }
+  }
+}

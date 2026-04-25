@@ -618,6 +618,48 @@ floor--produces a near-constant CI width of $\sim\!1.7\!\times\!10^{-3}$.}
 Figure~\ref{fig:ana_mlmc_comparison} visualises the comparison reported in
 Table~\ref{tab:ana_mlmc}.
 
+\paragraph{Per-node CI sharpening.}
+The headline numbers above are global-estimator CIs.  An operator-facing
+question is how the CI tightening distributes across individual nodes.
+Figure~\ref{fig:ana_fairness} reports a per-node fairness diagnostic on
+Barabasi-Albert $n=300$ at $\varepsilon=0.005$ (3 seeds), comparing the
+finest-level per-node 95\% CI half-width across configurations.  Three
+findings:
+\begin{itemize}
+    \item \emph{Sample reallocation.}  ANA reaches $\sim\!510$ samples at
+    the finest level versus standard Giles' pilot-floored $50$, even
+    though its total cost is only $1.3\!\times$ baseline.  In other words,
+    ANA pays for the extra samples almost entirely at the finest level
+    where the weighted variance is concentrated, rather than smearing
+    them across coarse levels.
+    \item \emph{Aggregate sharpening.}  Per-node CI is reduced to a
+    median $0.0057$ versus baseline's $0.0182$, a uniform sharpening of
+    $\sim\!3.2\times$ on every node.  The mean ANA / baseline ratio is
+    $0.31$ across all four ANA configurations, consistent with
+    $\sqrt{50/510}\approx0.31$ predicted by the level-0 sample-count
+    boost.
+    \item \emph{Differential per-node tilt.}  The sharpening ratio
+    varies modestly across nodes (range $0.25$--$0.38$, SD $\approx0.02$)
+    and is slightly tighter on hubs under
+    \texttt{centrality\_only}.  The headline operator value is
+    therefore the absolute CI tightening on every node, with a small
+    centrality-aligned tilt as a secondary effect.
+\end{itemize}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.98\columnwidth]{figures/ana_fairness_diagnostic.png}
+\caption{Per-node CI fairness diagnostic on Barabasi-Albert $n=300$,
+$\varepsilon=0.005$, 3 seeds. (a)~Per-node 95\% CI half-width sorted by
+ascending PageRank centrality.  Standard Giles (top blue line) hits the
+pilot-sample floor; all four ANA configurations sit $\sim\!3.2\times$
+lower.  (b)~Per-node sharpening ratio (ANA / baseline) plotted against
+node centrality on log scale.  Mean sharpening factor is $0.31$ with
+modest per-node tilt across the centrality range
+($0.25$--$0.38$, SD~$\approx 0.02$).}
+\label{fig:ana_fairness}
+\end{figure}
+
 \subsection{Dynamic Topology and Link Failures}
 \label{subsec:dynamic_results}
 
@@ -909,7 +951,7 @@ $n\le500$.  Multi-GPU distribution for $n>10{,}000$ would unlock SC-tier
 Internet-scale validation; the $n\times n$ matrix-vector product in the
 coupled SDE is the natural sharding boundary.
 
-\par\textbf{ANA-MLMC weight sensitivity (now resolved).} A
+\par\textbf{ANA-MLMC weight sensitivity (resolved).} A
 weight-sensitivity sweep over five named configurations
 (\texttt{centrality\_only}, \texttt{variance\_only}, \texttt{sla\_only},
 \texttt{balanced\_mix}, \texttt{default\_mix}) on Barabasi-Albert
@@ -917,13 +959,26 @@ $n=300$ at $\varepsilon=0.005$ shows that the total sample budget and
 the global CI half-width vary by less than $1.2\%$ and $3\%$
 respectively across all configurations
 (\texttt{scripts/run\_ana\_weight\_sweep.py},
-\texttt{results/ana\_weight\_sweep/weight\_sweep\_summary.json}).
+\texttt{results/ana\_weight\_sweep/weight\_sweep\_summary.json}).  The
+companion per-node fairness diagnostic
+(Section~\ref{subsec:ana_results}, Fig.~\ref{fig:ana_fairness},
+\texttt{scripts/run\_fairness\_diagnostic.py}) further shows that the
+sharpening factor concentrates on every node uniformly to within
+$0.25$--$0.38$ of baseline, with only a modest centrality-aligned tilt.
 Operators can therefore use the default $(0.4,0.4,0.2)$ blend without
-loss of efficiency; the visible difference between configurations is in
-\emph{which} nodes receive sharpened estimates, not in total cost.  We
-flag the per-node CI distribution under different weight choices--
-which is the metric an operator would actually tune--as a useful
-follow-up case study.
+loss of efficiency; the small differential per-node tilt is the
+secondary tuning knob an operator might exercise once the headline
+$3\!\times$ sharpening is locked in.
+
+\par\textbf{Per-tier MLMC chains (future work).} The current ANA
+implementation chooses the per-level sample count $N_l$ globally; every
+node within a level receives the same number of samples.  A natural
+follow-up is to partition nodes into priority tiers and run separate
+coupled MLMC chains per tier, so that high-priority nodes can be
+allocated proportionally more samples than low-priority ones at the
+same level.  This requires extending the path generator to support
+tier-conditioned random number streams while preserving the antithetic
+coupling, and is a clean extension on top of the present codebase.
 
 \par\textbf{Single-threaded CPU baseline.} The 87$\times$ and
 644$\times$ CPU-to-GPU speedups cited in the abstract compare against a
