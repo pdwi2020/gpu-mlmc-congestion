@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install runtime deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy scipy networkx pandas matplotlib pytest
+          pip install --index-url https://download.pytorch.org/whl/cpu torch || true
+      - name: Run unit tests (CPU)
+        env:
+          PYTHONPATH: src:.
+        run: |
+          pytest tests/ -q --ignore=tests/test_dataset_loaders.py
+      - name: Smoke-test M/M/1 sanity script
+        env:
+          PYTHONPATH: src:.
+        run: |
+          python scripts/verify_mm1_limit.py --rhos 0.5 --t-final 200 --output /tmp/mm1.json
+          test -s /tmp/mm1.json
+
+  paper-build:
+    runs-on: ubuntu-latest
+    container:
+      image: texlive/texlive:latest-basic
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build paper
+        run: |
+          cd paper
+          latexmk -pdf -interaction=nonstopmode gpuAcc.tex
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gpuAcc-pdf
+          path: paper/gpuAcc.pdf
