@@ -14,6 +14,7 @@ Classes:
     MLMCSimulator: Main MLMC simulator
     MLMCResult: Container for MLMC results with level-wise statistics
 """
+from __future__ import annotations
 
 import numpy as np
 from typing import Dict, Optional, List, Tuple
@@ -25,9 +26,9 @@ import sys
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from network.topology import NetworkGraph
+from network.topology import NetworkGraph, centrality_weights
 from network.traffic import TrafficModel
-from network.sde import QueueDynamicsSDE
+from network.sde import CongestionPropagationSDE, QueueDynamicsSDE
 from simulation.discretization import (
     MLMCHierarchy,
     generate_coupled_noise,
@@ -631,6 +632,376 @@ class MLMCSimulator:
         logger.info(f"Cost reduction: {comparison['cost_reduction']*100:.1f}%")
 
         return comparison
+
+
+class AdaptiveNetworkAwareMLMC(MLMCSimulator):
+    """Adaptive Network-Aware MLMC with centrality, variance, and SLA weights."""
+
+    def __init__(self,
+                 refinement_factor: int = 2,
+                 seed: Optional[int] = None,
+                 weight_centrality: float = 0.4,
+                 weight_variance: float = 0.4,
+                 weight_sla: float = 0.2,
+                 centrality_kind: str = 'pagerank',
+                 sla_priority: Optional[np.ndarray] = None) -> None:
+        """Initialize ANA-MLMC with network-risk weighting coefficients."""
+        super().__init__(refinement_factor=refinement_factor, seed=seed)
+        gammas = np.array([weight_centrality, weight_variance, weight_sla], dtype=float)
+        if np.any(gammas < 0.0):
+            raise ValueError("ANA-MLMC weights must be non-negative")
+        if not np.isclose(float(np.sum(gammas)), 1.0):
+            raise ValueError("ANA-MLMC weights must sum to 1.0")
+
+        self.weight_centrality = float(weight_centrality)
+        self.weight_variance = float(weight_variance)
+        self.weight_sla = float(weight_sla)
+        self.centrality_kind = centrality_kind
+        self.sla_priority = None if sla_priority is None else np.asarray(sla_priority, dtype=float)
+
+    @staticmethod
+    def _normalize_component(values: np.ndarray, n_nodes: int) -> np.ndarray:
+        """Normalize a non-negative component or return uniform weights."""
+        arr = np.asarray(values, dtype=float).reshape(-1)
+        if arr.size != n_nodes:
+            raise ValueError(f"Expected vector of length {n_nodes}, got {arr.size}")
+
+        arr = np.where(np.isfinite(arr), arr, 0.0)
+        arr = np.maximum(arr, 0.0)
+        total = float(np.sum(arr))
+        if total <= 0.0:
+            return np.full(n_nodes, 1.0 / n_nodes, dtype=float)
+        return arr / total
+
+    def compute_node_weights(self,
+                             graph: NetworkGraph,
+                             pilot_per_node_vars: np.ndarray,
+                             sla_vec: Optional[np.ndarray] = None) -> np.ndarray:
+        """Combine centrality, pilot variance, and SLA priority into node weights."""
+        n_nodes = graph.n_nodes
+        if n_nodes <= 0:
+            raise ValueError("ANA-MLMC requires at least one network node")
+
+        pilot_vars = np.asarray(pilot_per_node_vars, dtype=float)
+        if pilot_vars.ndim == 1:
+            variance_component_raw = pilot_vars
+        elif pilot_vars.ndim == 2:
+            variance_component_raw = np.mean(pilot_vars, axis=0)
+        else:
+            raise ValueError("pilot_per_node_vars must have shape (n,) or (L+1, n)")
+
+        c_i = centrality_weights(graph, kind=self.centrality_kind)
+        v_i = self._normalize_component(variance_component_raw, n_nodes)
+
+        sla_source = sla_vec
+        if sla_source is None:
+            sla_source = self.sla_priority
+        if sla_source is None:
+            sla_source = np.ones(n_nodes, dtype=float)
+        s_i = self._normalize_component(np.asarray(sla_source, dtype=float), n_nodes)
+
+        weights = (
+            self.weight_centrality * c_i
+            + self.weight_variance * v_i
+            + self.weight_sla * s_i
+        )
+        return self._normalize_component(weights, n_nodes)
+
+    def compute_optimal_samples_weighted(self,
+                                         level_var_per_node: np.ndarray,
+                                         costs: List[float],
+                                         weights: np.ndarray,
+                                         epsilon: float) -> List[int]:
+        """Compute Giles allocation using weighted per-node level variances."""
+        level_vars = np.asarray(level_var_per_node, dtype=float)
+        if level_vars.ndim != 2:
+            raise ValueError("level_var_per_node must have shape (L+1, n)")
+
+        n_levels, n_nodes = level_vars.shape
+        if len(costs) != n_levels:
+            raise ValueError("costs length must match the number of MLMC levels")
+
+        node_weights = self._normalize_component(np.asarray(weights, dtype=float), n_nodes)
+        uniform = np.full(n_nodes, 1.0 / n_nodes, dtype=float)
+
+        if np.allclose(node_weights, uniform, rtol=0.0, atol=1.0e-14):
+            weighted_variances = np.mean(level_vars, axis=1)
+            weighted_samples = super().compute_optimal_samples(
+                weighted_variances.tolist(), costs, epsilon
+            )
+            giles_samples = super().compute_optimal_samples(
+                np.mean(level_vars, axis=1).tolist(), costs, epsilon
+            )
+            assert weighted_samples == giles_samples
+            return weighted_samples
+
+        weighted_variances = level_vars @ node_weights
+        return super().compute_optimal_samples(weighted_variances.tolist(), costs, epsilon)
+
+    def _make_congestion_sde(self, network: NetworkGraph) -> CongestionPropagationSDE:
+        """Build the vector congestion SDE used by network-aware estimation."""
+        adjacency = network.get_adjacency_matrix()
+        return CongestionPropagationSDE(
+            adjacency_matrix=adjacency,
+            influence_strength=0.1,
+            decay_rate=0.5,
+            noise_intensity=0.1,
+        )
+
+    @staticmethod
+    def _extract_node_metric(path: np.ndarray, metric: str) -> np.ndarray:
+        """Extract a per-node metric from a congestion path."""
+        if metric in ('mean_congestion', 'mean_queue', 'mean'):
+            return np.mean(path, axis=0)
+        if metric in ('max_congestion', 'max_queue', 'max'):
+            return np.max(path, axis=0)
+        if metric in ('final_congestion', 'final_queue', 'final'):
+            return path[-1]
+        raise ValueError(f"Unknown metric: {metric}")
+
+    def _simulate_single_level_node_values(self,
+                                           network: NetworkGraph,
+                                           traffic: TrafficModel,
+                                           T: float,
+                                           dt: float,
+                                           metric: str,
+                                           seed: Optional[int]) -> np.ndarray:
+        """Simulate one vector congestion level and return per-node values."""
+        _ = traffic
+        congestion_sde = self._make_congestion_sde(network)
+        _, c_fine = congestion_sde.simulate_path(T=T, dt=dt, seed=seed)
+        return self._extract_node_metric(c_fine, metric)
+
+    def _simulate_coupled_level_node_values(self,
+                                            network: NetworkGraph,
+                                            traffic: TrafficModel,
+                                            T: float,
+                                            dt_fine: float,
+                                            dt_coarse: float,
+                                            metric: str,
+                                            seed: Optional[int]) -> Tuple[np.ndarray, np.ndarray]:
+        """Simulate coupled vector congestion levels and return per-node values."""
+        _ = traffic
+        congestion_sde = self._make_congestion_sde(network)
+        _, c_fine, c_coarse = congestion_sde.simulate_coupled_paths(
+            T=T,
+            dt_coarse=dt_coarse,
+            dt_fine=dt_fine,
+            seed=seed,
+        )
+        return (
+            self._extract_node_metric(c_fine, metric),
+            self._extract_node_metric(c_coarse, metric),
+        )
+
+    def run_coupled_node_paths(self,
+                               network: NetworkGraph,
+                               traffic: TrafficModel,
+                               level: int,
+                               T: float,
+                               base_dt: float,
+                               metric: str = 'mean_congestion',
+                               seed: Optional[int] = None) -> Tuple[np.ndarray, np.ndarray]:
+        """Run one coupled ANA-MLMC sample and return per-node fine/coarse values."""
+        dt_fine = get_timestep(level, base_dt, self.refinement_factor)
+        if level == 0:
+            y_fine = self._simulate_single_level_node_values(
+                network, traffic, T, dt_fine, metric, seed
+            )
+            y_coarse = np.zeros_like(y_fine)
+            return y_fine, y_coarse
+
+        dt_coarse = get_timestep(level - 1, base_dt, self.refinement_factor)
+        return self._simulate_coupled_level_node_values(
+            network, traffic, T, dt_fine, dt_coarse, metric, seed
+        )
+
+    def estimate_level_variance_per_node(self,
+                                         network: NetworkGraph,
+                                         traffic: TrafficModel,
+                                         level: int,
+                                         T: float,
+                                         base_dt: float,
+                                         metric: str,
+                                         n_samples: int = 100,
+                                         return_samples: bool = False
+                                         ) -> Tuple[np.ndarray, np.ndarray, float, Optional[np.ndarray]]:
+        """Estimate per-node mean and variance of one MLMC level difference."""
+        if n_samples <= 0:
+            raise ValueError("n_samples must be positive")
+
+        differences = np.zeros((n_samples, network.n_nodes), dtype=float)
+        for i in range(n_samples):
+            sample_seed = (self.seed + level * 10000 + i) if self.seed is not None else None
+            y_fine, y_coarse = self.run_coupled_node_paths(
+                network, traffic, level, T, base_dt, metric, sample_seed
+            )
+            differences[i] = y_fine - y_coarse
+
+        mean_diff = np.mean(differences, axis=0)
+        var_diff = (
+            np.var(differences, axis=0, ddof=1)
+            if n_samples > 1
+            else np.zeros(network.n_nodes, dtype=float)
+        )
+        dt_fine = get_timestep(level, base_dt, self.refinement_factor)
+        cost_per_sample = T / dt_fine
+
+        if return_samples:
+            return mean_diff, var_diff, cost_per_sample, differences
+        return mean_diff, var_diff, cost_per_sample, None
+
+    def mlmc_estimate_weighted(self,
+                               network: NetworkGraph,
+                               traffic: TrafficModel,
+                               epsilon: float,
+                               L_max: int,
+                               T: float = 10.0,
+                               base_dt: float = 0.1,
+                               metric: str = 'mean_congestion',
+                               pilot_samples: int = 100,
+                               confidence_level: float = 0.95,
+                               verbose: bool = True,
+                               sla_vec: Optional[np.ndarray] = None) -> MLMCResult:
+        """Run ANA-MLMC estimation for the weighted network quantity."""
+        if verbose:
+            logger.info(f"Starting ANA-MLMC simulation: ε={epsilon}, L_max={L_max}")
+
+        per_node_variances = []
+        costs = []
+        pilot_diffs = []
+
+        for l in range(L_max + 1):
+            _, var_diff, cost, diffs = self.estimate_level_variance_per_node(
+                network=network,
+                traffic=traffic,
+                level=l,
+                T=T,
+                base_dt=base_dt,
+                metric=metric,
+                n_samples=pilot_samples,
+                return_samples=True,
+            )
+            per_node_variances.append(var_diff)
+            costs.append(cost)
+            pilot_diffs.append(diffs)
+            if verbose:
+                logger.info(
+                    f"  Level {l}: weighted pilot input V_node_mean={np.mean(var_diff):.6e}, C={cost:.2e}"
+                )
+
+        level_var_per_node = np.vstack(per_node_variances)
+        node_weights = self.compute_node_weights(network, level_var_per_node, sla_vec=sla_vec)
+        optimal_N = self.compute_optimal_samples_weighted(
+            level_var_per_node, costs, node_weights, epsilon
+        )
+
+        if verbose:
+            logger.info("ANA node weights computed")
+            for l, n_l in enumerate(optimal_N):
+                logger.info(f"  Level {l}: N={n_l}")
+
+        level_stats = []
+        total_cost = 0.0
+        weighted_level_vars = []
+        weighted_estimator_vars = []
+
+        for l in range(L_max + 1):
+            n_additional = max(0, optimal_N[l] - pilot_samples)
+            n_total = pilot_samples + n_additional
+            diffs = pilot_diffs[l]
+
+            if n_additional > 0:
+                additional = np.zeros((n_additional, network.n_nodes), dtype=float)
+                for i in range(n_additional):
+                    sample_seed = (
+                        self.seed + l * 10000 + pilot_samples + i
+                        if self.seed is not None
+                        else None
+                    )
+                    y_fine, y_coarse = self.run_coupled_node_paths(
+                        network, traffic, l, T, base_dt, metric, sample_seed
+                    )
+                    additional[i] = y_fine - y_coarse
+                diffs = np.vstack([diffs, additional])
+
+            mean_per_node = np.mean(diffs, axis=0)
+            var_per_node = (
+                np.var(diffs, axis=0, ddof=1)
+                if n_total > 1
+                else np.zeros(network.n_nodes, dtype=float)
+            )
+            weighted_diffs = diffs @ node_weights
+
+            mean_diff = float(np.dot(node_weights, mean_per_node))
+            var_diff = float(np.dot(node_weights, var_per_node))
+            weighted_scalar_var = (
+                float(np.var(weighted_diffs, ddof=1))
+                if n_total > 1
+                else 0.0
+            )
+            weighted_level_vars.append(var_diff)
+            weighted_estimator_vars.append(weighted_scalar_var)
+
+            mean_Y = (
+                mean_diff
+                if l == 0
+                else sum(stats.mean_diff for stats in level_stats) + mean_diff
+            )
+            dt_l = get_timestep(l, base_dt, self.refinement_factor)
+            cost_per_sample = T / dt_l
+            level_cost = cost_per_sample * n_total
+            total_cost += level_cost
+
+            level_stats.append(MLMCLevelStats(
+                level=l,
+                n_samples=n_total,
+                dt=dt_l,
+                mean_Y=mean_Y,
+                var_Y=var_diff,
+                mean_diff=mean_diff,
+                var_diff=var_diff,
+                cost_per_sample=cost_per_sample,
+                total_cost=level_cost,
+            ))
+
+            if verbose:
+                logger.info(f"  Level {l} complete: {level_stats[-1]}")
+
+        estimate = float(sum(stats.mean_diff for stats in level_stats))
+        variance = float(sum(stats.var_diff / stats.n_samples for stats in level_stats))
+
+        dt_finest = get_timestep(L_max, base_dt, self.refinement_factor)
+        bias_estimate = self.BIAS_CALIBRATION_CONSTANT * np.sqrt(dt_finest)
+        mse = variance + bias_estimate ** 2
+
+        from scipy import stats as sp_stats
+        alpha = 1 - confidence_level
+        z_value = sp_stats.norm.ppf(1 - alpha / 2)
+        margin = z_value * np.sqrt(variance)
+
+        return MLMCResult(
+            estimate=estimate,
+            variance=variance,
+            mse=mse,
+            level_stats=level_stats,
+            total_cost=total_cost,
+            L_max=L_max,
+            epsilon=epsilon,
+            ci_lower=estimate - margin,
+            ci_upper=estimate + margin,
+            confidence_level=confidence_level,
+            metadata={
+                'T': T,
+                'base_dt': base_dt,
+                'metric': metric,
+                'refinement_factor': self.refinement_factor,
+                'ana_node_weights': node_weights.tolist(),
+                'ana_level_var_per_node': level_var_per_node.tolist(),
+                'ana_weighted_level_variances': weighted_level_vars,
+                'weighted_estimator_level_variances': weighted_estimator_vars,
+            },
+        )
 
 
 if __name__ == "__main__":

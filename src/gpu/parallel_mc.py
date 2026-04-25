@@ -8,9 +8,10 @@ Classes:
     GPUMonteCarloSimulator: GPU-accelerated Monte Carlo
     GPUMLMCSimulator: GPU-accelerated MLMC
 """
+from __future__ import annotations
 
 import numpy as np
-from typing import Optional, Dict, Tuple
+from typing import Dict, List, Optional, Tuple
 import logging
 import time
 from pathlib import Path
@@ -536,6 +537,7 @@ class GPUCoupledPropagationMLMC:
                 torch.cuda.manual_seed_all(seed)
 
         self.n_nodes = adjacency_matrix.shape[0]
+        self.influence_strength = influence_strength
         self.decay_rate = decay_rate
         self.noise_intensity = noise_intensity
         self.refinement_factor = refinement_factor
@@ -552,58 +554,150 @@ class GPUCoupledPropagationMLMC:
     # c_batch: (n_nodes, N_paths) tensor
     # dw:      (n_nodes, N_paths) noise tensor (pre-scaled by sqrt(dt))
     # ------------------------------------------------------------------
-    def _em_step(self, c_batch, dt, dw):
+    def _em_step(self, c_batch, dt, dw, influence=None, lambda_vec=None):
         t = self._torch
+        if influence is None:
+            influence = self._influence
         # drift: (n_nodes, N_paths) = influence @ c_batch - decay * c_batch
-        drift = t.mm(self._influence, c_batch) - self.decay_rate * c_batch
+        drift = t.mm(influence, c_batch) - self.decay_rate * c_batch
+        if lambda_vec is not None:
+            drift = drift + lambda_vec[:, None]
         c_new = c_batch + drift * dt + self.noise_intensity * dw
         return t.clamp_min(c_new, 0.0)
+
+    def _resample_dynamic_series(self,
+                                 values: Optional[np.ndarray],
+                                 target_steps: int,
+                                 expected_tail: Tuple[int, ...],
+                                 name: str) -> Optional[np.ndarray]:
+        """Resample dynamic inputs by repeating or block-averaging time steps."""
+        if values is None:
+            return None
+        arr = np.asarray(values, dtype=np.float32)
+        if arr.ndim < 1 or arr.shape[1:] != expected_tail:
+            raise ValueError(f"{name} must have trailing shape {expected_tail}")
+        if arr.shape[0] == target_steps + 1:
+            arr = arr[:-1]
+        source_steps = arr.shape[0]
+        if source_steps == target_steps:
+            return arr
+        if target_steps % source_steps == 0:
+            factor = target_steps // source_steps
+            return np.repeat(arr, factor, axis=0)
+        if source_steps % target_steps == 0:
+            factor = source_steps // target_steps
+            return arr.reshape(target_steps, factor, *arr.shape[1:]).mean(axis=1)
+        raise ValueError(
+            f"{name} with {source_steps} steps cannot be resampled to {target_steps} steps"
+        )
+
+    def _lambda_tensor(self,
+                       lambda_t: Optional[np.ndarray],
+                       target_steps: int):
+        """Prepare a dynamic arrival tensor for a target time grid."""
+        arr = self._resample_dynamic_series(
+            lambda_t,
+            target_steps,
+            (self.n_nodes,),
+            "lambda_t",
+        )
+        if arr is None:
+            return None
+        return self._torch.tensor(arr, dtype=self._torch.float32, device=self._device)
+
+    def _influence_tensor_series(self,
+                                 adjacency_t: Optional[np.ndarray],
+                                 target_steps: int):
+        """Prepare degree-normalized dynamic influence tensors for a target grid."""
+        arr = self._resample_dynamic_series(
+            adjacency_t,
+            target_steps,
+            (self.n_nodes, self.n_nodes),
+            "adjacency_t",
+        )
+        if arr is None:
+            return None
+        degrees = arr.sum(axis=2)
+        degrees[degrees == 0.0] = 1.0
+        influence = (arr / degrees[:, :, None]) * self.influence_strength
+        return self._torch.tensor(influence, dtype=self._torch.float32, device=self._device)
+
+    def _run_level_state_tensors(self,
+                                 level: int,
+                                 n_samples: int,
+                                 T: float,
+                                 base_dt: float,
+                                 lambda_t: Optional[np.ndarray] = None,
+                                 adjacency_t: Optional[np.ndarray] = None):
+        """Run coupled paths and return final fine/coarse state tensors."""
+        t = self._torch
+        dev = self._device
+
+        dt_fine = base_dt / (self.refinement_factor ** level)
+        n_steps_fine = int(T / dt_fine)
+        lambda_fine = self._lambda_tensor(lambda_t, n_steps_fine)
+        influence_fine = self._influence_tensor_series(adjacency_t, n_steps_fine)
+
+        if level == 0:
+            c_fine = t.zeros(self.n_nodes, n_samples, device=dev, dtype=t.float32)
+            for step_idx in range(n_steps_fine):
+                dw = t.randn(self.n_nodes, n_samples, device=dev) * (dt_fine ** 0.5)
+                influence = None if influence_fine is None else influence_fine[step_idx]
+                lambda_vec = None if lambda_fine is None else lambda_fine[step_idx]
+                c_fine = self._em_step(c_fine, dt_fine, dw, influence, lambda_vec)
+            c_coarse = t.zeros_like(c_fine)
+            return c_fine, c_coarse
+
+        M = self.refinement_factor
+        dt_coarse = dt_fine * M
+        n_steps_coarse = int(T / dt_coarse)
+        lambda_coarse = self._lambda_tensor(lambda_t, n_steps_coarse)
+        influence_coarse = self._influence_tensor_series(adjacency_t, n_steps_coarse)
+
+        c_fine = t.zeros(self.n_nodes, n_samples, device=dev, dtype=t.float32)
+        c_coarse = t.zeros(self.n_nodes, n_samples, device=dev, dtype=t.float32)
+
+        for i_coarse in range(n_steps_coarse):
+            # Generate M fine-level increments, aggregate for coarse
+            dw_sum = t.zeros(self.n_nodes, n_samples, device=dev, dtype=t.float32)
+            for j in range(M):
+                i_fine = i_coarse * M + j
+                dw_f = t.randn(self.n_nodes, n_samples, device=dev) * (dt_fine ** 0.5)
+                influence_f = None if influence_fine is None else influence_fine[i_fine]
+                lambda_f = None if lambda_fine is None else lambda_fine[i_fine]
+                c_fine = self._em_step(c_fine, dt_fine, dw_f, influence_f, lambda_f)
+                dw_sum = dw_sum + dw_f
+            # Coarse step with aggregated increment (same Brownian path)
+            influence_c = None if influence_coarse is None else influence_coarse[i_coarse]
+            lambda_c = None if lambda_coarse is None else lambda_coarse[i_coarse]
+            c_coarse = self._em_step(c_coarse, dt_coarse, dw_sum, influence_c, lambda_c)
+
+        return c_fine, c_coarse
 
     def run_level(self,
                   level: int,
                   n_samples: int,
                   T: float,
                   base_dt: float,
-                  metric: str = 'mean_congestion') -> Tuple[np.ndarray, np.ndarray]:
+                  metric: str = 'mean_congestion',
+                  lambda_t: Optional[np.ndarray] = None,
+                  adjacency_t: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray]:
         """
         Run N_samples coupled (fine, coarse) paths for MLMC level `level`.
 
         Returns:
             (Y_fine, Y_coarse): shape (n_samples,) each; Y_coarse=0 at level 0.
         """
-        t = self._torch
-        dev = self._device
-
-        dt_fine = base_dt / (self.refinement_factor ** level)
-        n_steps_fine = int(T / dt_fine)
-
-        if level == 0:
-            c = t.zeros(self.n_nodes, n_samples, device=dev, dtype=t.float32)
-            for _ in range(n_steps_fine):
-                dw = t.randn(self.n_nodes, n_samples, device=dev) * (dt_fine ** 0.5)
-                c = self._em_step(c, dt_fine, dw)
-            Y_fine = self._extract_metric(c, metric)
-            Y_coarse = np.zeros(n_samples, dtype=np.float32)
-        else:
-            M = self.refinement_factor
-            dt_coarse = dt_fine * M
-            n_steps_coarse = int(T / dt_coarse)
-
-            c_fine = t.zeros(self.n_nodes, n_samples, device=dev, dtype=t.float32)
-            c_coarse = t.zeros(self.n_nodes, n_samples, device=dev, dtype=t.float32)
-
-            for i_c in range(n_steps_coarse):
-                # Generate M fine-level increments, aggregate for coarse
-                dw_sum = t.zeros(self.n_nodes, n_samples, device=dev, dtype=t.float32)
-                for _ in range(M):
-                    dw_f = t.randn(self.n_nodes, n_samples, device=dev) * (dt_fine ** 0.5)
-                    c_fine = self._em_step(c_fine, dt_fine, dw_f)
-                    dw_sum = dw_sum + dw_f
-                # Coarse step with aggregated increment (same Brownian path)
-                c_coarse = self._em_step(c_coarse, dt_coarse, dw_sum)
-
-            Y_fine = self._extract_metric(c_fine, metric)
-            Y_coarse = self._extract_metric(c_coarse, metric)
+        c_fine, c_coarse = self._run_level_state_tensors(
+            level=level,
+            n_samples=n_samples,
+            T=T,
+            base_dt=base_dt,
+            lambda_t=lambda_t,
+            adjacency_t=adjacency_t,
+        )
+        Y_fine = self._extract_metric(c_fine, metric)
+        Y_coarse = self._extract_metric(c_coarse, metric)
 
         return Y_fine, Y_coarse
 
@@ -626,7 +720,9 @@ class GPUCoupledPropagationMLMC:
                       L_max: int = 6,
                       pilot_samples: int = 100,
                       metric: str = 'mean_congestion',
-                      verbose: bool = True) -> Dict:
+                      verbose: bool = True,
+                      lambda_t: Optional[np.ndarray] = None,
+                      adjacency_t: Optional[np.ndarray] = None) -> Dict:
         """
         Run GPU-MLMC for the coupled propagation SDE.
 
@@ -637,7 +733,15 @@ class GPUCoupledPropagationMLMC:
         variances, costs, mean_diffs_pilot, pilot_diffs_store = [], [], [], []
 
         for l in range(L_max + 1):
-            Yf, Yc = self.run_level(l, pilot_samples, T, base_dt, metric)
+            Yf, Yc = self.run_level(
+                l,
+                pilot_samples,
+                T,
+                base_dt,
+                metric,
+                lambda_t=lambda_t,
+                adjacency_t=adjacency_t,
+            )
             diffs = Yf - Yc
             mean_diffs_pilot.append(float(np.mean(diffs)))
             variances.append(float(np.var(diffs, ddof=1)))
@@ -665,7 +769,15 @@ class GPUCoupledPropagationMLMC:
             n_add = max(0, optimal_N[l] - pilot_samples)
             diffs = list(pilot_diffs_store[l])
             if n_add > 0:
-                Yf, Yc = self.run_level(l, n_add, T, base_dt, metric)
+                Yf, Yc = self.run_level(
+                    l,
+                    n_add,
+                    T,
+                    base_dt,
+                    metric,
+                    lambda_t=lambda_t,
+                    adjacency_t=adjacency_t,
+                )
                 diffs.extend(list(Yf - Yc))
             diffs = np.array(diffs)
             md = float(np.mean(diffs))
@@ -692,6 +804,296 @@ class GPUCoupledPropagationMLMC:
             'total_cost': total_cost,
             'level_stats': level_stats,
             'epsilon': epsilon,
+        }
+
+
+class GPUAdaptiveNetworkAwareMLMC(GPUCoupledPropagationMLMC):
+    """Torch implementation of Adaptive Network-Aware MLMC."""
+
+    def __init__(self,
+                 adjacency_matrix: "np.ndarray",
+                 influence_strength: float = 0.1,
+                 decay_rate: float = 0.5,
+                 noise_intensity: float = 0.1,
+                 refinement_factor: int = 2,
+                 seed: Optional[int] = None,
+                 weight_centrality: float = 0.4,
+                 weight_variance: float = 0.4,
+                 weight_sla: float = 0.2,
+                 centrality_kind: str = 'pagerank',
+                 sla_priority: Optional["np.ndarray"] = None) -> None:
+        """Initialize GPU ANA-MLMC with network-risk weighting coefficients."""
+        super().__init__(
+            adjacency_matrix=adjacency_matrix,
+            influence_strength=influence_strength,
+            decay_rate=decay_rate,
+            noise_intensity=noise_intensity,
+            refinement_factor=refinement_factor,
+            seed=seed,
+        )
+        gammas = np.array([weight_centrality, weight_variance, weight_sla], dtype=float)
+        if np.any(gammas < 0.0):
+            raise ValueError("ANA-MLMC weights must be non-negative")
+        if not np.isclose(float(np.sum(gammas)), 1.0):
+            raise ValueError("ANA-MLMC weights must sum to 1.0")
+
+        t = self._torch
+        self._adjacency = t.tensor(adjacency_matrix, dtype=t.float32, device=self._device)
+        self.weight_centrality = float(weight_centrality)
+        self.weight_variance = float(weight_variance)
+        self.weight_sla = float(weight_sla)
+        self.centrality_kind = centrality_kind
+        self.sla_priority = (
+            None
+            if sla_priority is None
+            else t.tensor(sla_priority, dtype=t.float32, device=self._device)
+        )
+
+    def _normalize_tensor(self, values: "torch.Tensor") -> "torch.Tensor":
+        """Normalize a non-negative tensor or return uniform weights."""
+        t = self._torch
+        arr = values.to(device=self._device, dtype=t.float32).flatten()
+        arr = t.where(t.isfinite(arr), arr, t.zeros_like(arr))
+        arr = t.clamp_min(arr, 0.0)
+        total = arr.sum()
+        if float(total.item()) <= 0.0:
+            return t.full_like(arr, 1.0 / arr.numel())
+        return arr / total
+
+    def _centrality_tensor(self, alpha: float = 0.85) -> "torch.Tensor":
+        """Compute centrality weights as a torch tensor."""
+        t = self._torch
+        n_nodes = self.n_nodes
+        adjacency = t.clamp_min(self._adjacency, 0.0)
+
+        if self.centrality_kind == 'degree':
+            return self._normalize_tensor(adjacency.sum(dim=1))
+
+        if self.centrality_kind == 'pagerank':
+            adjacency = adjacency + t.eye(n_nodes, device=self._device, dtype=t.float32) * 1.0e-12
+            row_sums = t.clamp_min(adjacency.sum(dim=1), 1.0e-12)
+            transition = adjacency / row_sums[:, None]
+            rank = t.full((n_nodes,), 1.0 / n_nodes, device=self._device, dtype=t.float32)
+            teleport = (1.0 - alpha) / n_nodes
+            for _ in range(100):
+                rank = teleport + alpha * t.mv(transition.t(), rank)
+            return self._normalize_tensor(rank)
+
+        if self.centrality_kind == 'betweenness':
+            import networkx as nx
+            graph_np = self._adjacency.detach().cpu().numpy()
+            directed = not np.allclose(graph_np, graph_np.T)
+            nx_graph = nx.from_numpy_array(
+                graph_np,
+                create_using=nx.DiGraph if directed else nx.Graph,
+            )
+            scores = nx.betweenness_centrality(nx_graph, normalized=True, weight='weight')
+            vals = t.tensor(
+                [scores[i] for i in range(n_nodes)],
+                dtype=t.float32,
+                device=self._device,
+            )
+            return self._normalize_tensor(vals)
+
+        raise ValueError(f"Unknown centrality kind: {self.centrality_kind}")
+
+    def compute_node_weights(self,
+                             pilot_per_node_vars: "torch.Tensor",
+                             sla_vec: Optional["torch.Tensor"] = None) -> "torch.Tensor":
+        """Combine centrality, pilot variance, and SLA priority into node weights."""
+        t = self._torch
+        pilot_vars = pilot_per_node_vars.to(device=self._device, dtype=t.float32)
+        if pilot_vars.ndim == 1:
+            variance_raw = pilot_vars
+        elif pilot_vars.ndim == 2:
+            variance_raw = pilot_vars.mean(dim=0)
+        else:
+            raise ValueError("pilot_per_node_vars must have shape (n,) or (L+1, n)")
+
+        c_i = self._centrality_tensor()
+        v_i = self._normalize_tensor(variance_raw)
+
+        sla_source = sla_vec
+        if sla_source is None:
+            sla_source = self.sla_priority
+        if sla_source is None:
+            sla_source = t.ones(self.n_nodes, device=self._device, dtype=t.float32)
+        else:
+            sla_source = sla_source.to(device=self._device, dtype=t.float32)
+        s_i = self._normalize_tensor(sla_source)
+
+        return self._normalize_tensor(
+            self.weight_centrality * c_i
+            + self.weight_variance * v_i
+            + self.weight_sla * s_i
+        )
+
+    def _giles_allocation_tensor(self,
+                                 variances: "torch.Tensor",
+                                 costs: "torch.Tensor",
+                                 epsilon: float) -> List[int]:
+        """Compute Giles allocation using torch tensor operations."""
+        t = self._torch
+        variances = t.clamp_min(variances.to(device=self._device, dtype=t.float32), 0.0)
+        costs = costs.to(device=self._device, dtype=t.float32)
+        positive = (variances > 0.0) & (costs > 0.0)
+        sum_term = t.sqrt(variances * t.clamp_min(costs, 0.0)).sum()
+        raw = (2.0 / epsilon ** 2) * t.sqrt(
+            variances / t.clamp_min(costs, 1.0e-30)
+        ) * sum_term
+        samples = t.where(positive, t.ceil(raw), t.ones_like(raw))
+        samples = t.clamp_min(samples, 1.0).to(dtype=t.int64)
+        return [int(v) for v in samples.detach().cpu().tolist()]
+
+    def compute_optimal_samples_weighted(self,
+                                         level_var_per_node: "torch.Tensor",
+                                         costs: "torch.Tensor",
+                                         weights: "torch.Tensor",
+                                         epsilon: float) -> List[int]:
+        """Compute Giles allocation from weighted per-node level variances."""
+        t = self._torch
+        level_vars = level_var_per_node.to(device=self._device, dtype=t.float32)
+        if level_vars.ndim != 2:
+            raise ValueError("level_var_per_node must have shape (L+1, n)")
+
+        costs_t = costs.to(device=self._device, dtype=t.float32)
+        node_weights = self._normalize_tensor(weights)
+        uniform = t.full((self.n_nodes,), 1.0 / self.n_nodes, device=self._device)
+
+        if t.allclose(node_weights, uniform, rtol=0.0, atol=1.0e-7):
+            weighted_variances = level_vars.mean(dim=1)
+            weighted_samples = self._giles_allocation_tensor(weighted_variances, costs_t, epsilon)
+            giles_samples = self._giles_allocation_tensor(level_vars.mean(dim=1), costs_t, epsilon)
+            assert weighted_samples == giles_samples
+            return weighted_samples
+
+        weighted_variances = t.mv(level_vars, node_weights)
+        return self._giles_allocation_tensor(weighted_variances, costs_t, epsilon)
+
+    def run_level_node_values(self,
+                              level: int,
+                              n_samples: int,
+                              T: float,
+                              base_dt: float,
+                              metric: str = 'mean_congestion') -> Tuple["torch.Tensor", "torch.Tensor"]:
+        """Run N coupled paths and return per-node fine/coarse final states."""
+        _ = metric
+        c_fine, c_coarse = self._run_level_state_tensors(
+            level=level,
+            n_samples=n_samples,
+            T=T,
+            base_dt=base_dt,
+        )
+        return c_fine.t().contiguous(), c_coarse.t().contiguous()
+
+    def mlmc_estimate_weighted(self,
+                               epsilon: float,
+                               T: float,
+                               base_dt: float,
+                               L_max: int = 6,
+                               pilot_samples: int = 100,
+                               metric: str = 'mean_congestion',
+                               sla_vec: Optional["torch.Tensor"] = None,
+                               verbose: bool = True) -> Dict:
+        """Run GPU ANA-MLMC for the weighted network quantity."""
+        t = self._torch
+        per_node_variances = []
+        costs = []
+        pilot_diffs_store = []
+
+        for l in range(L_max + 1):
+            y_fine, y_coarse = self.run_level_node_values(l, pilot_samples, T, base_dt, metric)
+            diffs = y_fine - y_coarse
+            var_per_node = (
+                t.var(diffs, dim=0, unbiased=True)
+                if pilot_samples > 1
+                else t.zeros(self.n_nodes, device=self._device, dtype=t.float32)
+            )
+            per_node_variances.append(var_per_node)
+            dt_l = base_dt / (self.refinement_factor ** l)
+            costs.append(float(T / dt_l))
+            pilot_diffs_store.append(diffs)
+            if verbose:
+                logger.info(
+                    f"  Level {l}: V_node_mean={float(var_per_node.mean().item()):.4e}, C={costs[-1]:.2e}"
+                )
+
+        level_var_per_node = t.stack(per_node_variances, dim=0)
+        costs_tensor = t.tensor(costs, dtype=t.float32, device=self._device)
+        weights = self.compute_node_weights(level_var_per_node, sla_vec=sla_vec)
+        optimal_N = self.compute_optimal_samples_weighted(
+            level_var_per_node, costs_tensor, weights, epsilon
+        )
+
+        level_stats = []
+        total_cost = 0.0
+        weighted_level_vars = []
+        weighted_estimator_level_vars = []
+
+        for l in range(L_max + 1):
+            n_add = max(0, optimal_N[l] - pilot_samples)
+            diffs = pilot_diffs_store[l]
+            if n_add > 0:
+                y_fine, y_coarse = self.run_level_node_values(l, n_add, T, base_dt, metric)
+                diffs = t.cat([diffs, y_fine - y_coarse], dim=0)
+
+            n_total = int(diffs.shape[0])
+            mean_per_node = diffs.mean(dim=0)
+            var_per_node = (
+                t.var(diffs, dim=0, unbiased=True)
+                if n_total > 1
+                else t.zeros(self.n_nodes, device=self._device, dtype=t.float32)
+            )
+            weighted_diffs = t.mv(diffs, weights)
+            mean_diff_t = t.dot(weights, mean_per_node)
+            var_diff_t = t.dot(weights, var_per_node)
+            weighted_scalar_var_t = (
+                t.var(weighted_diffs, unbiased=True)
+                if n_total > 1
+                else t.tensor(0.0, device=self._device)
+            )
+
+            mean_diff = float(mean_diff_t.item())
+            var_diff = float(var_diff_t.item())
+            weighted_scalar_var = float(weighted_scalar_var_t.item())
+            weighted_level_vars.append(var_diff)
+            weighted_estimator_level_vars.append(weighted_scalar_var)
+
+            dt_l = base_dt / (self.refinement_factor ** l)
+            cp = float(T / dt_l)
+            total_cost += cp * n_total
+            level_stats.append({
+                'level': l,
+                'n_samples': n_total,
+                'mean_diff': mean_diff,
+                'var_diff': var_diff,
+                'weighted_estimator_var_diff': weighted_scalar_var,
+                'cost_per_sample': cp,
+            })
+            if verbose:
+                logger.info(
+                    f"  Level {l}: N={n_total}, weighted V={var_diff:.4e}, C={cp:.2e}"
+                )
+
+        estimate = float(sum(s['mean_diff'] for s in level_stats))
+        variance = float(sum(s['var_diff'] / s['n_samples'] for s in level_stats))
+        from scipy import stats as sp_stats
+        z = float(sp_stats.norm.ppf(0.975))
+        margin = z * float(np.sqrt(variance))
+
+        return {
+            'estimate': estimate,
+            'variance': variance,
+            'ci_lower': estimate - margin,
+            'ci_upper': estimate + margin,
+            'total_cost': total_cost,
+            'level_stats': level_stats,
+            'epsilon': epsilon,
+            'weights': weights.detach().cpu().tolist(),
+            'level_var_per_node': level_var_per_node.detach().cpu().tolist(),
+            'weighted_level_variances': weighted_level_vars,
+            'weighted_estimator_level_variances': weighted_estimator_level_vars,
+            'optimal_N': optimal_N,
         }
 
 

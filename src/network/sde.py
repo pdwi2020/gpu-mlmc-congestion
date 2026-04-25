@@ -8,6 +8,7 @@ Classes:
     QueueDynamicsSDE: Queue length evolution model
     CongestionPropagationSDE: Network-wide congestion spread model
 """
+from __future__ import annotations
 
 import numpy as np
 from typing import Tuple, Optional, Callable
@@ -315,15 +316,137 @@ class CongestionPropagationSDE:
 
         Normalized by node degree to prevent unbounded growth.
         """
+        return self._compute_influence_from_adjacency(
+            self.adjacency,
+            self.influence_strength,
+        )
+
+    @staticmethod
+    def _compute_influence_from_adjacency(
+        adjacency_matrix: np.ndarray,
+        influence_strength: float,
+    ) -> np.ndarray:
+        """Compute a degree-normalized influence matrix from an adjacency matrix."""
         # Degree of each node
-        degrees = np.sum(self.adjacency, axis=1)
+        degrees = np.sum(adjacency_matrix, axis=1)
         degrees[degrees == 0] = 1  # Avoid division by zero
 
         # Normalize by degree
-        influence = self.adjacency / degrees[:, np.newaxis]
-        influence *= self.influence_strength
+        influence = adjacency_matrix / degrees[:, np.newaxis]
+        influence *= influence_strength
 
         return influence
+
+    def _drift_with_inputs(
+        self,
+        c: np.ndarray,
+        influence_matrix: np.ndarray,
+        lambda_vec: Optional[np.ndarray] = None,
+    ) -> np.ndarray:
+        """Compute drift with optional exogenous arrival-rate forcing."""
+        neighbor_influence = influence_matrix @ c
+        self_decay = self.decay_rate * c
+        drift = neighbor_influence - self_decay
+        if lambda_vec is not None:
+            drift = drift + lambda_vec
+        return drift
+
+    def _em_step_with_inputs(
+        self,
+        c: np.ndarray,
+        t: float,
+        dt: float,
+        dw: Optional[np.ndarray],
+        influence_matrix: np.ndarray,
+        lambda_vec: Optional[np.ndarray] = None,
+    ) -> np.ndarray:
+        """Apply one Euler-Maruyama step with optional dynamic inputs."""
+        if dw is None:
+            dw = np.random.normal(0, np.sqrt(dt), self.n_nodes)
+
+        drift_term = self._drift_with_inputs(c, influence_matrix, lambda_vec) * dt
+        diffusion_term = self.diffusion(c, t) * dw
+        return np.maximum(0.0, c + drift_term + diffusion_term)
+
+    def _validate_lambda_series(
+        self,
+        lambda_t: Optional[np.ndarray],
+        n_steps: int,
+    ) -> Optional[np.ndarray]:
+        """Validate an arrival-rate series and return interval values."""
+        if lambda_t is None:
+            return None
+        values = np.asarray(lambda_t, dtype=float)
+        if values.shape == (n_steps + 1, self.n_nodes):
+            return values[:-1]
+        if values.shape == (n_steps, self.n_nodes):
+            return values
+        raise ValueError(
+            f"lambda_t must have shape ({n_steps}, {self.n_nodes}) "
+            f"or ({n_steps + 1}, {self.n_nodes})"
+        )
+
+    def _validate_adjacency_series(
+        self,
+        adjacency_t: Optional[np.ndarray],
+        n_steps: int,
+    ) -> Optional[np.ndarray]:
+        """Validate an adjacency series and return interval snapshots."""
+        if adjacency_t is None:
+            return None
+        values = np.asarray(adjacency_t, dtype=float)
+        expected = (n_steps, self.n_nodes, self.n_nodes)
+        expected_plus_endpoint = (n_steps + 1, self.n_nodes, self.n_nodes)
+        if values.shape == expected_plus_endpoint:
+            return values[:-1]
+        if values.shape == expected:
+            return values
+        raise ValueError(
+            f"adjacency_t must have shape {expected} or {expected_plus_endpoint}"
+        )
+
+    def _simulate_path_core(
+        self,
+        T: float,
+        dt: float,
+        c0: Optional[np.ndarray],
+        seed: Optional[int],
+        lambda_t: Optional[np.ndarray] = None,
+        adjacency_t: Optional[np.ndarray] = None,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Run the Euler-Maruyama path loop with optional dynamic inputs."""
+        if seed is not None:
+            np.random.seed(seed)
+
+        if c0 is None:
+            c0 = np.zeros(self.n_nodes)
+
+        n_steps = int(T / dt)
+        time = np.linspace(0, T, n_steps + 1)
+        lambda_series = self._validate_lambda_series(lambda_t, n_steps)
+        adjacency_series = self._validate_adjacency_series(adjacency_t, n_steps)
+
+        c = np.zeros((n_steps + 1, self.n_nodes))
+        c[0] = c0
+
+        for i in range(n_steps):
+            influence_matrix = self.influence_matrix
+            if adjacency_series is not None:
+                influence_matrix = self._compute_influence_from_adjacency(
+                    adjacency_series[i],
+                    self.influence_strength,
+                )
+            lambda_vec = None if lambda_series is None else lambda_series[i]
+            c[i + 1] = self._em_step_with_inputs(
+                c=c[i],
+                t=time[i],
+                dt=dt,
+                dw=None,
+                influence_matrix=influence_matrix,
+                lambda_vec=lambda_vec,
+            )
+
+        return time, c
 
     def drift(self, c: np.ndarray, t: float) -> np.ndarray:
         """
@@ -336,13 +459,7 @@ class CongestionPropagationSDE:
         Returns:
             Drift vector (n_nodes,)
         """
-        # Influence from neighbors
-        neighbor_influence = self.influence_matrix @ c
-
-        # Self-decay
-        self_decay = self.decay_rate * c
-
-        return neighbor_influence - self_decay
+        return self._drift_with_inputs(c, self.influence_matrix)
 
     def diffusion(self, c: np.ndarray, t: float) -> np.ndarray:
         """
@@ -375,20 +492,13 @@ class CongestionPropagationSDE:
         Returns:
             Congestion vector at t + dt
         """
-        # Generate Wiener increments if not provided
-        if dw is None:
-            dw = np.random.normal(0, np.sqrt(dt), self.n_nodes)
-
-        # Euler-Maruyama update
-        drift_term = self.drift(c, t) * dt
-        diffusion_term = self.diffusion(c, t) * dw
-
-        c_new = c + drift_term + diffusion_term
-
-        # Enforce non-negativity
-        c_new = np.maximum(0.0, c_new)
-
-        return c_new
+        return self._em_step_with_inputs(
+            c=c,
+            t=t,
+            dt=dt,
+            dw=dw,
+            influence_matrix=self.influence_matrix,
+        )
 
     def simulate_path(self,
                      T: float,
@@ -408,25 +518,39 @@ class CongestionPropagationSDE:
             Tuple of (time_array, congestion_matrix)
             congestion_matrix shape: (n_steps + 1, n_nodes)
         """
-        if seed is not None:
-            np.random.seed(seed)
+        return self._simulate_path_core(
+            T=T,
+            dt=dt,
+            c0=c0,
+            seed=seed,
+        )
 
-        if c0 is None:
-            c0 = np.zeros(self.n_nodes)
+    def simulate_with_dynamic_inputs(
+        self,
+        T: float,
+        dt: float,
+        lambda_t: Optional[np.ndarray],
+        adjacency_t: Optional[np.ndarray] = None,
+        c0: Optional[np.ndarray] = None,
+        seed: Optional[int] = None,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Simulate congestion with time-indexed arrivals and topology snapshots.
 
-        # Number of time steps
-        n_steps = int(T / dt)
-        time = np.linspace(0, T, n_steps + 1)
-
-        # Initialize arrays
-        c = np.zeros((n_steps + 1, self.n_nodes))
-        c[0] = c0
-
-        # Simulate path
-        for i in range(n_steps):
-            c[i + 1] = self.euler_maruyama_step(c[i], time[i], dt)
-
-        return time, c
+        ``lambda_t`` is an additive drift term with shape ``(n_steps, n_nodes)``.
+        ``adjacency_t`` may have shape ``(n_steps, n_nodes, n_nodes)``; when it is
+        omitted, the static adjacency supplied at construction time is used.
+        """
+        if lambda_t is None and adjacency_t is None:
+            return self.simulate_path(T=T, dt=dt, c0=c0, seed=seed)
+        return self._simulate_path_core(
+            T=T,
+            dt=dt,
+            c0=c0,
+            seed=seed,
+            lambda_t=lambda_t,
+            adjacency_t=adjacency_t,
+        )
 
     def simulate_coupled_paths(self,
                               T: float,
@@ -491,6 +615,111 @@ class CongestionPropagationSDE:
             c_coarse[i_c + 1] = np.maximum(0.0, c_coarse[i_c] + drift_c + diff_c)
 
         # Align coarse to fine time grid: repeat each coarse step M times, keep final
+        c_coarse_aligned = np.zeros_like(c_fine)
+        c_coarse_aligned[:-1] = np.repeat(c_coarse[:-1], M, axis=0)
+        c_coarse_aligned[-1] = c_coarse[-1]
+
+        return time_fine, c_fine, c_coarse_aligned
+
+    def simulate_coupled_dynamic_paths(
+        self,
+        T: float,
+        dt_coarse: float,
+        dt_fine: float,
+        lambda_t: Optional[np.ndarray] = None,
+        adjacency_t: Optional[np.ndarray] = None,
+        c0: Optional[np.ndarray] = None,
+        seed: Optional[int] = None,
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Simulate coupled MLMC paths driven by dynamic arrivals and topology.
+
+        The supplied dynamic arrays are interpreted on the fine grid. Coarse
+        inputs are block averages over the matching fine-grid intervals.
+        """
+        if lambda_t is None and adjacency_t is None:
+            return self.simulate_coupled_paths(
+                T=T,
+                dt_coarse=dt_coarse,
+                dt_fine=dt_fine,
+                c0=c0,
+                seed=seed,
+            )
+
+        if seed is not None:
+            np.random.seed(seed)
+
+        M = int(round(dt_coarse / dt_fine))
+        if not np.isclose(dt_coarse, M * dt_fine):
+            raise ValueError("dt_coarse must be an integer multiple of dt_fine")
+
+        if c0 is None:
+            c0 = np.zeros(self.n_nodes)
+
+        n_steps_fine = int(T / dt_fine)
+        n_steps_coarse = int(T / dt_coarse)
+        if n_steps_fine != n_steps_coarse * M:
+            raise ValueError("fine and coarse grids must align exactly")
+
+        time_fine = np.linspace(0, T, n_steps_fine + 1)
+        lambda_fine = self._validate_lambda_series(lambda_t, n_steps_fine)
+        adjacency_fine = self._validate_adjacency_series(adjacency_t, n_steps_fine)
+        lambda_coarse = None
+        adjacency_coarse = None
+        if lambda_fine is not None:
+            lambda_coarse = lambda_fine.reshape(n_steps_coarse, M, self.n_nodes).mean(axis=1)
+        if adjacency_fine is not None:
+            adjacency_coarse = adjacency_fine.reshape(
+                n_steps_coarse,
+                M,
+                self.n_nodes,
+                self.n_nodes,
+            ).mean(axis=1)
+
+        dw_fine = np.random.normal(0.0, np.sqrt(dt_fine), (n_steps_fine, self.n_nodes))
+        c_fine = np.zeros((n_steps_fine + 1, self.n_nodes))
+        c_coarse = np.zeros((n_steps_coarse + 1, self.n_nodes))
+        c_fine[0] = c0.copy()
+        c_coarse[0] = c0.copy()
+
+        for i_c in range(n_steps_coarse):
+            dw_coarse = np.sum(dw_fine[i_c * M:(i_c + 1) * M], axis=0)
+
+            for j in range(M):
+                i_f = i_c * M + j
+                influence_f = self.influence_matrix
+                if adjacency_fine is not None:
+                    influence_f = self._compute_influence_from_adjacency(
+                        adjacency_fine[i_f],
+                        self.influence_strength,
+                    )
+                lambda_f = None if lambda_fine is None else lambda_fine[i_f]
+                c_fine[i_f + 1] = self._em_step_with_inputs(
+                    c=c_fine[i_f],
+                    t=time_fine[i_f],
+                    dt=dt_fine,
+                    dw=dw_fine[i_f],
+                    influence_matrix=influence_f,
+                    lambda_vec=lambda_f,
+                )
+
+            influence_c = self.influence_matrix
+            if adjacency_coarse is not None:
+                influence_c = self._compute_influence_from_adjacency(
+                    adjacency_coarse[i_c],
+                    self.influence_strength,
+                )
+            lambda_c = None if lambda_coarse is None else lambda_coarse[i_c]
+            t_c = i_c * dt_coarse
+            c_coarse[i_c + 1] = self._em_step_with_inputs(
+                c=c_coarse[i_c],
+                t=t_c,
+                dt=dt_coarse,
+                dw=dw_coarse,
+                influence_matrix=influence_c,
+                lambda_vec=lambda_c,
+            )
+
         c_coarse_aligned = np.zeros_like(c_fine)
         c_coarse_aligned[:-1] = np.repeat(c_coarse[:-1], M, axis=0)
         c_coarse_aligned[-1] = c_coarse[-1]

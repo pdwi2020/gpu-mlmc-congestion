@@ -640,6 +640,110 @@ class TestGPUCoupledPropagationMLMC:
         assert np.all(Yc == 0.0), "Level-0 coarse output must be all zeros"
         assert Yf.shape == (50,)
 
+    def test_run_level_accepts_dynamic_inputs(self):
+        """Dynamic arrival and adjacency inputs can drive a GPU MLMC level."""
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        from gpu.parallel_mc import GPUCoupledPropagationMLMC
+
+        adj = self._make_chain_adj(3)
+        lambda_t = np.full((2, 3), 0.05, dtype=np.float32)
+        adjacency_t = np.repeat(adj[None, :, :], 2, axis=0).astype(np.float32)
+        mlmc = GPUCoupledPropagationMLMC(adj, seed=19)
+
+        Yf, Yc = mlmc.run_level(
+            level=1,
+            n_samples=5,
+            T=0.2,
+            base_dt=0.1,
+            lambda_t=lambda_t,
+            adjacency_t=adjacency_t,
+        )
+
+        assert Yf.shape == (5,)
+        assert Yc.shape == (5,)
+        assert np.all(np.isfinite(Yf))
+        assert np.all(np.isfinite(Yc))
+
+
+class TestDynamicCongestionInputs:
+    """Regression tests for dynamic-input congestion simulation."""
+
+    def _make_chain_adj(self, n: int) -> np.ndarray:
+        adj = np.zeros((n, n), dtype=float)
+        for i in range(n - 1):
+            adj[i, i + 1] = adj[i + 1, i] = 1.0
+        return adj
+
+    def test_dynamic_inputs_runs(self):
+        """simulate_with_dynamic_inputs runs on a tiny graph with correct shape."""
+        from network.sde import CongestionPropagationSDE
+
+        n = 10
+        adj = self._make_chain_adj(n)
+        sde = CongestionPropagationSDE(adj, noise_intensity=0.01)
+        n_steps = 100
+        lambda_t = np.full((n_steps, n), 0.05, dtype=float)
+        adjacency_t = np.repeat(adj[None, :, :], n_steps, axis=0)
+
+        time, congestion = sde.simulate_with_dynamic_inputs(
+            T=1.0,
+            dt=0.01,
+            lambda_t=lambda_t,
+            adjacency_t=adjacency_t,
+            seed=11,
+        )
+
+        assert time.shape == (n_steps + 1,)
+        assert congestion.shape == (n_steps + 1, n)
+        assert np.all(congestion >= 0.0)
+
+    def test_dynamic_path_no_inputs_matches_static_bitwise(self):
+        """No dynamic inputs should preserve static simulate_path exactly."""
+        from network.sde import CongestionPropagationSDE
+
+        adj = self._make_chain_adj(5)
+        sde = CongestionPropagationSDE(adj, noise_intensity=0.1)
+
+        time_static, congestion_static = sde.simulate_path(T=1.0, dt=0.05, seed=13)
+        time_dynamic, congestion_dynamic = sde.simulate_with_dynamic_inputs(
+            T=1.0,
+            dt=0.05,
+            lambda_t=None,
+            adjacency_t=None,
+            seed=13,
+        )
+
+        assert np.array_equal(time_static, time_dynamic)
+        assert np.array_equal(congestion_static, congestion_dynamic)
+
+    def test_dynamic_coupled_no_inputs_matches_static_bitwise(self):
+        """No dynamic inputs should preserve static coupled paths exactly."""
+        from network.sde import CongestionPropagationSDE
+
+        adj = self._make_chain_adj(5)
+        c0 = np.array([1.0, 0.0, 0.0, 0.0, 0.0])
+        sde = CongestionPropagationSDE(adj, noise_intensity=0.1)
+
+        static = sde.simulate_coupled_paths(
+            T=1.0,
+            dt_coarse=0.1,
+            dt_fine=0.05,
+            c0=c0,
+            seed=17,
+        )
+        dynamic = sde.simulate_coupled_dynamic_paths(
+            T=1.0,
+            dt_coarse=0.1,
+            dt_fine=0.05,
+            lambda_t=None,
+            adjacency_t=None,
+            c0=c0,
+            seed=17,
+        )
+
+        for static_arr, dynamic_arr in zip(static, dynamic):
+            assert np.array_equal(static_arr, dynamic_arr)
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

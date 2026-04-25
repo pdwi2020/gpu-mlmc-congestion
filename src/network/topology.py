@@ -8,11 +8,12 @@ Classes:
     NetworkGraph: Network topology representation with link properties
     TopologyGenerator: Generate synthetic network topologies
 """
+from __future__ import annotations
 
 import networkx as nx
 import numpy as np
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional, Union
+from typing import Dict, List, Literal, Optional, Tuple, Union
 import logging
 import bz2
 import gzip
@@ -269,6 +270,67 @@ class NetworkGraph:
 
     def __repr__(self) -> str:
         return f"NetworkGraph(nodes={self.n_nodes}, edges={self.n_edges}, directed={self.graph.is_directed()})"
+
+
+def _centrality_graph_with_self_loops(graph: nx.Graph) -> nx.Graph:
+    """Return a copy with tiny self-loops when connectivity is incomplete."""
+    if graph.number_of_nodes() == 0:
+        return graph.copy()
+
+    is_connected = (
+        nx.is_weakly_connected(graph)
+        if graph.is_directed()
+        else nx.is_connected(graph)
+    )
+    if is_connected:
+        return graph.copy()
+
+    graph_with_loops = graph.copy()
+    for node in graph_with_loops.nodes:
+        if not graph_with_loops.has_edge(node, node):
+            graph_with_loops.add_edge(node, node, weight=1.0e-12)
+    return graph_with_loops
+
+
+def _normalize_centrality(values: np.ndarray) -> np.ndarray:
+    """Clip and normalize a centrality vector."""
+    if values.size == 0:
+        return values.astype(float)
+
+    values = np.asarray(values, dtype=float)
+    values = np.where(np.isfinite(values), values, 0.0)
+    values = np.maximum(values, 0.0)
+    total = float(np.sum(values))
+    if total <= 0.0:
+        return np.full(values.shape, 1.0 / values.size, dtype=float)
+    return values / total
+
+
+def centrality_weights(
+    graph: NetworkGraph,
+    kind: Literal['pagerank', 'betweenness', 'degree'] = 'pagerank',
+    alpha: float = 0.85,
+) -> np.ndarray:
+    """Return non-negative node centrality weights in NetworkGraph node order."""
+    nx_graph = _centrality_graph_with_self_loops(graph.graph)
+    nodes = list(nx_graph.nodes)
+    if not nodes:
+        return np.array([], dtype=float)
+
+    if kind == 'pagerank':
+        pagerank_func = getattr(nx, 'pagerank_numpy', None)
+        if pagerank_func is None:
+            scores = nx.pagerank(nx_graph, alpha=alpha, weight='weight')
+        else:
+            scores = pagerank_func(nx_graph, alpha=alpha, weight='weight')
+    elif kind == 'betweenness':
+        scores = nx.betweenness_centrality(nx_graph, normalized=True, weight='weight')
+    elif kind == 'degree':
+        scores = nx.degree_centrality(nx_graph)
+    else:
+        raise ValueError(f"Unknown centrality kind: {kind}")
+
+    return _normalize_centrality(np.array([scores[node] for node in nodes], dtype=float))
 
 
 def load_snap_graph(filepath: Union[str, Path],
