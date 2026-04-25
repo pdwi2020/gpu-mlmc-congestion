@@ -1,0 +1,19 @@
+{
+  "n_rows": 18,
+  "methods": [
+    "ana",
+    "baseline"
+  ],
+  "mean_by_method": {
+    "ana": {
+      "total_cost": 86738.88888888889,
+      "runtime_s": 0.6187799444564411,
+      "estimate": 0.08346730294740862
+    },
+    "baseline": {
+      "total_cost": 77500.0,
+      "runtime_s": 0.6719128751299448,
+      "estimate": 0.0833630863732348
+    }
+  }
+}

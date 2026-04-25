@@ -122,3 +122,9 @@ paper/*.blg
 paper/*.fdb_latexmk
 paper/*.fls
 paper/*.pdf
+
+# Real-trace dataset caches
+datasets/mawi/raw/
+datasets/mawi/processed/
+datasets/kaggle/raw/
+datasets/kaggle/processed/
