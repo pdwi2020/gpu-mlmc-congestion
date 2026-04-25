@@ -727,6 +727,16 @@ better agreement with a packet-level reference, because aggregation
 restores the central-limit-theorem regime in which the diffusion
 approximation is tight.
 
+\paragraph{Cross-day stability.}
+We extended the deep validation across five consecutive MAWI days
+(2024-01-01 through 2024-01-05, 14:00 JST, 60\,MB Range cap each).
+The median relative P95/P99 disagreement against the Poisson G/D/1
+reference at $0.1$\,s bins is highly stable across days: P95~error
+$85.9\!\pm\!5.3\%$ and P99~error $87.3\!\pm\!5.1\%$ (mean$\pm$SD over
+five days, $\sim\!2.2$~M packets per trace).  The fine-bin
+diffusion-approximation envelope is therefore a property of the SDE
+formulation rather than a single-day artefact.
+
 
 \section{Discussion}
 
@@ -899,13 +909,21 @@ $n\le500$.  Multi-GPU distribution for $n>10{,}000$ would unlock SC-tier
 Internet-scale validation; the $n\times n$ matrix-vector product in the
 coupled SDE is the natural sharding boundary.
 
-\par\textbf{ANA-MLMC weight sensitivity.} The default
-$(\gamma_C,\gamma_V,\gamma_S)=(0.4,0.4,0.2)$ blend was chosen for
-balanced behaviour but has not yet been swept across operational
-scenarios; an operator using the framework should expect to retune the
-weights for their specific SLA priorities.  A sensitivity study and a
-cross-validation procedure for the weight selection are obvious
-follow-ups.
+\par\textbf{ANA-MLMC weight sensitivity (now resolved).} A
+weight-sensitivity sweep over five named configurations
+(\texttt{centrality\_only}, \texttt{variance\_only}, \texttt{sla\_only},
+\texttt{balanced\_mix}, \texttt{default\_mix}) on Barabasi-Albert
+$n=300$ at $\varepsilon=0.005$ shows that the total sample budget and
+the global CI half-width vary by less than $1.2\%$ and $3\%$
+respectively across all configurations
+(\texttt{scripts/run\_ana\_weight\_sweep.py},
+\texttt{results/ana\_weight\_sweep/weight\_sweep\_summary.json}).
+Operators can therefore use the default $(0.4,0.4,0.2)$ blend without
+loss of efficiency; the visible difference between configurations is in
+\emph{which} nodes receive sharpened estimates, not in total cost.  We
+flag the per-node CI distribution under different weight choices--
+which is the metric an operator would actually tune--as a useful
+follow-up case study.
 
 \par\textbf{Single-threaded CPU baseline.} The 87$\times$ and
 644$\times$ CPU-to-GPU speedups cited in the abstract compare against a

@@ -1,0 +1,57 @@
+{
+  "epsilon": 0.005,
+  "n_nodes": 300,
+  "T": 5.0,
+  "L_max": 4,
+  "pilot_samples": 50,
+  "summary": {
+    "default_mix": {
+      "n_seeds": 3,
+      "total_cost_mean": 101000.0,
+      "total_cost_std": 526.7826876426369,
+      "runtime_mean": 0.3807568326666626,
+      "ci_width_mean": 0.012081175512804168,
+      "ci_width_std": 9.192147821057184e-05
+    },
+    "centrality_only": {
+      "n_seeds": 3,
+      "total_cost_mean": 100533.33333333333,
+      "total_cost_std": 404.145188432738,
+      "runtime_mean": 0.4603265083333336,
+      "ci_width_mean": 0.012174330675470671,
+      "ci_width_std": 6.26585806734289e-05
+    },
+    "variance_only": {
+      "n_seeds": 3,
+      "total_cost_mean": 101683.33333333333,
+      "total_cost_std": 602.7713773341708,
+      "runtime_mean": 0.3977454783333343,
+      "ci_width_mean": 0.011949637000831551,
+      "ci_width_std": 0.00010136267346148175
+    },
+    "baseline_giles": {
+      "n_seeds": 3,
+      "total_cost_mean": 77500.0,
+      "total_cost_std": 0.0,
+      "runtime_mean": 0.6927761096666671,
+      "ci_width_mean": 0.0023977296712509124,
+      "ci_width_std": 0.00022038311898159234
+    },
+    "sla_only": {
+      "n_seeds": 3,
+      "total_cost_mean": 100583.33333333333,
+      "total_cost_std": 525.1983752196244,
+      "runtime_mean": 0.3989629213333359,
+      "ci_width_mean": 0.012154976939067261,
+      "ci_width_std": 0.00010095140301185103
+    },
+    "balanced_mix": {
+      "n_seeds": 3,
+      "total_cost_mean": 100950.0,
+      "total_cost_std": 526.7826876426369,
+      "runtime_mean": 0.41281686466666656,
+      "ci_width_mean": 0.012089560733835325,
+      "ci_width_std": 9.41893207436723e-05
+    }
+  }
+}
