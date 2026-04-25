@@ -4,6 +4,7 @@ Runs MLMCSimulator (CPU/NumPy) on synthetic ER graphs and compares timings
 against the GPU results already stored in results/results/tables/.
 Saves output to results/results/tables/cpu_vs_gpu_mlmc.json
 """
+from __future__ import annotations
 
 import sys
 import os

@@ -8,6 +8,7 @@ Provides common helpers used across modules:
 - Path management
 - Numerical utilities
 """
+from __future__ import annotations
 
 import numpy as np
 import time

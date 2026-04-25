@@ -16,6 +16,7 @@ Mathematical Background:
     D_queue = queueing delay
     D_trans = transmission delay (packet_size / bandwidth)
 """
+from __future__ import annotations
 
 import numpy as np
 from typing import Dict, List, Tuple, Optional, Union

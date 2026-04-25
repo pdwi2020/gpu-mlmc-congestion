@@ -7,6 +7,8 @@ CongestionPropagationSDE (coupled model) and saves results + figures.
 Run from project root:
     python scripts/run_scaling_experiment.py
 """
+from __future__ import annotations
+
 import json
 import sys
 import time

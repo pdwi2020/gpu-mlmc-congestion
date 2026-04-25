@@ -10,6 +10,7 @@ Supported datasets:
 
 Dataset source: https://snap.stanford.edu/data/
 """
+from __future__ import annotations
 
 import urllib.request
 import gzip

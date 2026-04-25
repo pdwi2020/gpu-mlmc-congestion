@@ -14,6 +14,7 @@ Mathematical Background:
 - Heavy load: ρ > 0.8 typically indicates high congestion risk
 - Congestion propagation: C_i influences C_j through routing
 """
+from __future__ import annotations
 
 import numpy as np
 from typing import Dict, List, Tuple, Optional, Set, Union

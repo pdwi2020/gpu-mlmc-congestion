@@ -14,6 +14,7 @@ Mathematical Background:
 - Variance Reduction Ratio: VRR = Var(MC) / Var(MLMC)
 - Effective Sample Size: ESS = n / (1 + 2Σρ_k) for autocorrelated samples
 """
+from __future__ import annotations
 
 import numpy as np
 from typing import Dict, List, Tuple, Optional, Union, Callable

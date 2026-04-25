@@ -6,6 +6,7 @@ queue dynamics and congestion propagation.
 
 Each thread simulates one independent sample path, enabling massive parallelism.
 """
+from __future__ import annotations
 
 import logging
 from typing import Optional, Tuple

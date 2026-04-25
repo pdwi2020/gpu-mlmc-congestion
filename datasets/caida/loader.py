@@ -9,6 +9,7 @@ Format: <AS1>|<AS2>|<relationship>
   -1 = provider-to-customer
    0 = peer-to-peer
 """
+from __future__ import annotations
 
 import urllib.request
 import bz2

@@ -12,6 +12,7 @@ Usage:
     python scripts/visualize_results.py --experiment 1
     python scripts/visualize_results.py --experiment 2 3 4
 """
+from __future__ import annotations
 
 import sys
 from pathlib import Path

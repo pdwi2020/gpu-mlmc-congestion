@@ -13,9 +13,10 @@ Classes:
     DiscretizationLevel: Represents a single discretization level
     MLMCHierarchy: Manages hierarchy of discretization levels
 """
+from __future__ import annotations
 
 import numpy as np
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 import logging
 
 

@@ -8,6 +8,7 @@ Classes:
     MonteCarloSimulator: Single-level Monte Carlo simulation
     NetworkSimulationResult: Container for simulation results
 """
+from __future__ import annotations
 
 import numpy as np
 from typing import Dict, Optional, Callable, List, Tuple

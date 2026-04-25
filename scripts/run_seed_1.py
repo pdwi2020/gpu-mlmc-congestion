@@ -1,4 +1,6 @@
 """Run MLMC experiment seed 1 for 5-run error bar study."""
+from __future__ import annotations
+
 import base64
 import glob
 import os

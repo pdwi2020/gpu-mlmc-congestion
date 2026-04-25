@@ -10,10 +10,11 @@ Classes:
     BurstyTraffic: On-Off bursty traffic model
     MAWIBasedTraffic: Traffic model based on MAWI trace statistics
 """
+from __future__ import annotations
 
 import numpy as np
 from abc import ABC, abstractmethod
-from typing import Optional, Dict, Tuple, List
+from typing import Optional, Dict, Tuple, List, Union
 import logging
 from pathlib import Path
 

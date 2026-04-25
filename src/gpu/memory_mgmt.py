@@ -8,6 +8,7 @@ Classes:
     GPUMemoryManager: Manage GPU device memory allocation and transfers
     GPUMemoryPool: Memory pool for reusable allocations
 """
+from __future__ import annotations
 
 import numpy as np
 from typing import Optional, Dict, List, Tuple, Any
