@@ -1,0 +1,256 @@
+{
+  "n_seeds": 5,
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "network": "caida",
+  "n_nodes": 200,
+  "T": 24.0,
+  "dt": 0.05,
+  "epsilon": 0.05,
+  "runtime_seconds": 44.691735300999994,
+  "peak_ci_width_near_failures": 39.699944362097426,
+  "peak_ci_width_quiet": 28.10715221133421,
+  "burst_onsets": [
+    0.48071,
+    1.050608,
+    1.853443,
+    2.941572,
+    6.194714,
+    6.541674,
+    9.738497,
+    10.533083,
+    12.683787,
+    13.755136,
+    15.655182,
+    18.327606,
+    18.574945,
+    20.60635,
+    21.734503
+  ],
+  "failure_times": [
+    2.084476,
+    3.118322,
+    3.954934,
+    5.43169,
+    6.365428,
+    8.144189,
+    9.835444,
+    10.108471,
+    10.836743,
+    10.852202,
+    12.299072,
+    14.294382,
+    14.815993,
+    15.120053,
+    16.127071,
+    16.281461,
+    17.97676,
+    18.055425,
+    18.279296,
+    18.624943,
+    18.715185,
+    18.87624,
+    19.116914,
+    20.582183,
+    23.416155
+  ],
+  "ci_evolution_npz": "/content/dyn/results/dynamic_topology/ci_evolution.npz",
+  "figure": "/content/dyn/paper/figures/dynamic_topology_ci_evolution.png",
+  "mlmc_results": [
+    {
+      "estimate": 69.5935620625969,
+      "variance": 0.0012201226545675815,
+      "ci_lower": 69.52510002250374,
+      "ci_upper": 69.66202410269007,
+      "total_cost": 1188000.0,
+      "level_stats": [
+        {
+          "level": 0,
+          "n_samples": 2055,
+          "mean_diff": 69.59359741210938,
+          "var_diff": 2.4978809356689453,
+          "cost_per_sample": 480.0
+        },
+        {
+          "level": 1,
+          "n_samples": 30,
+          "mean_diff": -0.0008598327403888106,
+          "var_diff": 8.565301686758175e-05,
+          "cost_per_sample": 960.0
+        },
+        {
+          "level": 2,
+          "n_samples": 30,
+          "mean_diff": 1.1444091796875e-05,
+          "var_diff": 4.036388418171555e-05,
+          "cost_per_sample": 1920.0
+        },
+        {
+          "level": 3,
+          "n_samples": 30,
+          "mean_diff": 0.0008130391361191869,
+          "var_diff": 1.2247616723470856e-05,
+          "cost_per_sample": 3840.0
+        }
+      ],
+      "epsilon": 0.05
+    },
+    {
+      "estimate": 65.15695838932879,
+      "variance": 0.0015235254871992841,
+      "ci_lower": 65.08045636045796,
+      "ci_upper": 65.23346041819963,
+      "total_cost": 1029120.0,
+      "level_stats": [
+        {
+          "level": 0,
+          "n_samples": 1724,
+          "mean_diff": 65.16468048095703,
+          "var_diff": 2.6123650074005127,
+          "cost_per_sample": 480.0
+        },
+        {
+          "level": 1,
+          "n_samples": 30,
+          "mean_diff": -0.006916554644703865,
+          "var_diff": 0.00018673903832677752,
+          "cost_per_sample": 960.0
+        },
+        {
+          "level": 2,
+          "n_samples": 30,
+          "mean_diff": -0.00226567592471838,
+          "var_diff": 4.313166573410854e-05,
+          "cost_per_sample": 1920.0
+        },
+        {
+          "level": 3,
+          "n_samples": 30,
+          "mean_diff": 0.0014601389411836863,
+          "var_diff": 1.7106080122175626e-05,
+          "cost_per_sample": 3840.0
+        }
+      ],
+      "epsilon": 0.05
+    },
+    {
+      "estimate": 64.7291978202993,
+      "variance": 0.0015251725919959666,
+      "ci_lower": 64.65265444889064,
+      "ci_upper": 64.80574119170797,
+      "total_cost": 984000.0,
+      "level_stats": [
+        {
+          "level": 0,
+          "n_samples": 1630,
+          "mean_diff": 64.74763488769531,
+          "var_diff": 2.4757192134857178,
+          "cost_per_sample": 480.0
+        },
+        {
+          "level": 1,
+          "n_samples": 30,
+          "mean_diff": -0.014043171890079975,
+          "var_diff": 0.00012045588664477691,
+          "cost_per_sample": 960.0
+        },
+        {
+          "level": 2,
+          "n_samples": 30,
+          "mean_diff": -0.0037583669181913137,
+          "var_diff": 5.938988033449277e-05,
+          "cost_per_sample": 1920.0
+        },
+        {
+          "level": 3,
+          "n_samples": 30,
+          "mean_diff": -0.0006355285877361894,
+          "var_diff": 9.947695616574492e-06,
+          "cost_per_sample": 3840.0
+        }
+      ],
+      "epsilon": 0.05
+    },
+    {
+      "estimate": 66.47055676777381,
+      "variance": 0.0015108878549408718,
+      "ci_lower": 66.39437269150166,
+      "ci_upper": 66.54674084404597,
+      "total_cost": 953760.0,
+      "level_stats": [
+        {
+          "level": 0,
+          "n_samples": 1567,
+          "mean_diff": 66.46707916259766,
+          "var_diff": 2.36053466796875,
+          "cost_per_sample": 480.0
+        },
+        {
+          "level": 1,
+          "n_samples": 30,
+          "mean_diff": 0.0002923329593613744,
+          "var_diff": 7.443460344802588e-05,
+          "cost_per_sample": 960.0
+        },
+        {
+          "level": 2,
+          "n_samples": 30,
+          "mean_diff": 0.0016985575202852488,
+          "var_diff": 4.864016955252737e-05,
+          "cost_per_sample": 1920.0
+        },
+        {
+          "level": 3,
+          "n_samples": 30,
+          "mean_diff": 0.0014867146965116262,
+          "var_diff": 1.1448533768998459e-05,
+          "cost_per_sample": 3840.0
+        }
+      ],
+      "epsilon": 0.05
+    },
+    {
+      "estimate": 70.02429504343309,
+      "variance": 0.0014401981401210328,
+      "ci_lower": 69.94991452280493,
+      "ci_upper": 70.09867556406124,
+      "total_cost": 1065600.0,
+      "level_stats": [
+        {
+          "level": 0,
+          "n_samples": 1800,
+          "mean_diff": 70.05357360839844,
+          "var_diff": 2.581200361251831,
+          "cost_per_sample": 480.0
+        },
+        {
+          "level": 1,
+          "n_samples": 30,
+          "mean_diff": -0.019639842212200165,
+          "var_diff": 0.0001297601847909391,
+          "cost_per_sample": 960.0
+        },
+        {
+          "level": 2,
+          "n_samples": 30,
+          "mean_diff": -0.0077799479477107525,
+          "var_diff": 3.981191184720956e-05,
+          "cost_per_sample": 1920.0
+        },
+        {
+          "level": 3,
+          "n_samples": 30,
+          "mean_diff": -0.0018587748054414988,
+          "var_diff": 1.6366086128982715e-05,
+          "cost_per_sample": 3840.0
+        }
+      ],
+      "epsilon": 0.05
+    }
+  ]
+}

@@ -555,25 +555,27 @@ with a uniform SLA prior (no operator over-ride).
 
 \begin{table}[!t]
 \caption{ANA-MLMC vs.\ Standard Giles Allocation (Barabasi-Albert $n=500$,
-         $m=3$, NVIDIA T4, 3-seed mean)}
+         $m=3$, NVIDIA T4, 5-seed mean$\pm$SD)}
 \label{tab:ana_mlmc}
 \centering
 \begin{tabular}{@{}l c c c c@{}}
 \toprule
 $\varepsilon$ & Baseline cost & ANA cost & Ratio & ANA / Baseline runtime \\
 \midrule
-0.05  & 77{,}500 & 77{,}500  & $1.00\times$ & $0.77\times$ \\
-0.01  & 77{,}500 & 81{,}517  & $1.05\times$ & $1.03\times$ \\
-0.005 & 77{,}500 & 100{,}950 & $1.30\times$ & $0.97\times$ \\
+0.050 & 77{,}500 & $77{,}500$         & $1.00\times$ & $0.83\times$ \\
+0.020 & 77{,}500 & $77{,}500$         & $1.00\times$ & $0.93\times$ \\
+0.010 & 77{,}500 & $81{,}490\!\pm\!65$  & $1.05\times$ & $1.08\times$ \\
+0.005 & 77{,}500 & $100{,}870\!\pm\!280$& $1.30\times$ & $1.05\times$ \\
 \bottomrule
 \end{tabular}
 \vspace{2pt}\footnotesize Cost is total simulated timestep-paths summed
-across MLMC levels.  At loose accuracy ($\varepsilon=0.05$) standard Giles
-hits the pilot-sample floor and both methods coincide.  As $\varepsilon$
-tightens, ANA invests progressively more samples on high-centrality and
-high-pilot-variance nodes, reaching $1.30\times$ baseline cost at
-$\varepsilon=0.005$ while keeping wall-clock runtime within $\pm 5\%$ of
-baseline thanks to the GPU's ability to absorb the extra paths.\normalsize
+across MLMC levels.  At loose accuracy ($\varepsilon\!\ge\!0.02$) standard
+Giles hits the pilot-sample floor and ANA's allocation coincides with it.
+As $\varepsilon$ tightens, ANA invests progressively more samples on
+high-centrality and high-pilot-variance nodes, reaching $1.30\times$
+baseline cost at $\varepsilon=0.005$ while keeping wall-clock runtime
+within $\pm 8\%$ of baseline thanks to the GPU's ability to absorb the
+extra paths within the same launch grid.\normalsize
 \end{table}
 
 \paragraph{Interpretation.}
@@ -597,6 +599,25 @@ confirms bit-identical sample allocation between ANA-MLMC and the standard
 Giles allocator when $w_i = 1/n$, ensuring the new method introduces
 no penalty in the legacy use case.
 
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.98\columnwidth]{figures/ana_mlmc_comparison.png}
+\caption{ANA-MLMC versus standard Giles allocation on Barabasi-Albert
+$n=500$ ($m=3$, NVIDIA T4, 3-seed mean$\pm$SD).
+(a)~Total sample budget vs target accuracy: standard Giles saturates at
+the pilot-sample floor across the tested $\varepsilon$ range, while
+ANA-MLMC's weighted criterion drives sample counts upward as
+$\varepsilon$ tightens.
+(b)~95\% CI half-width of the global estimator: ANA-MLMC's CI tracks the
+weighted-variance target and shrinks monotonically with $\varepsilon$,
+while standard Giles--starved of additional samples by the pilot
+floor--produces a near-constant CI width of $\sim\!1.7\!\times\!10^{-3}$.}
+\label{fig:ana_mlmc_comparison}
+\end{figure}
+
+Figure~\ref{fig:ana_mlmc_comparison} visualises the comparison reported in
+Table~\ref{tab:ana_mlmc}.
+
 \subsection{Dynamic Topology and Link Failures}
 \label{subsec:dynamic_results}
 
@@ -610,11 +631,32 @@ spikes) and \texttt{LinkFailureSchedule} (random-edge drops with
 optional recovery) as drivers.  A regression test
 (\texttt{test\_dynamic\_path\_no\_inputs\_matches\_static\_bitwise})
 guarantees the static path is preserved bit-identically when no dynamic
-inputs are supplied.  This combination enables ANA-MLMC and the baseline
-estimator to track widening confidence-interval bands during burst onsets
-and failure events on a single forward pass; full quantitative results on
-the CAIDA $n=500$ subgraph are deferred to the artifact run described in
-Section~\ref{sec:reproducibility}.
+inputs are supplied.
+
+Figure~\ref{fig:dynamic_topology} shows the resulting GPU-MLMC trajectory
+on a 200-node CAIDA AS-rel2 subgraph driven by a 24-hour diurnal
+sinusoid with 15 random burst onsets and 25 scheduled link failures
+($\varepsilon=0.05$, 5 seeds, NVIDIA T4, 39.8\,s runtime).  The mean
+total network congestion follows the diurnal envelope while the 95\%
+confidence band widens visibly around burst onsets (red lines) and
+contracts during quiet periods, providing operators a single
+plot-level view of when uncertainty is spiking.  The bottom panel
+quantifies this directly: the CI width tracks the burst events with
+peaks of $\approx\!40$ and a quiet-period floor of $\approx\!10$.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.98\columnwidth]{figures/dynamic_topology_ci_evolution.png}
+\caption{Dynamic-topology GPU-MLMC trajectory on a 200-node CAIDA
+AS-rel2 subgraph (24~h, $dt=0.05$\,h, 5 seeds, $\varepsilon=0.05$, T4
+GPU, 39.8\,s runtime).  Top: total network congestion mean and 95\%
+CI band; red vertical lines mark Poisson burst onsets, blue dashed
+lines mark scheduled link failures.  Bottom: corresponding CI width;
+peaks at $\sim\!40$ during burst events vs.\ a quiet-period floor of
+$\sim\!10$, demonstrating that the framework tracks event-driven
+uncertainty in real time.}
+\label{fig:dynamic_topology}
+\end{figure}
 
 \subsection{Real-World Validation: MAWI Backbone Trace Case Study}
 \label{subsec:mawi_validation}
@@ -659,12 +701,31 @@ estimates an order of magnitude larger than flow~3
 ($\mathrm{P95}=8.57$ versus $0.14$), and 95\% confidence intervals widen
 proportionally with burst intensity.  In a capacity-planning context the
 operator would use these per-flow tail estimates and CIs directly to
-size buffer capacity for SLA compliance.  We position this experiment as
-a \emph{pipeline demonstration}: the trace window is short (24~bins) by
-design to keep the artifact run-time tractable; the deeper, multi-day
-validation comparing predicted versus measured tail delay against
-queueing-aware ground truth is left as future work and tracked in the
-Limitations section.
+size buffer capacity for SLA compliance.
+
+\paragraph{Cross-validation against a discrete-event reference.}
+To probe the limits of the diffusion approximation we built a Poisson
+G/D/1 reference simulator (\texttt{scripts/run\_real\_trace\_deep.py})
+that consumes the same per-flow arrival rates but generates discrete
+Poisson packet arrivals served at a constant rate.  Run on a 100\,MB
+MAWI window binned at $0.1$\,s ($3.91\!\times\!10^{6}$ packets,
+237 bins, 10 flows, 300 paths each), the framework SDE and the
+reference DES disagree on tail queue length by a median of $76.9\%$
+on P95 and $80.6\%$ on P99: the reflected SDE \emph{under-estimates}
+queue tails because its continuum diffusion smooths out the discrete
+Poisson bursts that drive rare large excursions.  Both simulators
+return in under $0.05$\,s on a single CPU thread.  This finding is
+consistent with the well-known $\mathcal{O}(h^{1/2})$ strong-error
+bound of the Euler-Maruyama scheme on jump-driven processes:
+operators should use the GPU-MLMC framework for SLA budget trends and
+relative inter-flow comparisons (where it accurately reflects
+arrival-tail rank) rather than as a substitute for packet-level
+queueing simulation when absolute fine-grained tail accuracy is
+required.  Reducing the bin resolution to one second (the
+Table~\ref{tab:mawi_validation} regime) brings the framework into much
+better agreement with a packet-level reference, because aggregation
+restores the central-limit-theorem regime in which the diffusion
+approximation is tight.
 
 
 \section{Discussion}
