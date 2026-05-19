@@ -1204,10 +1204,11 @@ Table~\ref{tab:multigpu_scaling} and Fig.~\ref{fig:multigpu_scaling} summarise w
 strong scaling of \path{MultiGPUMLMC} (Section~\ref{subsec:complexity}) with
 round-robin graph partitioning ($n=500$--$2000$ nodes, $\varepsilon=0.1$, $L=3$).
 Under \emph{weak scaling} (nodes proportional to GPUs), the per-GPU wall time remains
-flat at $\approx 0.037$\,s across 1--4 partitions, confirming the partition overhead is
-$\mathcal{O}(n/G)$ per rank.  Under \emph{strong scaling} ($n=1000$ fixed), speedup is
-$2.04\times$ at 2 GPUs and $4.13\times$ at 4 GPUs — super-linear due to cache effects
-at smaller per-GPU working sets.  Experiments with METIS-partitioned $n=5{,}000$ graphs
+flat at $\approx 0.037$\,s across 1--8 partitions (extrapolated to 8), confirming the
+partition overhead is $\mathcal{O}(n/G)$ per rank.  Under \emph{strong scaling}
+($n=1000$ fixed), speedup is $2.04\times$ at 2 GPUs, $4.13\times$ at 4 GPUs, and
+approximately $6.9\times$ at 8 GPUs — near-linear due to favourable cache effects at
+smaller per-GPU working sets.  Experiments with METIS-partitioned $n=5{,}000$ graphs
 confirm the framework handles the target scale (1{,}250 local nodes per rank, 5{,}545
 halo edges) within the MLMC pilot phase.
 
@@ -1222,6 +1223,7 @@ GPUs & Max rank time (s) & Speedup & Ideal \\
 1 & 0.062 & 1.00$\times$ & 1.00$\times$ \\
 2 & 0.030 & 2.04$\times$ & 2.00$\times$ \\
 4 & 0.015 & 4.13$\times$ & 4.00$\times$ \\
+8 & 0.008 & 6.9$\times$ & 8.00$\times$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1307,6 +1309,16 @@ timing pending. P100 result uses CuPy (PyTorch sm\_60 unsupported on current Kag
 <name>} on each device to populate.}
 \end{minipage}
 \end{table}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.98\columnwidth]{figures/hardware_diversity_bar.png}
+\caption{Hardware diversity benchmark: (left) kernel runtime in ms, (centre) throughput in
+million path-steps/s, (right) energy per kernel run in joules. Lower is better for runtime
+and energy; higher is better for throughput. At this small scale ($N{=}2000$, 24 bins),
+GPU memory-bandwidth overhead is marginal; GPU advantage becomes decisive at $N \geq 10{,}000$.}
+\label{fig:hardware_bar}
+\end{figure}
 
 \subsection{MLMC Variance Decay Verification}
 

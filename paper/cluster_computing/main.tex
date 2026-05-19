@@ -541,6 +541,15 @@ Figure~\ref{fig:loglog_cost_eps} shows a fitted slope of ${\approx}\,{-2}$ in th
 cost--accuracy plot, confirming case~(i) numerically for the MAWI-calibrated parameters.
 \end{proof}
 
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\columnwidth]{figures/loglog_cost_vs_epsilon_a100.png}
+\caption{Log--log cost vs target RMS error $\varepsilon$ for GPU-MC (single-level) and
+GPU-MLMC. Cost is measured as total simulated timesteps $\times$ paths. GPU-MC shows a
+steeper empirical slope, consistent with higher complexity than GPU-MLMC.}
+\label{fig:loglog_cost_eps}
+\end{figure}
+
 \subsection{Rare-Event Analysis via Large Deviations}
 \label{subsec:rare_event}
 
@@ -714,15 +723,6 @@ Figure~\ref{fig:loglog_cost_eps} plots cost vs.\ $\varepsilon$ on log-log axes;
 Figure~\ref{fig:runtime_eps} shows the corresponding wall-clock runtime;
 Figure~\ref{fig:cost_ratio_eps} shows the work-reduction ratio (GPU-MC cost divided by
 GPU-MLMC cost) across target accuracies, with $\pm1\sigma$ ribbons over five independent runs.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.95\columnwidth]{figures/loglog_cost_vs_epsilon_a100.png}
-\caption{Log--log cost vs target RMS error $\varepsilon$ for GPU-MC (single-level) and GPU-MLMC.
-Cost is measured as total simulated timesteps $\times$ paths. GPU-MC shows a steeper empirical
-slope, consistent with higher complexity than GPU-MLMC.}
-\label{fig:loglog_cost_eps}
-\end{figure}
 
 \begin{figure}[htbp]
 \centering
