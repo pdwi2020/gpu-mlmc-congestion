@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "kaggle-exec": {
+      "command": "/Library/Frameworks/Python.framework/Versions/3.13/bin/mcp-server-kaggle-exec",
+      "args": [],
+      "env": {}
+    },
+    "colab-exec": {
+      "command": "/Users/paritoshdwivedi/.local/bin/mcp-server-colab-exec",
+      "args": [],
+      "env": {}
+    }
+  }
+}

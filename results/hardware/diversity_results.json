@@ -1,0 +1,32 @@
+[
+  {
+    "device_label": "MacBook_M1_CPU",
+    "gpu_name": "N/A (no GPU)",
+    "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+    "n_paths": 2000,
+    "n_flows": 5,
+    "n_bins": 24,
+    "elapsed_mean_s": 0.002844028019656738,
+    "elapsed_std_s": 4.3909626567466025e-05,
+    "throughput_mean": 16881513.648682382,
+    "peak_gpu_mem_mb": 0.0,
+    "power_draw_w": null,
+    "energy_j": null,
+    "backend": "torch-cpu"
+  },
+  {
+    "device_label": "Apple_M2_Air_CPU",
+    "gpu_name": "N/A (no GPU)",
+    "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+    "n_paths": 2000,
+    "n_flows": 5,
+    "n_bins": 24,
+    "elapsed_mean_s": 0.0028615084011107683,
+    "elapsed_std_s": 4.8487238100322795e-05,
+    "throughput_mean": 16779120.702517614,
+    "peak_gpu_mem_mb": 0.0,
+    "power_draw_w": null,
+    "energy_j": null,
+    "backend": "torch-cpu"
+  }
+]

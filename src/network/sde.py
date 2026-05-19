@@ -52,24 +52,68 @@ class QueueDynamicsSDE:
                  arrival_rate: float,
                  service_rate: float,
                  noise_intensity: float = 0.1,
-                 max_capacity: Optional[float] = None):
+                 max_capacity: Optional[float] = None,
+                 jump_intensity: float = 0.0,
+                 jump_size_mean: float = 0.0,
+                 time_varying_sigma: bool = False):
         """
         Initialize Queue Dynamics SDE.
 
         Args:
             arrival_rate: Mean arrival rate λ (packets/time unit)
             service_rate: Service rate μ (packets/time unit)
-            noise_intensity: Noise coefficient σ (controls randomness)
+            noise_intensity: Noise coefficient σ; ignored when time_varying_sigma=True
             max_capacity: Maximum queue capacity (None = unbounded)
+            jump_intensity: Poisson jump rate λ_J (jumps per time unit); 0 = plain diffusion
+            jump_size_mean: Mean exponential jump size 1/μ_J; ignored when jump_intensity=0
+            time_varying_sigma: If True, use σ(t)=√λ(t) (CIR / Poisson square-root diffusion).
+                euler_maruyama_step() must be called with current_arrival_rate kwarg.
         """
         self.arrival_rate = arrival_rate
         self.service_rate = service_rate
         self.noise_intensity = noise_intensity
         self.max_capacity = max_capacity
+        self.jump_intensity = jump_intensity
+        self.jump_size_mean = jump_size_mean
+        self.time_varying_sigma = time_varying_sigma
 
         # Check stability condition
         if arrival_rate >= service_rate:
             logger.warning(f"Queue is unstable: λ={arrival_rate} >= μ={service_rate}")
+
+    @classmethod
+    def moment_matched(
+        cls,
+        arrivals: "np.ndarray",
+        service_rate: float,
+        dt: float,
+        max_capacity: Optional[float] = None,
+    ) -> "QueueDynamicsSDE":
+        """Return a QueueDynamicsSDE whose parameters are calibrated to arrivals.
+
+        Moment-matching for a G/D/1 Brownian approximation:
+          σ² = mean(arrivals)            [match Poisson variance rate]
+          jump params: λ_J=2·λ̄, μ_J⁻¹=0.5  [match mean and variance of Poisson(λ̄·dt)]
+
+        The Brownian-only calibration (σ=√λ̄, no jumps) matches both mean and
+        variance of the DES net-arrival increment for Poisson arrivals at rate λ̄.
+        """
+        import numpy as _np
+        lam_bar = float(_np.mean(arrivals))
+        sigma_cal = float(_np.sqrt(max(lam_bar, 1e-6)))
+        # Compound Poisson params that match mean and variance of Poisson(λ̄·dt):
+        #   E[J·dt] = λ_J · μ_J⁻¹ · dt = λ̄·dt  →  λ_J · μ_J⁻¹ = λ̄
+        #   Var[J·dt] = 2λ_J · μ_J⁻² · dt = λ̄·dt  →  μ_J⁻¹ = 0.5, λ_J = 2λ̄
+        jump_intensity = 2.0 * lam_bar
+        jump_size_mean = 0.5
+        return cls(
+            arrival_rate=lam_bar,
+            service_rate=service_rate,
+            noise_intensity=0.0,          # pure jump model; Brownian adds no extra variance
+            max_capacity=max_capacity,
+            jump_intensity=jump_intensity,
+            jump_size_mean=jump_size_mean,
+        )
 
     def drift(self, q: float, t: float) -> float:
         """
@@ -99,11 +143,31 @@ class QueueDynamicsSDE:
         # Noise intensity can depend on queue state
         return self.noise_intensity
 
+
+    @classmethod
+    def cir_calibrated(
+        cls,
+        arrivals: "np.ndarray",
+        service_rate: float,
+        max_capacity: Optional[float] = None,
+    ) -> "QueueDynamicsSDE":
+        """σ(t)=√λ(t) (CIR / Poisson square-root diffusion).
+
+        Matches the per-step variance of Poisson(λ(t)·dt) arrivals exactly.
+        Call euler_maruyama_step() with current_arrival_rate=λ(t) each step.
+        """
+        import numpy as _np
+        lam_bar = float(_np.mean(arrivals))
+        return cls(arrival_rate=lam_bar, service_rate=service_rate,
+                   noise_intensity=0.0, max_capacity=max_capacity,
+                   time_varying_sigma=True)
+
     def euler_maruyama_step(self,
                            q: float,
                            t: float,
                            dt: float,
-                           dw: Optional[float] = None) -> float:
+                           dw: Optional[float] = None,
+                           current_arrival_rate: Optional[float] = None) -> float:
         """
         Single Euler-Maruyama step for SDE integration.
 
@@ -118,15 +182,28 @@ class QueueDynamicsSDE:
         Returns:
             Queue length at t + dt
         """
-        # Generate Wiener increment if not provided
+        # Determine σ(t): constant or time-varying (CIR / Poisson square-root)
+        if self.time_varying_sigma:
+            lam_t = current_arrival_rate if current_arrival_rate is not None else self.arrival_rate
+            sigma_t = float(np.sqrt(max(lam_t, 0.0)))
+        else:
+            sigma_t = self.noise_intensity
+
         if dw is None:
             dw = np.random.normal(0, np.sqrt(dt))
 
-        # Euler-Maruyama update
         drift_term = self.drift(q, t) * dt
-        diffusion_term = self.diffusion(q, t) * dw
+        diffusion_term = sigma_t * dw
 
         q_new = q + drift_term + diffusion_term
+
+        # Compound Poisson jump term: dJ = sum of Exp(jump_size_mean) jumps
+        # where the number of jumps ~ Poisson(jump_intensity * dt).
+        # Captures burst arrivals that the diffusion term smooths over.
+        if self.jump_intensity > 0.0:
+            n_jumps = np.random.poisson(self.jump_intensity * dt)
+            if n_jumps > 0:
+                q_new += np.random.exponential(self.jump_size_mean, n_jumps).sum()
 
         # Enforce non-negativity constraint (reflected boundary)
         # Note: This reflection introduces O(dt^0.5) bias - see class docstring

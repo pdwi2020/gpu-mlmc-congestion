@@ -1,11 +1,12 @@
-\documentclass{ieeeaccess}
+% Cluster Computing (Springer) — requires svjour3.cls from:
+% https://www.springernature.com/gp/authors/campaigns/latex-author-support
+% Download "svjour3.zip", extract svjour3.cls and spbasic.bst into this folder.
+\documentclass[smallextended]{svjour3}
 
-\usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
-\usepackage{amsthm}
 \usepackage{algorithmic}
 \usepackage{graphicx}
-\graphicspath{{./}{paper/}}
+\graphicspath{{./}{../}}
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{booktabs}
@@ -26,26 +27,25 @@
 \newcommand{\mmonererrB}{12.6}
 \newcommand{\mmonererrC}{6.5}
 
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}{Lemma}
-\newtheorem{corollary}{Corollary}
-
 \begin{document}
-\history{Received: xx xx, xxxx; Accepted: xx xx, xxxx; Published: xx xx, xxxx.}
-\doi{10.1109/ACCESS.2026.0000000}
+
+\journalname{Cluster Computing}
 
 \title{GPU-Accelerated Multilevel Monte Carlo for Network Congestion Propagation: Coupled SDE Models with Uncertainty Quantification}
 
-\author{\uppercase{Paritosh Dwivedi}\authorrefmark{1} and
-        \uppercase{Anindita Kundu}\authorrefmark{2}}
-\address[1]{Vellore Institute of Technology, Vellore, India
-(e-mail: \url{paritosh.dwivedi2024@vitstudent.ac.in})}
-\address[2]{Vellore Institute of Technology, Vellore, India
-(e-mail: anindita.kundu@vit.ac.in)}
-\markboth
-{Dwivedi \emph{et al.}: GPU-Accelerated MLMC for Network Congestion Propagation}
-{Dwivedi \emph{et al.}: GPU-Accelerated MLMC for Network Congestion Propagation}
-\corresp{Corresponding author: A.\ Kundu (e-mail: anindita.kundu@vit.ac.in).}
+\author{Paritosh Dwivedi \and Anindita Kundu}
+
+\institute{
+  Paritosh Dwivedi \at
+    School of Computer Science and Engineering,\\
+    Vellore Institute of Technology, Vellore 632 014, India \\
+    \email{paritosh.dwivedi2024@vitstudent.ac.in}
+  \and
+  Anindita Kundu \at
+    School of Computer Science and Engineering,\\
+    Vellore Institute of Technology, Vellore 632 014, India \\
+    \email{anindita.kundu@vit.ac.in} \quad \emph{(Corresponding author)}
+}
 
 \begin{abstract}
 Internet service providers must provision capacity under uncertain demand while keeping delay
@@ -72,20 +72,15 @@ above the finite-sample estimator floor---confirming distributional parity with 
 reference at standard binning resolution.
 \end{abstract}
 
-\begin{keywords}
-Monte Carlo methods, GPU computing, network modeling, uncertainty quantification,
-stochastic differential equations, queueing networks
-\end{keywords}
-
-\titlepgskip=-15pt
+\keywords{Monte Carlo methods \and GPU computing \and network modeling \and uncertainty quantification \and stochastic differential equations \and queueing networks}
 
 \maketitle
 
 \section{Introduction}
 
-\PARstart{N}{etwork} traffic is stochastic at the time scales where service-level agreements
+Network traffic is stochastic at the time scales where service-level agreements
 are won or lost: arrivals fluctuate, service rates vary, and correlated bursts can move delay risk
-across adjacent links \cite{kelly2011stochastic, whitt2002, cisco2023annual}. Deterministic traffic
+across adjacent links \cite{kelly2011stochastic,whitt2002,cisco2023annual}. Deterministic traffic
 models compress this uncertainty into a single forecast, while ad-hoc provisioning margins give
 operators little control over the probability or severity of SLA violations. As a result, an ISP
 planning capacity for tail-delay guarantees must either overbuy infrastructure or accept
@@ -103,11 +98,11 @@ Our key contributions are:
     \item A \emph{coupled} stochastic differential equation (SDE) model for network-wide
     congestion propagation ($dC_i = (\sum_j \alpha_{ij}C_j - \beta_i C_i)dt + \sigma_i dW_i$),
     with degree-normalised influence weights derived from the network adjacency matrix
-    \cite{kang2007, harrison1985}
+    \cite{kang2007,harrison1985}
     \item Integration of the coupled-propagation SDE into the GPU-MLMC estimation loop,
     enabling correlated uncertainty quantification across neighbouring nodes
     \item An adaptive MLMC implementation with optimal sample allocation (Giles formula
-    \cite{giles2015multilevel, collier2015}) and a crossover model characterising when MLMC
+    \cite{giles2015multilevel,collier2015}) and a crossover model characterising when MLMC
     runtime advantage emerges over single-level GPU-MC
     \item \emph{Adaptive Network-Aware MLMC} (ANA-MLMC), a new sample-allocation rule that
     minimises a centrality-, pilot-variance-, and SLA-priority-weighted estimator variance
@@ -132,21 +127,21 @@ extends these results to non-Lipschitz settings relevant to queueing systems \ci
 
 MLMC was originally developed for parametric integration \cite{heinrich2001multilevel} and
 stochastic differential equations \cite{giles2008multilevel}. The method has since been extended
-to numerous applications including computational finance \cite{giles2012finance, glasserman2003monte},
+to numerous applications including computational finance \cite{giles2012finance,glasserman2003monte},
 fluid dynamics \cite{mishra2012sparse}, elliptic PDEs \cite{cliffe2015}, and Bayesian inference
 \cite{dodwell2015hierarchical}. Key theoretical results establish that MLMC achieves
 $\mathcal{O}(\varepsilon^{-2})$ complexity when variance decays as $\mathcal{O}(2^{-\alpha l})$
 and cost grows as $\mathcal{O}(2^{\gamma l})$ with $\alpha \geq \frac{1}{2}\gamma$
 \cite{giles2015multilevel}. Higham \cite{higham2015} provides an accessible introduction, while
 Zhang and Karniadakis \cite{zhang2020} survey modern developments including control variates
-\cite{hickernell2005, lapeyre2003}. Recent surveys cover MLMC in finance \cite{giles2024review}
+\cite{hickernell2005,lapeyre2003}. Recent surveys cover MLMC in finance \cite{giles2024review}
 and small-noise SDE settings \cite{spiliopoulos2022multilevel} relevant to our low-diffusivity
 regime.
 
 \subsection{GPU-Accelerated Monte Carlo}
 
 GPU computing has revolutionized Monte Carlo simulation, enabling speedups of 10--100$\times$
-for various applications \cite{nvidia2020cuda, owens2008}. Harris et al.\ \cite{harris2007}
+for various applications \cite{nvidia2020cuda,owens2008}. Harris et al.\ \cite{harris2007}
 introduced efficient parallel reduction algorithms essential for Monte Carlo estimators. Previous
 work has demonstrated GPU acceleration for financial Monte Carlo \cite{thompson2010gpu}, particle
 transport \cite{bergmann2017gpu}, and network simulation \cite{perumalla2011discrete}. Recent work
@@ -157,7 +152,7 @@ implementation uses PyTorch~2 \cite{pytorch2024} for portable GPU tensor operati
 Table~\ref{tab:gpu_lit} positions our contribution against representative GPU Monte Carlo work
 in prior literature.
 
-\begin{table*}[t]
+\begin{table}[t]
 \caption{GPU-Accelerated Monte Carlo Methods in Literature}
 \label{tab:gpu_lit}
 \centering
@@ -180,18 +175,18 @@ Proposed Work & This work & Network UQ & Yes & Yes & Yes & Yes (real-topology su
 \bottomrule
 \end{tabular}%
 }
-\end{table*}
+\end{table}
 
 While prior GPU-accelerated Monte Carlo methods have been applied in physics and computational
-finance \cite{nvidia2020cuda, owens2008, harris2007, thompson2010gpu}, they typically employ
+finance \cite{nvidia2020cuda,owens2008,harris2007,thompson2010gpu}, they typically employ
 single-level sampling. Our work experimentally compares such single-level GPU Monte Carlo against
 a multilevel GPU implementation under identical SDE discretization and hardware settings.
 
 \subsection{Network Queueing Models}
 
 Stochastic network models based on queueing theory provide mathematical foundations for
-performance analysis \cite{kelly2011stochastic, whitt2002}. Diffusion approximations enable
-continuous-time modeling of discrete queueing systems \cite{kang2007, harrison1985}. Roy et al.\
+performance analysis \cite{kelly2011stochastic,whitt2002}. Diffusion approximations enable
+continuous-time modeling of discrete queueing systems \cite{kang2007,harrison1985}. Roy et al.\
 \cite{roy2016} extend these models to semi-open networks. Recent work incorporates SDEs to model
 time-varying arrival and service rates \cite{mandelbaum2014stochastic}. Network propagation
 phenomena on random graphs \cite{hofstad2016} and epidemic models \cite{kenah2011} share similar
@@ -199,7 +194,7 @@ mathematical structure. Large deviation theory provides tools for rare event ana
 \cite{chatterjee2017}. Table~\ref{tab:network_modeling} summarizes how these theoretical models
 compare with the proposed simulation-oriented MLMC-GPU framework.
 
-\begin{table*}[t]
+\begin{table}[t]
 \caption{Network Congestion Modeling Approaches}
 \label{tab:network_modeling}
 \centering
@@ -221,14 +216,14 @@ Validated on real-topology subgraphs \\
 \bottomrule
 \end{tabular}%
 }
-\end{table*}
+\end{table}
 
 \section{Methodology}
 
 \subsection{SDE-Based Network Model}
 
 We model network queue dynamics using a stochastic differential equation that captures both mean
-behavior and random fluctuations \cite{kloeden1992, khasminskii2012}:
+behavior and random fluctuations \cite{kloeden1992,khasminskii2012}:
 
 \begin{equation}
     dQ(t) = (\lambda(t) - \mu(t))dt + \sigma dW(t)
@@ -238,7 +233,7 @@ behavior and random fluctuations \cite{kloeden1992, khasminskii2012}:
 \noindent where $Q(t)$ is the queue length, $\lambda(t)$ is the arrival rate, $\mu(t)$ is the
 service rate, $\sigma$ controls noise magnitude, and $W(t)$ is a standard Wiener process. This
 diffusion approximation is justified by classical heavy-traffic limit theorems for queueing
-networks \cite{kang2007, whitt2002}.
+networks \cite{kang2007,whitt2002}.
 
 For numerical integration, we use the Euler-Maruyama scheme with time step $h$
 \cite{kloeden1992}:
@@ -271,7 +266,7 @@ distributional parity with the Poisson reference.
 \subsection{Multilevel Monte Carlo}
 
 The MLMC estimator combines samples from multiple resolution levels to achieve variance reduction
-\cite{giles2008multilevel, giles2015multilevel}. Let $P_l$ denote the quantity of interest
+\cite{giles2008multilevel,giles2015multilevel}. Let $P_l$ denote the quantity of interest
 computed at level $l$ with time step $h_l = h_0 \cdot 2^{-l}$. The MLMC estimator is:
 
 \begin{equation}
@@ -295,12 +290,12 @@ per sample at level $l$.
 
 For SDEs with Lipschitz coefficients, the weak error is $\mathcal{O}(h_l)$ and the variance
 decays as $V_l = \mathcal{O}(h_l) = \mathcal{O}(2^{-l})$, yielding optimal
-$\mathcal{O}(\varepsilon^{-2})$ complexity \cite{giles2015multilevel, higham2015}. Adaptive
+$\mathcal{O}(\varepsilon^{-2})$ complexity \cite{giles2015multilevel,higham2015}. Adaptive
 methods \cite{collier2015} can further improve efficiency.
 Table~\ref{tab:complexity} highlights the complexity-positioning of standard MC, classical MLMC,
 and our MLMC + GPU implementation.
 
-\begin{table*}[t]
+\begin{table}[t]
 \caption{Algorithmic Complexity Comparison for Stochastic SDE Simulation}
 \label{tab:complexity}
 \centering
@@ -319,14 +314,14 @@ $\mathcal{O}(\varepsilon^{-2})$ (parallelized) & Yes & Real-topology subgraph va
 \bottomrule
 \end{tabular}%
 }
-\end{table*}
+\end{table}
 
 \subsection{Single-Level GPU Monte Carlo Baseline}
 
 For fair comparison, we implement a single-level GPU Monte Carlo (GPU-MC) baseline using
 Euler--Maruyama discretization at the finest timestep $h_L$. This corresponds to the classical
 Monte Carlo approach described in \cite{glasserman2003monte} with GPU parallelization following
-standard CUDA practices \cite{nvidia2020cuda, owens2008, harris2007}. No multilevel correction
+standard CUDA practices \cite{nvidia2020cuda,owens2008,harris2007}. No multilevel correction
 is applied. Equal-accuracy comparison is enforced via matched confidence interval half-widths.
 
 \subsection{GPU Parallelization Strategy}
@@ -569,8 +564,6 @@ equal mean reduces to $D_{\mathrm{KL}} = \tfrac{1}{2}(u - 1 - \ln u)$ where
 $u = \lambda(t)/\sigma^2(t)$.  Since $f(u) = \tfrac{1}{2}(u-1-\ln u) \ge 0$ with
 $f(u)=0 \iff u=1$ and $f$ strictly convex on $(0,\infty)$, the unique minimum is at
 $\sigma^2(t) = \lambda(t)$, i.e.\ $\sigma^{\star}(t) = \sqrt{\lambda(t)}$.
-The first-order condition is the Fisher information equation
-$\partial_{\sigma^2} D_{\mathrm{KL}} = 0$; uniqueness follows from strict convexity.
 The martingale problem formulation of~\cite{ethier1986markov} (Ch.~4) confirms
 that the resulting measure is the unique solution to the SDE martingale problem.
 \end{proof}
@@ -593,32 +586,13 @@ minimiser of $I$ over paths with $\max_t \varphi(t) = B$.
 Since $\sigma(t) = \sqrt{\lambda(t)} > 0$ is bounded away from zero by assumption, the
 Freidlin--Wentzell theory for diffusions~\cite{dupuis2007dynamic} applies.  The action
 functional is the squared Cameron--Martin norm of the deviation from the drift, giving
-Eq.~\eqref{eq:rate_function}.  Reflection at zero is handled by the Skorokhod embedding;
-the rate function on reflected paths is the same as for the unreflected diffusion on paths
-that do not touch the boundary, and is infinite for paths that would require downward jumps
-through zero.
+Eq.~\eqref{eq:rate_function}.  Reflection at zero is handled by the Skorokhod embedding.
 \end{proof}
 
 \paragraph{Practical importance sampling.}
 The optimal IS change of measure is the Girsanov transform with drift
 $h^{\star}(t) = (\dot\varphi^{\star}(t) - (\lambda(t){-}\mu)) / \sqrt{\lambda(t)}$,
 following Dupuis and Wang~\cite{dupuis2007dynamic}.
-
-\paragraph{Numerical validation.}
-Figure~\ref{fig:rate_function} shows $\log\hat P(Q_{\max} \ge B)$ from direct Monte Carlo
-(200{,}000 paths, $T{=}20$\,s, $\lambda{=}0.8$, $\mu{=}1.0$) versus the theoretical rate
-$-I(\varphi^{\star})$.  The MC slope ($-0.717$ per unit $B$) and the theory slope ($-0.540$
-for unconstrained paths) converge as $B$ grows (gap of $0.14$ at $B{=}5$, narrowing to
-$0.04$ at $B{=}7$), confirming large-deviation theory becomes exact as $B\to\infty$.
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=0.9\columnwidth]{figures/rate_function_validation.png}
-\caption{Rate-function validation for the TV-$\sigma$ reflected SDE ($\lambda{=}0.8$,
-$\mu{=}1.0$). Direct Monte Carlo $\log\hat P(Q_{\max}\ge B)$ (dots) converges to the
-Freidlin--Wentzell theoretical bound $-I(\varphi^{\star})$ (dashed) as $B$ increases.}
-\label{fig:rate_function}
-\end{figure}
 
 
 \section{Implementation}
@@ -687,7 +661,7 @@ path generation. In addition to mean behavior, the framework provides uncertaint
 including confidence intervals and tail-delay estimates (P95, P99), which are essential for
 congestion-risk analysis.
 
-\begin{table*}[t]
+\begin{table}[t]
 \caption{GPU Single-Level Monte Carlo vs GPU-MLMC (NVIDIA A100 80GB PCIe). Results are
 single-run estimates; repeated-run error bars across five independent runs are shown in the figures below.}
 \label{tab:gpu_gpu_a100}
@@ -711,7 +685,7 @@ CAIDA subgraph ($n=500$) & 0.01 & 36.19 & 20.95 & 1.73$\times$$^\dagger$ & 64.33
 \footnotesize$^\dagger$MC sample cap of $10^6$ reached; CI half-widths remain ${\sim}2\times$
 wider than the target, so strict equal-accuracy is not achieved. Reported speedup and cost-ratio
 values are \emph{lower bounds} on MLMC advantage at tighter targets.\normalsize
-\end{table*}
+\end{table}
 
 Under a reduced single-level cap of $5\times10^5$ paths ($T{=}5$\,s, enforcing equal wall-clock
 time rather than equal accuracy), GPU-MLMC achieves up to $12.91\times$ runtime speedup.
@@ -970,7 +944,6 @@ event-driven uncertainty in real time.}
 \end{figure}
 
 \subsection{Real-World Validation: MAWI Backbone Trace Case Study}
-\label{sec:real_trace}
 \label{subsec:mawi_validation}
 
 Real-trace validation provides the most direct evidence of framework utility under production conditions.
@@ -1201,7 +1174,7 @@ entries confirm spatial correlation of congestion propagation along the chain.}
 \label{subsec:multigpu_scaling}
 
 Table~\ref{tab:multigpu_scaling} and Fig.~\ref{fig:multigpu_scaling} summarise weak and
-strong scaling of \path{MultiGPUMLMC} (Section~\ref{subsec:complexity}) with
+strong scaling of \texttt{MultiGPUMLMC} (Section~\ref{subsec:complexity}) with
 round-robin graph partitioning ($n=500$--$2000$ nodes, $\varepsilon=0.1$, $L=3$).
 Under \emph{weak scaling} (nodes proportional to GPUs), the per-GPU wall time remains
 flat at $\approx 0.037$\,s across 1--4 partitions, confirming the partition overhead is
@@ -1212,23 +1185,23 @@ confirm the framework handles the target scale (1{,}250 local nodes per rank, 5{
 halo edges) within the MLMC pilot phase.
 
 \begin{table}[!t]
-\caption{Multi-GPU MLMC Scaling (N=1000, $\varepsilon=0.1$)}
+\caption{Multi-GPU MLMC Scaling ($N=1000$, $\varepsilon=0.1$)}
 \label{tab:multigpu_scaling}
 \centering\small
 \begin{tabular}{rrrr}
 \toprule
 GPUs & Max rank time (s) & Speedup & Ideal \\
 \midrule
-1 & 0.062 & 1.00$\times$ & 1.00$\times$ \\
-2 & 0.030 & 2.04$\times$ & 2.00$\times$ \\
-4 & 0.015 & 4.13$\times$ & 4.00$\times$ \\
+1 & 0.062 & $1.00\times$ & $1.00\times$ \\
+2 & 0.030 & $2.04\times$ & $2.00\times$ \\
+4 & 0.015 & $4.13\times$ & $4.00\times$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=0.95\columnwidth]{figures/multi_gpu_scaling.png}
+\includegraphics[width=0.95\textwidth]{figures/multi_gpu_scaling.png}
 \caption{Weak scaling (left): per-GPU time stays flat as both node count and GPU count grow
 proportionally.  Strong scaling (right): near-ideal speedup on $n=1{,}000$ nodes.}
 \label{fig:multigpu_scaling}
@@ -1268,7 +1241,7 @@ $\rho = 0.8$; the SDE CDF tracks the DES reference closely up to the $95$th perc
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=0.9\columnwidth]{figures/cdf_rho08.png}
+\includegraphics[width=0.9\textwidth]{figures/cdf_rho08.png}
 \caption{Empirical CDF of queue occupancy at $\rho=0.8$: TV-$\sigma$ SDE (dashed) vs.\
 discrete-event M/D/1 reference (solid). Both P95 and P99 errors are below $15\%$.}
 \label{fig:cdf_rho08}
@@ -1280,7 +1253,7 @@ discrete-event M/D/1 reference (solid). Both P95 and P99 errors are below $15\%$
 Table~\ref{tab:hardware_diversity} reports performance of the TV-$\sigma$ MLMC kernel
 ($N{=}2000$ paths, 5 flows, 24 time bins) across target hardware platforms.  The A100
 baseline is from prior benchmarks (Section~\ref{subsec:ana_results}); T4/V100 entries
-are collected via \path{run_hardware_diversity.py} on RunPod/Colab;
+are collected via \texttt{run\_hardware\_diversity.py} on RunPod/Colab;
 CPU results use PyTorch on the local host.
 
 \begin{table}[!t]
@@ -1291,20 +1264,20 @@ CPU results use PyTorch on the local host.
 \toprule
 Device & Time (s) & Throughput & Mem (MB) & Energy (J) \\
 \midrule
-NVIDIA A100 80GB & 0.31$^\dagger$ & — & — & — \\
+NVIDIA A100 80GB & 0.31$^\dagger$ & --- & --- & --- \\
 Tesla P100-PCIE-16GB & 0.0048 & 10.0M & 10.7 & 0.13 \\
 NVIDIA T4 (Colab) & 0.0032 & 15.1M & 0.2 & 0.03 \\
-NVIDIA V100 32GB & — & — & — & — \\
-Jetson AGX Orin & — & — & N/A & — \\
+NVIDIA V100 32GB & --- & --- & --- & --- \\
+Jetson AGX Orin  & --- & --- & N/A & --- \\
 CPU (Apple M2 Air) & 0.003 & 16.8M & N/A & N/A \\
-RPi4 (CPU only)  & — & — & N/A & — \\
+RPi4 (CPU only)  & --- & --- & N/A & --- \\
 \bottomrule
 \end{tabular}
-\begin{minipage}{0.95\columnwidth}
+\begin{minipage}{0.95\textwidth}
 \footnotesize{$^\dagger$A100 time is from the full GPU-MLMC system (Tab.~5); kernel-only
 timing pending. P100 result uses CuPy (PyTorch sm\_60 unsupported on current Kaggle image).
-``—'' = pending hardware access; run \path{scripts/run_hardware_diversity.py --device-label
-<name>} on each device to populate.}
+``---'' = pending hardware access; run \texttt{scripts/run\_hardware\_diversity.py
+--device-label <name>} on each device to populate.}
 \end{minipage}
 \end{table}
 
@@ -1459,17 +1432,12 @@ The authors thank the CAIDA project for providing the AS-level topology data.
 Source code, experiment scripts, and instructions to reproduce all figures and tables are
 available at \cite{gpu_mlmc_code} (\url{https://github.com/pdwi2020/gpu-mlmc-congestion}).
 The artifact includes a one-command Docker setup verified on Ubuntu~22.04 with CUDA~12.1.
-The MAWI samplepoint-F traces (2024-01-01 to 2024-01-05, 60\,MB per day) used in
-Section~\ref{sec:real_trace} are publicly accessible at the MAWI archive; the
-preprocessed per-flow arrival CSVs are archived on Zenodo~\cite{mawi2024zenodo}
-(DOI to be finalised upon upload).
+The MAWI samplepoint-F traces (2024-01-01 to 2024-01-05, 60\,MB per day) used in the
+real-trace validation are publicly accessible at the MAWI archive; preprocessed per-flow
+arrival CSVs are archived on Zenodo~\cite{mawi2024zenodo} (DOI to be finalised upon
+upload).
 
-\bibliographystyle{IEEEtran}
-\IfFileExists{gpuAcc.bib}{%
-    \bibliography{gpuAcc}%
-}{%
-    \bibliography{paper/gpuAcc}%
-}
-\EOD
+\bibliographystyle{spbasic}
+\bibliography{main}
 
 \end{document}
