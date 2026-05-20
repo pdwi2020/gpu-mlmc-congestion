@@ -101,9 +101,9 @@ Our key contributions are:
     \cite{kang2007,harrison1985}
     \item Integration of the coupled-propagation SDE into the GPU-MLMC estimation loop,
     enabling correlated uncertainty quantification across neighbouring nodes
-    \item An adaptive MLMC implementation with optimal sample allocation (Giles formula
-    \cite{giles2015multilevel,collier2015}) and a crossover model characterising when MLMC
-    runtime advantage emerges over single-level GPU-MC
+    \item An adaptive MLMC implementation with optimal sample allocation and a crossover
+    model characterising when MLMC runtime advantage emerges over single-level
+    GPU-MC \cite{giles2015multilevel,collier2015}
     \item \emph{Adaptive Network-Aware MLMC} (ANA-MLMC), a new sample-allocation rule that
     minimises a centrality-, pilot-variance-, and SLA-priority-weighted estimator variance
     (Eqs.~\eqref{eq:ana_var}--\eqref{eq:ana_weights}); the rule reduces exactly to standard
@@ -140,6 +140,7 @@ regime.
 
 \subsection{GPU-Accelerated Monte Carlo}
 
+\begin{sloppypar}
 GPU computing has revolutionized Monte Carlo simulation, enabling speedups of 10--100$\times$
 for various applications \cite{nvidia2020cuda,owens2008}. Harris et al.\ \cite{harris2007}
 introduced efficient parallel reduction algorithms essential for Monte Carlo estimators. Previous
@@ -151,6 +152,7 @@ with Monte Carlo for traffic prediction \cite{chen2022neural}. Quantum-accelerat
 implementation uses PyTorch~2 \cite{pytorch2024} for portable GPU tensor operations.
 Table~\ref{tab:gpu_lit} positions our contribution against representative GPU Monte Carlo work
 in prior literature.
+\end{sloppypar}
 
 \begin{table}[t]
 \caption{GPU-Accelerated Monte Carlo Methods in Literature}
@@ -177,10 +179,12 @@ Proposed Work & This work & Network UQ & Yes & Yes & Yes & Yes (real-topology su
 }
 \end{table}
 
+\begin{sloppypar}
 While prior GPU-accelerated Monte Carlo methods have been applied in physics and computational
 finance \cite{nvidia2020cuda,owens2008,harris2007,thompson2010gpu}, they typically employ
 single-level sampling. Our work experimentally compares such single-level GPU Monte Carlo against
 a multilevel GPU implementation under identical SDE discretization and hardware settings.
+\end{sloppypar}
 
 \subsection{Network Queueing Models}
 
@@ -343,7 +347,7 @@ Our GPU implementation parallelizes across independent Monte Carlo samples using
     \STATE Simulate coarse path with step $h_{l-1}$ (same noise)
     \STATE Compute $Y_l^{(i)} = P_l^{(i)} - P_{l-1}^{(i)}$
 \ENDFOR
-\STATE Parallel reduction for mean and variance \cite{harris2007}
+\STATE Parallel reduction for mean/variance~\cite{harris2007}
 \STATE \textbf{Return:} $\bar{Y}_l$, $\hat{V}_l$
 \end{algorithmic}
 \end{algorithm}
