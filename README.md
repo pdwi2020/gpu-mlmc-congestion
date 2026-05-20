@@ -394,8 +394,8 @@ This project is licensed under the MIT License - see LICENSE file for details.
 ## Contact
 
 **Author**: Paritosh Dwivedi
-**Email**: your.email@example.com
-**Project**: M.Tech Thesis / Computer Networks Research
+**Email**: paritosh.dwivedi2024@vitstudent.ac.in
+**Project**: Computer Networks Research Project
 
 ## Project Status
 
@@ -409,9 +409,6 @@ This project is licensed under the MIT License - see LICENSE file for details.
 - ✅ Phase 5: Dataset Integration (Weeks 9-10)
 - ✅ Phase 6: Performance Metrics (Week 11)
 - ✅ Phase 7: Experiments (Weeks 12-14)
-
-**In Progress**:
-- 🚧 Phase 8: Documentation & Reporting (Weeks 15-16)
 
 **Implementation Statistics**:
 - **Total Code**: ~18,000+ lines
@@ -434,8 +431,6 @@ This project is licensed under the MIT License - see LICENSE file for details.
 3. Write project report and presentations
 4. Add user guides and tutorials
 5. Create Jupyter notebook examples
-
-For detailed implementation plan, see: `~/.claude/plans/typed-drifting-tiger.md`
 
 ---
 

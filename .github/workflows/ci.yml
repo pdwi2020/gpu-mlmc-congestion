@@ -37,15 +37,19 @@ jobs:
 
   paper-build:
     runs-on: ubuntu-latest
-    container:
-      image: texlive/texlive:latest-basic
     steps:
       - uses: actions/checkout@v4
-      - name: Build paper
+      - name: Install LaTeX
         run: |
-          cd paper
-          latexmk -pdf -interaction=nonstopmode gpuAcc.tex
+          sudo apt-get update -q
+          sudo apt-get install -y --no-install-recommends \
+            texlive-latex-base texlive-latex-extra texlive-science \
+            texlive-fonts-recommended texlive-bibtex-extra latexmk
+      - name: Build Cluster Computing paper
+        run: |
+          cd paper/cluster_computing
+          latexmk -pdf -interaction=nonstopmode -bibtex main.tex
       - uses: actions/upload-artifact@v4
         with:
-          name: gpuAcc-pdf
-          path: paper/gpuAcc.pdf
+          name: cluster-computing-pdf
+          path: paper/cluster_computing/main.pdf
