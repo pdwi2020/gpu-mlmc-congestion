@@ -376,7 +376,8 @@ If you use this code in your research, please cite:
   title={GPU-Accelerated Uncertainty-Aware Modeling of Network Propagation and Congestion Dynamics using Multilevel Monte Carlo},
   author={Dwivedi, Paritosh},
   year={2026},
-  school={Your University}
+  school={Vellore Institute of Technology},
+  note={Guided by Dr. Anindita Kundu, School of Computer Science and Engineering, VIT}
 }
 ```
 
@@ -396,6 +397,9 @@ This project is licensed under the MIT License - see LICENSE file for details.
 **Author**: Paritosh Dwivedi
 **Email**: paritosh.dwivedi2024@vitstudent.ac.in
 **Project**: Computer Networks Research Project
+
+**Guide**: Dr. Anindita Kundu
+**Email**: anindita.kundu@vit.ac.in
 
 ## Project Status
 
