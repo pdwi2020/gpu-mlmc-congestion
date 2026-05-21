@@ -546,29 +546,16 @@ Tail congestion events (queue overflow, SLA violation) are rare but consequentia
 Large-deviation theory provides asymptotically exact log-probability estimates without
 the exponential sample cost of direct Monte Carlo.
 
-\begin{theorem}[KL-based optimality of TV-$\sigma$ --- heuristic but practically justified]
-\label{thm:kl_heuristic}
-Let the true jump distribution be Poisson with rate $\lambda$, and consider a Gaussian
-approximation with matched mean and variance.  Under this approximation, the
-Kullback--Leibler (KL) divergence between the Poisson and the Gaussian is minimised when
-$\sigma^2 = \lambda$ (i.e.\ variance equals mean).  This condition corresponds to the
-TV-$\sigma$ filter's design principle $\sigma(t) = \sqrt{\lambda(t)}$.
-\end{theorem}
-\begin{proof}[Heuristic justification]
-The KL divergence from a Poisson($\lambda$) to a Gaussian($\mu, \sigma^2$) is not
-directly defined on discrete versus continuous spaces.  One may instead compare the
-Poisson to a Gaussian discretised on the same support, or use a local approximation valid
-for large $\lambda$ (central limit theorem).  For $\lambda \to \infty$ the Poisson tends
-to a Gaussian with $\mu = \sigma^2 = \lambda$, and the KL divergence in the continuous
-limit attains a minimum at $\sigma^2 = \lambda$.  The theoretical basis for such
-approximations in filtering is provided by~\cite{kabanov1978,liptser2001statistics}.
-A rigorous derivation would require handling the Radon--Nikodym derivative across
-different dominating measures, which is beyond the scope of this paper; the claim should
-therefore be interpreted as a heuristic justification that aligns with numerical evidence
-and known results in jump-diffusion filtering.  For practical purposes, setting
-$\sigma^2(t) = \lambda(t)$ yields near-optimal performance, as confirmed by the
-SDE--DES discrepancy reduction in Section~\ref{subsec:mawi_validation}.
-\end{proof}
+\paragraph{Heuristic justification of TV-$\sigma$ (moment matching).}
+In each time step of duration $h$, the Euler--Maruyama increment is approximately
+$\mathcal{N}((\lambda(t)-\mu)h,\,\sigma^2(t)h)$, while the Poisson arrival count
+$\mathrm{Poisson}(\lambda(t)h)$ has mean $\lambda(t)h$ and variance $\lambda(t)h$.
+Setting $\sigma^2(t)h = \lambda(t)h$ yields the moment-matching condition
+$\sigma^\star(t)=\sqrt{\lambda(t)}$. A rigorous KL-minimisation proof would require the
+Girsanov density between the Poisson and Gaussian measures~\cite{kabanov1978,liptser2001statistics};
+the moment-matching argument directly motivates the TV-$\sigma$ choice and is consistent with
+the reduction in SDE--DES discrepancy observed in
+Section~\ref{subsec:mawi_validation}.
 
 \begin{proposition}[Freidlin--Wentzell LDP for reflected SDEs {\cite{dupuis1997large,xu2009large}}]
 \label{prop:rate_function}
