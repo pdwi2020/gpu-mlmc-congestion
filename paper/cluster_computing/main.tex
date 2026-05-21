@@ -1305,36 +1305,6 @@ Figure~\ref{fig:cdf_rho08} (Fig.~\ref{fig:multigpu_cdf_pair}(b)) shows the empir
 of instantaneous queue occupancy at $\rho = 0.8$; the SDE CDF tracks the DES reference
 closely up to the $95$th percentile.
 
-\subsection{Hardware Diversity}
-\label{subsec:hardware_diversity}
-
-Table~\ref{tab:hardware_diversity} reports performance of the TV-$\sigma$ MLMC kernel
-($N{=}2000$ paths, 5 flows, 24 time bins) across target hardware platforms.  The A100
-baseline is from prior benchmarks (Section~\ref{subsec:ana_results}); T4/V100 entries
-are collected via \texttt{run\_hardware\_diversity.py} on RunPod/Colab;
-CPU results use PyTorch on the local host.
-
-\begin{table}[!t]
-\caption{Hardware Diversity Benchmark ($N{=}2000$, 5 flows, 24 bins)}
-\label{tab:hardware_diversity}
-\centering\small
-\begin{tabular}{lrrrr}
-\toprule
-Device & Time (s) & Throughput & Mem (MB) & Energy (J) \\
-\midrule
-NVIDIA A100 80GB & 0.31$^\dagger$ & --- & --- & --- \\
-Tesla P100-PCIE-16GB & 0.0048 & 10.0M & 10.7 & 0.13 \\
-NVIDIA T4 (Colab) & 0.0032 & 15.1M & 0.2 & 0.03 \\
-NVIDIA V100 32GB & --- & --- & --- & --- \\
-Jetson AGX Orin  & --- & --- & N/A & --- \\
-CPU (Apple M2 Air) & 0.003 & 16.8M & N/A & N/A \\
-RPi4 (CPU only)  & --- & --- & N/A & --- \\
-\bottomrule
-\end{tabular}
-\par\footnotesize $^\dagger$A100 time is from the full GPU-MLMC system (Tab.~5);
-kernel-only timing pending. P100 uses CuPy (PyTorch sm\_60 unsupported on Kaggle).
-``---'' = pending hardware access.
-\end{table}
 
 \subsection{MLMC Variance Decay Verification}
 
