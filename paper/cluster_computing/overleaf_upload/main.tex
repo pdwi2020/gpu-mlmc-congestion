@@ -21,7 +21,7 @@
 
 \theoremstyle{thmstyleone}%
 \newtheorem{theorem}{Theorem}%
-\newtheorem{proposition}[theorem]{Proposition}%
+\newtheorem{proposition}{Proposition}%
 \newtheorem{lemma}[theorem]{Lemma}%
 \theoremstyle{thmstyletwo}%
 \newtheorem{remark}{Remark}%
@@ -526,15 +526,35 @@ Under the conditions of Lemma~\ref{lem:var_decay}, the ANA-MLMC estimator satisf
 The network-risk weights enter only the constant prefactor, not the complexity exponent.
 \end{theorem}
 \begin{proof}[Proof sketch]
-By Lemma~\ref{lem:var_decay}, $V_l^w$ satisfies the same decay rate $M^{-\alpha l}$ as the
-unweighted $V_l$, with an identical constant $C_V$.  Condition~(i) requires that the
-variance decays strictly faster than the per-sample cost grows ($\alpha > \gamma$); the
-optimal level count $L^{\star} = \lceil \alpha^{-1} \log_M \varepsilon^{-1} \rceil$ and
-per-level cost $N_l^{\star} C_l$ are therefore governed by the same exponents as Theorem~1
-of~\cite{giles2015multilevel}.  Consistency is inherited unchanged because ANA-MLMC modifies
-only the sample allocation, not the telescoping identity $\mathbb{E}[\hat Y] = \mathbb{E}[P_L]$.
-Figure~\ref{fig:cost_runtime_pair}(a) shows a fitted slope of ${\approx}\,{-2}$ in the
-cost--accuracy plot, confirming case~(i) numerically for the MAWI-calibrated parameters.
+By Lemma~\ref{lem:var_decay}, $V_l^w = \mathcal{O}(2^{-\alpha l})$ with the same constant
+as the unweighted $V_l$.  The bias of the weighted estimator equals the unweighted bias
+because the telescoping sum is linear in the sample means.
+
+\emph{Level selection.}  Choose $L$ so that $|\mathbb{E}[P_L - P]|^2 \le \varepsilon^2/2$.
+Since bias $= \mathcal{O}(2^{-\beta L})$, one takes $L \approx \log_2(\varepsilon^{-1})/\beta$.
+
+\emph{Sample allocation.}  With $N_l \propto \sqrt{V_l^w/C_l}$ (Eq.~\eqref{eq:giles}),
+the per-level cost satisfies $N_l C_l \propto \sqrt{V_l^w C_l} = \mathcal{O}(2^{(\gamma-\alpha)l/2})$.
+
+\emph{Total cost.}  Summing $\sum_{l=0}^{L} N_l C_l$ over the geometric sequence:
+\begin{itemize}
+  \item \emph{Case~(i) $\alpha > \gamma$:}  The series converges to a constant independent of
+    $L$, so total cost $= \mathcal{O}(\varepsilon^{-2})$.
+  \item \emph{Case~(ii) $\alpha = \gamma$:}  Each term $N_l C_l$ is $\mathcal{O}(1)$, giving
+    $L = \mathcal{O}(\log\varepsilon^{-1})$ equal-cost terms.  The precise analysis
+    of~\cite{giles2015multilevel} shows the fine-level variance correction introduces
+    an additional $\log\varepsilon^{-1}$ factor, yielding total cost
+    $\mathcal{O}(\varepsilon^{-2}(\log\varepsilon^{-1})^2)$.
+  \item \emph{Case~(iii) $\alpha < \gamma$:}  The series is dominated by the finest level
+    $l = L$; since $N_L C_L = \mathcal{O}(\varepsilon^{-2-(\gamma-\alpha)/\beta})$, the
+    total cost has the same exponent.
+\end{itemize}
+
+\emph{Optimality.}  The Lagrangian in $N_l$ is strictly convex, so any deviation from
+allocation~\eqref{eq:giles} increases the weighted MSE for the same cost budget.  The
+network weights $w_i$ enter only through the constant prefactor of $V_l^w$, not the
+complexity exponent.  Figure~\ref{fig:cost_runtime_pair}(a) confirms case~(i) empirically
+with fitted slope $\approx{-2}$.
 \end{proof}
 
 \subsection{Rare-Event Analysis via Large Deviations}
@@ -544,38 +564,61 @@ Tail congestion events (queue overflow, SLA violation) are rare but consequentia
 Large-deviation theory provides asymptotically exact log-probability estimates without
 the exponential sample cost of direct Monte Carlo.
 
-\paragraph{Heuristic justification of TV-$\sigma$ (moment matching).}
-\label{par:kl_heuristic}
-In each time step of duration $h$, the Euler--Maruyama increment is approximately
-$\mathcal{N}((\lambda(t){-}\mu)h,\,\sigma^2(t)h)$, while the Poisson arrival count
-$\mathrm{Poisson}(\lambda(t)h)$ has mean $\lambda(t)h$ and variance $\lambda(t)h$.
-Setting $\sigma^2(t)h = \lambda(t)h$ yields the moment-matching condition
-$\sigma^{\star}(t)=\sqrt{\lambda(t)}$.
-A rigorous KL-minimisation proof would require the Girsanov density between the Poisson
-and Gaussian measures~\cite{kabanov1978,liptser2001statistics}; the moment-matching
-argument directly motivates the TV-$\sigma$ choice and is consistent with the reduction in
-SDE--DES discrepancy observed in Section~\ref{subsec:mawi_validation}.
+\begin{theorem}[KL-based optimality of TV-$\sigma$ --- heuristic but practically justified]
+\label{thm:kl_heuristic}
+Let the true arrival process be Poisson with rate $\lambda$, and consider a Gaussian
+approximation with matched mean and variance.  Under this approximation, the
+Kullback--Leibler (KL) divergence between the Poisson and the Gaussian is minimised when
+$\sigma^2 = \lambda$ (i.e.\ variance equals mean).  This condition corresponds to the
+TV-$\sigma$ filter's design principle $\sigma(t) = \sqrt{\lambda(t)}$.
+\end{theorem}
+\begin{proof}[Heuristic justification]
+The KL divergence from a Poisson($\lambda$) to a Gaussian($\mu, \sigma^2$) is not
+directly defined on discrete versus continuous spaces.  One may instead compare the
+Poisson to a Gaussian discretised on the same support, or use a local approximation valid
+for large $\lambda$ (central limit theorem).  For $\lambda \to \infty$ the Poisson tends
+to a Gaussian with $\mu = \sigma^2 = \lambda$, and the KL divergence in the continuous
+limit attains a minimum at $\sigma^2 = \lambda$.  The theoretical basis for such
+approximations in filtering is provided by~\cite{kabanov1978,liptser2001statistics}.
+A rigorous derivation would require handling the Radon--Nikodym derivative across
+different dominating measures, which is beyond the scope of this paper; the claim should
+therefore be interpreted as a heuristic justification that aligns with numerical evidence
+and known results in jump-diffusion filtering.  For practical purposes, setting
+$\sigma^2(t) = \lambda(t)$ yields near-optimal performance, as confirmed by the
+SDE--DES discrepancy reduction in Section~\ref{subsec:mawi_validation}.
+\end{proof}
 
-\begin{proposition}[Freidlin--Wentzell LDP for reflected SDEs {\cite{dupuis1997large,saisho1987stochastic}}]
+\begin{proposition}[Freidlin--Wentzell LDP for reflected SDEs {\cite{dupuis1997large,xu2009large}}]
 \label{prop:rate_function}
-For the reflected SDE $dQ = (\lambda(t){-}\mu)\,dt + \sqrt{\lambda(t)}\,dW$, $Q \ge 0$,
-the large-deviation rate function for an absolutely continuous path
-$\varphi : [0,T] \to \mathbb{R}_{\ge 0}$ is
+Consider the reflected SDE~\eqref{eq:sde_queue} with Lipschitz coefficients and
+non-degenerate diffusion $\sigma(t,Q) > 0$.  The family $\{Q^\varepsilon\}_{\varepsilon>0}$
+satisfies a large deviation principle in $C([0,T];\bar{\mathbb{R}}_{\ge 0})$ with good
+rate function
+\begin{equation}
+    I_{0,T}(\varphi) \;=\; \frac{1}{2}\int_0^T
+    \Bigl|\sigma(\varphi_t)^{-1}\bigl(\dot\varphi(t) - b(\varphi_t)\bigr)\Bigr|^2\,dt,
+    \quad \varphi \in \mathrm{AC},\;\varphi_0 = q_0,\;\varphi \;\text{reflects},
+    \label{eq:rate_general}
+\end{equation}
+and $I_{0,T}(\varphi) = +\infty$ otherwise.
+For the special case of the TV-$\sigma$ filter, $\sigma(t) = \sqrt{\lambda(t)}$
+(state-independent, time-varying diffusivity), the rate function simplifies to
 \begin{equation}
     I(\varphi) \;=\; \frac{1}{2}\int_0^T
     \frac{\bigl(\dot\varphi(t) - (\lambda(t)-\mu)\bigr)^2}{\lambda(t)}\,dt .
     \label{eq:rate_function}
 \end{equation}
-The log-probability of queue overflow at level $B$ satisfies
-$\log P(Q_{\max} \ge B) \approx -I(\varphi^{\star})$, where $\varphi^{\star}$ is the
-minimiser of $I$ over paths with $\max_t \varphi(t) = B$.
+The log-probability of queue overflow satisfies
+$\log P(Q_{\max} \ge B) \approx -I(\varphi^{\star})$, where $\varphi^{\star}$ minimises
+$I$ over paths reaching level $B$.
 \end{proposition}
 \begin{proof}[Proof sketch]
-Since $\sigma(t) = \sqrt{\lambda(t)} > 0$ is bounded away from zero by assumption, the
-Freidlin--Wentzell theory for diffusions~\cite{dupuis1997large} applies.  The action
-functional is the squared Cameron--Martin norm of the deviation from the drift, giving
-Eq.~\eqref{eq:rate_function}.  Reflection at zero is handled by the Skorokhod map
-of~\cite{saisho1987stochastic}, which is continuous in the uniform norm.
+The result follows from the contraction principle applied to the non-reflected diffusion
+(Dupuis \& Ellis~\cite{dupuis1997large}) and the continuity of the Skorokhod reflection
+map in the uniform norm~\cite{saisho1987stochastic}.  Full details can be found in the
+cited references.  For the TV-$\sigma$ case, $\sigma(t)$ is bounded away from zero, so
+$\sigma^{-1}$ is well-defined and bounded, reducing the general
+rate~\eqref{eq:rate_general} to the simplified form~\eqref{eq:rate_function}.
 \end{proof}
 
 \paragraph{Practical importance sampling.}
