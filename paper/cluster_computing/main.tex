@@ -15,6 +15,7 @@
 \usepackage{algorithmic}%
 \usepackage{subcaption}%
 \PassOptionsToPackage{hyphens}{url}\usepackage{url}%
+\usepackage{pdflscape}%
 \tolerance=2000
 \emergencystretch=3em
 \hbadness=10000
@@ -153,15 +154,15 @@ Table~\ref{tab:gpu_lit} positions our contribution against representative GPU Mo
 in prior literature.
 \end{sloppypar}
 
-\begin{sidewaystable}[tp]
-\caption{GPU-Accelerated Monte Carlo Methods in Literature}
-\label{tab:gpu_lit}
+\begin{landscape}
 \centering
-\setlength{\tabcolsep}{4pt}
-\begin{tabular*}{\textheight}{@{\extracolsep\fill}llllccll@{}}
+\captionof{table}{GPU-Accelerated Monte Carlo Methods in Literature}%
+\label{tab:gpu_lit}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{llllccll}
 \toprule
 Work & Reference & Domain & GPU Accel. & MLMC? & Network-aware? &
-Network-scale Validation? & Tail-risk UQ? \\
+Network-scale Valid.? & Tail-risk UQ? \\
 \midrule
 CPU MLMC & Giles \cite{giles2008multilevel} & SDE finance & No & Yes & No & No & No \\
 GPU MC (Ising) & Preis et al.\ \cite{thompson2010gpu} & Stat.\ Physics & Yes & No & No & No & No \\
@@ -173,8 +174,9 @@ Neural MC Traffic & Chen et al.\ \cite{chen2022neural} & Networking & Yes & No &
 Yes (surrogate) & No \\
 Proposed Work & This work & Network UQ & Yes & Yes & Yes & Yes (real-topology) & Yes \\
 \bottomrule
-\end{tabular*}
-\end{sidewaystable}
+\end{tabular}%
+}
+\end{landscape}
 
 \begin{sloppypar}
 While prior GPU-accelerated Monte Carlo methods have been applied in physics and computational
@@ -195,12 +197,12 @@ mathematical structure. Large deviation theory provides tools for rare event ana
 \cite{chatterjee2017}. Table~\ref{tab:network_modeling} summarizes how these theoretical models
 compare with the proposed simulation-oriented MLMC-GPU framework.
 
-\begin{sidewaystable}[tp]
-\caption{Network Congestion Modeling Approaches}
-\label{tab:network_modeling}
+\begin{landscape}
 \centering
-\setlength{\tabcolsep}{3pt}
-\begin{tabular*}{\textheight}{@{\extracolsep\fill}lllll@{}}
+\captionof{table}{Network Congestion Modeling Approaches}%
+\label{tab:network_modeling}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lllll}
 \toprule
 Approach & Reference & UQ Support & Tail Delay & Scalability \\
 \midrule
@@ -210,8 +212,9 @@ Reflected Brownian Motion & Harrison \cite{harrison1985} & Theoretical & Analyti
 Event-Driven Simulation & OMNeT++/ns-3 \cite{perumalla2011discrete} & None & None & High-fidelity; no UQ \\
 Proposed MLMC-GPU & This work & Full distribution & P95, P99, CI & Real-topology validated \\
 \bottomrule
-\end{tabular*}
-\end{sidewaystable}
+\end{tabular}%
+}
+\end{landscape}
 
 \section{Methodology}
 
@@ -290,12 +293,12 @@ methods \cite{collier2015} can further improve efficiency.
 Table~\ref{tab:complexity} highlights the complexity-positioning of standard MC, classical MLMC,
 and our MLMC + GPU implementation.
 
-\begin{sidewaystable}[tp]
-\caption{Algorithmic Complexity Comparison for Stochastic SDE Simulation}
-\label{tab:complexity}
+\begin{landscape}
 \centering
-\setlength{\tabcolsep}{3pt}
-\begin{tabular*}{\textheight}{@{\extracolsep\fill}llllcl@{}}
+\captionof{table}{Algorithmic Complexity Comparison for Stochastic SDE Simulation}%
+\label{tab:complexity}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{llllcl}
 \toprule
 Method & Core Reference & Problem Domain & Total Cost ($\varepsilon$ target) &
 Var.\ Reduction & Applicability \\
@@ -307,8 +310,9 @@ $\mathcal{O}(\varepsilon^{-2})$ & Yes & Generic \\
 Proposed MLMC + GPU & This work & Network congestion SDE &
 $\mathcal{O}(\varepsilon^{-2})$ (parallelized) & Yes & Real-topology validated \\
 \bottomrule
-\end{tabular*}
-\end{sidewaystable}
+\end{tabular}%
+}
+\end{landscape}
 
 \subsection{Single-Level GPU Monte Carlo Baseline}
 
