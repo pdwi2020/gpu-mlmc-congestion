@@ -478,41 +478,9 @@ Section~\ref{subsec:ana_results}.
 \subsection{Complexity Guarantees}
 \label{subsec:complexity}
 
-We formalise the complexity claim in the preceding paragraph with two supporting lemmas and a
-main theorem.  All proofs follow the structure of Giles~\cite{giles2015multilevel} with the
-network-risk weights entering only through a multiplicative constant.
-
-\begin{lemma}[Weighted variance decay]
-\label{lem:var_decay}
-Let $w_i > 0$ for all $i \in \{1,\ldots,n\}$ with $\sum_i w_i = 1$, and suppose the
-per-node level-difference variances satisfy the standard MLMC decay condition
-$V_{l,i} \le C_V M^{-\alpha l}$ for constants $C_V > 0$, $M > 1$, $\alpha > 0$.
-(Strong order-$\tfrac{1}{2}$ Euler--Maruyama guarantees this for Lipschitz
-SDEs~\cite{kloeden1992}.)
-Then the weighted level variance $V_l^w = \sum_i w_i V_{l,i}$ satisfies
-\begin{equation}
-    V_l^w \;\le\; C_V\, M^{-\alpha l} .
-\end{equation}
-\end{lemma}
-\begin{proof}
-$V_l^w = \sum_i w_i V_{l,i} \le C_V M^{-\alpha l} \sum_i w_i = C_V M^{-\alpha l}$,
-since $w \in \Delta^{n-1}$.
-\end{proof}
-
-\begin{lemma}[Continuity of optimal allocation]
-\label{lem:continuity}
-Let $V_{l,i} \ge 0$ be fixed per-node variances and $C_l > 0$ fixed costs.
-The optimal sample allocation $N_l^{\star}(w)$ defined by Eq.~\eqref{eq:ana_giles} is a
-continuous function of the weight vector $w \in \Delta^{n-1}$.
-\end{lemma}
-\begin{proof}
-Each weighted variance $V_l^w = \sum_i w_i V_{l,i}$ is linear (hence continuous) in $w$.
-The map $w \mapsto N_l^{\star}(w) = \tfrac{2}{\varepsilon^2}\sqrt{V_l^w/C_l}
-\sum_k \sqrt{V_k^w C_k}$ is a composition of continuous functions on the compact
-simplex $\Delta^{n-1}$, hence continuous.  In the limit $w_i \to 1/n$, $V_l^w \to
-\bar V_l = \tfrac{1}{n}\sum_i V_{l,i}$ and $N_l^{\star}$ recovers the standard Giles
-allocation exactly, as enforced by the regression test \path{test_uniform_weights_match_giles}.
-\end{proof}
+We formalise the complexity claim in the preceding paragraph as a theorem following the
+structure of Giles~\cite{giles2015multilevel}, with the network-risk weights entering only
+through a multiplicative constant.
 
 \begin{theorem}[ANA-MLMC complexity]
 \label{thm:complexity}
@@ -522,7 +490,7 @@ $|\mathbb{E}[P_l - P]| = \mathcal{O}(2^{-\beta l})$, and the cost per sample
 $C_l = \mathcal{O}(2^{\gamma l})$, in the sense of~\cite{giles2015multilevel}.
 For any fixed weight vector $\mathbf{w}$ with $w_i \ge 0$ and $\sum_i w_i = 1$,
 the weighted level variance $V_l^w = \sum_i w_i V_{l,i}$ satisfies
-$V_l^w = \mathcal{O}(2^{-\alpha l})$ (Lemma~\ref{lem:var_decay}), and the bias
+$V_l^w = \mathcal{O}(2^{-\alpha l})$ (since $\sum_i w_i = 1$ and each $V_{l,i} = \mathcal{O}(2^{-\alpha l})$), and the bias
 of the weighted estimator equals the unweighted bias because the telescoping sum
 is linear.  Then for any target $\varepsilon > 0$ there exists a choice of $L$ and
 $\{N_l\}$ such that $\mathrm{MSE}(\hat{\mu}^w) \le \varepsilon^2$ and the total
@@ -539,8 +507,9 @@ constant factor, and the network-risk weights $w_i$ enter only that constant, no
 complexity exponent.
 \end{theorem}
 \begin{proof}[Proof sketch]
-By Lemma~\ref{lem:var_decay}, $V_l^w = \mathcal{O}(2^{-\alpha l})$ with the same constant
-as the unweighted $V_l$.  The bias of the weighted estimator equals the unweighted bias
+Since $\sum_i w_i = 1$ and each per-node variance satisfies $V_{l,i} = \mathcal{O}(2^{-\alpha l})$,
+we have $V_l^w = \sum_i w_i V_{l,i} \le C_V 2^{-\alpha l}$, giving $V_l^w = \mathcal{O}(2^{-\alpha l})$.
+The bias of the weighted estimator equals the unweighted bias
 because the telescoping sum is linear in the sample means.
 
 \emph{Level selection.}  Choose $L$ so that $|\mathbb{E}[P_L - P]|^2 \le \varepsilon^2/2$.
@@ -1417,16 +1386,6 @@ $n > 10{,}000$ node topologies, and adaptive GPU kernel selection.
 \section*{Acknowledgment}
 
 The authors thank the CAIDA project for providing the AS-level topology data.
-
-\section*{Reproducibility}
-\label{sec:reproducibility}
-Source code, experiment scripts, and instructions to reproduce all figures and tables are
-available at \cite{gpu_mlmc_code} (\url{https://github.com/pdwi2020/gpu-mlmc-congestion}).
-The artifact includes a one-command Docker setup verified on Ubuntu~22.04 with CUDA~12.1.
-The MAWI samplepoint-F traces (2024-01-01 to 2024-01-05, 60\,MB per day) used in the
-real-trace validation are publicly accessible at the MAWI archive; preprocessed per-flow
-arrival CSVs are archived on Zenodo~\cite{mawi2024zenodo} (DOI to be finalised upon
-upload).
 
 \bibliography{main}
 
