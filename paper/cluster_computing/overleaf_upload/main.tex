@@ -39,8 +39,8 @@
 \title[GPU-MLMC Network Congestion]{GPU-Accelerated Multilevel Monte Carlo for Network
 Congestion Propagation: Coupled SDE Models with Uncertainty Quantification}
 
-\author*[1]{\fnm{Paritosh} \sur{Dwivedi}}\email{paritosh.dwivedi2024@vitstudent.ac.in}
-\author[1]{\fnm{Anindita} \sur{Kundu}}\email{anindita.kundu@vit.ac.in}
+\author[1]{\fnm{Paritosh} \sur{Dwivedi}}\email{paritosh.dwivedi2024@vitstudent.ac.in}
+\author*[1]{\fnm{Anindita} \sur{Kundu}}\email{anindita.kundu@vit.ac.in}
 
 \affil*[1]{\orgdiv{School of Computer Science and Engineering},
   \orgname{Vellore Institute of Technology},
@@ -153,7 +153,7 @@ Table~\ref{tab:gpu_lit} positions our contribution against representative GPU Mo
 in prior literature.
 \end{sloppypar}
 
-\begin{sidewaystable}
+\begin{sidewaystable}[tp]
 \caption{GPU-Accelerated Monte Carlo Methods in Literature}
 \label{tab:gpu_lit}
 \centering
@@ -195,7 +195,7 @@ mathematical structure. Large deviation theory provides tools for rare event ana
 \cite{chatterjee2017}. Table~\ref{tab:network_modeling} summarizes how these theoretical models
 compare with the proposed simulation-oriented MLMC-GPU framework.
 
-\begin{sidewaystable}
+\begin{sidewaystable}[tp]
 \caption{Network Congestion Modeling Approaches}
 \label{tab:network_modeling}
 \centering
@@ -290,7 +290,7 @@ methods \cite{collier2015} can further improve efficiency.
 Table~\ref{tab:complexity} highlights the complexity-positioning of standard MC, classical MLMC,
 and our MLMC + GPU implementation.
 
-\begin{sidewaystable}
+\begin{sidewaystable}[tp]
 \caption{Algorithmic Complexity Comparison for Stochastic SDE Simulation}
 \label{tab:complexity}
 \centering
@@ -599,7 +599,7 @@ SDE--DES discrepancy reduction in Section~\ref{subsec:mawi_validation}.
 
 \begin{proposition}[Freidlin--Wentzell LDP for reflected SDEs {\cite{dupuis1997large,xu2009large}}]
 \label{prop:rate_function}
-Consider the reflected SDE~\eqref{eq:sde_queue} with Lipschitz coefficients and
+Consider the reflected SDE~\eqref{eq:sde} with Lipschitz coefficients and
 non-degenerate diffusion $\sigma(t,Q) > 0$.  The family $\{Q^\varepsilon\}_{\varepsilon>0}$
 satisfies a large deviation principle in $C([0,T];\bar{\mathbb{R}}_{\ge 0})$ with good
 rate function
