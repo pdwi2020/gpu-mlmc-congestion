@@ -760,7 +760,7 @@ theoretical complexity trends.}
 \label{fig:slope_bars}
 \end{figure}
 
-Figure~\ref{fig:mlmc_level_alloc} shows the per-level sample allocation driving this cost
+Figure~\ref{fig:ratio_alloc_pair}(b) shows the per-level sample allocation driving this cost
 reduction. Empirical slope analysis (Figure~\ref{fig:slope_bars}) further supports the complexity
 interpretation. For the CAIDA subgraph ($n=500$), fitted slopes are approximately $-3.57$
 (GPU-MC) and $-2.28$ (GPU-MLMC); for synthetic $n=500$, slopes are approximately $-3.79$
@@ -921,7 +921,7 @@ recovery) as drivers. A regression test
 (\path{test_dynamic_path_no_inputs_matches_static_bitwise}) guarantees the static path is
 preserved bit-identically when no dynamic inputs are supplied.
 
-Figure~\ref{fig:dynamic_topology} shows the resulting GPU-MLMC trajectory on a 200-node CAIDA
+Figure~\ref{fig:dynamic_runtime_pair}(a) shows the resulting GPU-MLMC trajectory on a 200-node CAIDA
 AS-rel2 subgraph driven by a 24-hour diurnal sinusoid with 15 random burst onsets and 25
 scheduled link failures ($\varepsilon=0.05$, 5 seeds, NVIDIA T4, 39.8\,s runtime). The mean
 total network congestion follows the diurnal envelope while the 95\% confidence band widens
@@ -1087,8 +1087,7 @@ P99 queue-occupancy estimates within $0.2\%$ of a tight reference Monte Carlo, c
 reliable tail-risk quantification. The results indicate that while GPU acceleration improves both
 methods, multilevel variance reduction provides substantial additional gains, particularly at
 higher accuracy targets, aligning with theoretical complexity predictions.
-Figure~\ref{fig:runtime_scaling_categorical} (Fig.~\ref{fig:dynamic_runtime_pair}(b))
-summarises runtime scaling across all three tested configurations at the tightest accuracy target.
+Figure~\ref{fig:dynamic_runtime_pair}(b) summarises runtime scaling across all three tested configurations at the tightest accuracy target.
 
 \begin{table}[!t]
 \caption{Capability Comparison Across Simulation Frameworks}
@@ -1171,7 +1170,7 @@ entries confirm spatial correlation of congestion propagation along the chain.}
 \subsection{Multi-GPU Scaling: Weak and Strong Scaling}
 \label{subsec:multigpu_scaling}
 
-Table~\ref{tab:multigpu_scaling} and Fig.~\ref{fig:multigpu_scaling} summarise weak and
+Table~\ref{tab:multigpu_scaling} and Fig.~\ref{fig:multigpu_cdf_pair}(a) summarise weak and
 strong scaling of \texttt{MultiGPUMLMC} (Section~\ref{subsec:complexity}) with
 round-robin graph partitioning ($n=500$--$2000$ nodes, $\varepsilon=0.1$, $L=3$).
 Under \emph{weak scaling} (nodes proportional to GPUs), the per-GPU wall time remains
