@@ -512,10 +512,17 @@ allocation exactly, as enforced by the regression test \path{test_uniform_weight
 
 \begin{theorem}[ANA-MLMC complexity]
 \label{thm:complexity}
-Let $\alpha$, $\beta$, $\gamma > 0$ be the MLMC variance, bias, and cost exponents
-($\alpha=$ variance decay rate, $\beta=$ bias decay rate, $\gamma=$ cost growth rate)
-in the sense of Definition~1 of~\cite{giles2015multilevel}, and let $w_i \in (0,1)$.
-Under the conditions of Lemma~\ref{lem:var_decay}, the ANA-MLMC estimator satisfies:
+Assume the standard MLMC decay exponents $\alpha, \beta, \gamma > 0$: the level-difference
+variance $V_l = \mathrm{Var}[P_l - P_{l-1}] = \mathcal{O}(2^{-\alpha l})$, the weak error
+$|\mathbb{E}[P_l - P]| = \mathcal{O}(2^{-\beta l})$, and the cost per sample
+$C_l = \mathcal{O}(2^{\gamma l})$, in the sense of~\cite{giles2015multilevel}.
+For any fixed weight vector $\mathbf{w}$ with $w_i \ge 0$ and $\sum_i w_i = 1$,
+the weighted level variance $V_l^w = \sum_i w_i V_{l,i}$ satisfies
+$V_l^w = \mathcal{O}(2^{-\alpha l})$ (Lemma~\ref{lem:var_decay}), and the bias
+of the weighted estimator equals the unweighted bias because the telescoping sum
+is linear.  Then for any target $\varepsilon > 0$ there exists a choice of $L$ and
+$\{N_l\}$ such that $\mathrm{MSE}(\hat{\mu}^w) \le \varepsilon^2$ and the total
+computational cost satisfies:
 \begin{enumerate}
   \item[{\rm (i)}] If $\alpha > \gamma$: total cost $\mathcal{O}(\varepsilon^{-2})$.
   \item[{\rm (ii)}] If $\alpha = \gamma$: total cost
@@ -523,7 +530,9 @@ Under the conditions of Lemma~\ref{lem:var_decay}, the ANA-MLMC estimator satisf
   \item[{\rm (iii)}] If $\alpha < \gamma$: total cost
     $\mathcal{O}\!\left(\varepsilon^{-2-(\gamma-\alpha)/\beta}\right)$.
 \end{enumerate}
-The network-risk weights enter only the constant prefactor, not the complexity exponent.
+Moreover, the optimal sample allocation~\eqref{eq:giles} achieves this cost up to a
+constant factor, and the network-risk weights $w_i$ enter only that constant, not the
+complexity exponent.
 \end{theorem}
 \begin{proof}[Proof sketch]
 By Lemma~\ref{lem:var_decay}, $V_l^w = \mathcal{O}(2^{-\alpha l})$ with the same constant
@@ -566,7 +575,7 @@ the exponential sample cost of direct Monte Carlo.
 
 \begin{theorem}[KL-based optimality of TV-$\sigma$ --- heuristic but practically justified]
 \label{thm:kl_heuristic}
-Let the true arrival process be Poisson with rate $\lambda$, and consider a Gaussian
+Let the true jump distribution be Poisson with rate $\lambda$, and consider a Gaussian
 approximation with matched mean and variance.  Under this approximation, the
 Kullback--Leibler (KL) divergence between the Poisson and the Gaussian is minimised when
 $\sigma^2 = \lambda$ (i.e.\ variance equals mean).  This condition corresponds to the
@@ -601,8 +610,15 @@ rate function
     \label{eq:rate_general}
 \end{equation}
 and $I_{0,T}(\varphi) = +\infty$ otherwise.
-For the special case of the TV-$\sigma$ filter, $\sigma(t) = \sqrt{\lambda(t)}$
-(state-independent, time-varying diffusivity), the rate function simplifies to
+For the special case of \emph{time-dependent, state-independent} diffusivity $\sigma(t)$
+(as in the TV-$\sigma$ filter), the rate function simplifies to
+\begin{equation}
+    I_{0,T}(\varphi) \;=\; \frac{1}{2}\int_0^T
+    \sigma(t)^{-2}\,\bigl|\dot\varphi(t) - b(\varphi_t)\bigr|^2\,dt .
+    \label{eq:rate_si}
+\end{equation}
+Substituting the TV-$\sigma$ choice $\sigma(t) = \sqrt{\lambda(t)}$ and
+$b(\varphi) = \lambda(t) - \mu$ yields the explicit form
 \begin{equation}
     I(\varphi) \;=\; \frac{1}{2}\int_0^T
     \frac{\bigl(\dot\varphi(t) - (\lambda(t)-\mu)\bigr)^2}{\lambda(t)}\,dt .
