@@ -1272,39 +1272,6 @@ GPUs & Max rank time (s) & Speedup & Ideal \\
 \label{fig:multigpu_cdf_pair}
 \end{figure}
 
-\subsection{ns-3 Bottleneck Validation}
-\label{subsec:ns3_validation}
-
-We compare the TV-$\sigma$ SDE against a discrete-event M/D/1 queue reference (Poisson
-arrivals, deterministic service, identical parameters) across utilisation levels
-$\rho \in \{0.5, 0.7, 0.8, 0.9\}$, 10 seeds each (Table~\ref{tab:ns3_comparison}).
-
-\begin{table}[!t]
-\caption{SDE vs.\ Discrete-Event (M/D/1) Queue: P95/P99 Error}
-\label{tab:ns3_comparison}
-\centering\small
-\begin{tabular}{rrrrrr}
-\toprule
-$\rho$ & DES P95 & SDE P95 & Err\% & DES P99 & Err\% \\
-\midrule
-0.50 & 2.40 & 1.45 & 39.5 & 3.40 & 34.1 \\
-0.70 & 4.70 & 3.47 & 26.2 & 6.10 & 11.2 \\
-\textbf{0.80} & \textbf{6.50} & \textbf{5.99} & \textbf{7.8} & \textbf{8.50} & \textbf{10.7} \\
-0.90 & 12.90 & 12.46 & 3.4 & 14.70 & 29.1 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-At $\rho = 0.8$ (the operating point of interest), both P95 error ($7.8\%$) and P99
-error ($10.7\%$) are below $15\%$, confirming the SDE diffusion approximation is
-accurate in the moderately-loaded regime.  At $\rho = 0.5$, errors reach $\sim 40\%$:
-the continuous Gaussian does not faithfully reproduce the discrete Poisson arrival
-distribution at low load, as expected from diffusion-approximation theory.
-
-Figure~\ref{fig:cdf_rho08} (Fig.~\ref{fig:multigpu_cdf_pair}(b)) shows the empirical CDF
-of instantaneous queue occupancy at $\rho = 0.8$; the SDE CDF tracks the DES reference
-closely up to the $95$th percentile.
-
 
 \subsection{MLMC Variance Decay Verification}
 
