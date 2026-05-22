@@ -51,24 +51,21 @@ keeping delay service-level agreements credible during bursts, failures, and diu
 changes. Deterministic planning and fixed safety margins either waste capacity or hide
 violation risk. This paper presents a GPU-accelerated Multilevel Monte Carlo (MLMC)
 framework that turns stochastic congestion models into confidence intervals and tail-delay
-estimates for such provisioning decisions.
-
-The framework combines a coupled network diffusion model with GPU-parallel sampling, so
-neighbouring queues can share congestion effects while thousands of paths are simulated
-concurrently. In prose, the complexity contrast is the central motivation: MLMC reaches the
-target accuracy with order $\varepsilon^{-2}$ work, whereas single-level Monte Carlo requires
-order $\varepsilon^{-3}$ work under the same SDE discretization assumptions.
-
-On identical A100 GPU hardware, GPU-MLMC achieves up to 12.91$\times$ runtime speedup and
-257.72$\times$ work reduction over single-level GPU-MC at $\varepsilon=0.01$. The implementation
-exceeds 65,000 samples/s on 100-node networks, sustains practical throughput on 500-node
-topologies, and estimates P95/P99 tail delay with $<0.2\%$ relative error against a tight
-Monte Carlo reference (MLMC convergence accuracy). Cross-validation of the underlying SDE
-model against a Poisson G/D/1 discrete-event reference on MAWI backbone traffic shows that
-a time-varying CIR diffusion coefficient $\sigma(t){=}\sqrt{\lambda(t)}$ reduces the median
-SDE--DES tail discrepancy to $7.1\%$ on P95 and $7.0\%$ on P99---only $2.1$ percentage points
-above the finite-sample estimator floor---confirming distributional parity with the Poisson
-reference at standard binning resolution.}
+estimates for such provisioning decisions. The framework combines a coupled network diffusion
+model with GPU-parallel sampling, so neighbouring queues can share congestion effects while
+thousands of paths are simulated concurrently. MLMC reaches the target accuracy with order
+$\varepsilon^{-2}$ work, whereas single-level Monte Carlo requires order $\varepsilon^{-3}$
+work under the same SDE discretization assumptions. On identical A100 GPU hardware, GPU-MLMC
+achieves up to 12.91$\times$ runtime speedup and 257.72$\times$ work reduction over
+single-level GPU-MC at $\varepsilon=0.01$. The implementation exceeds 65,000 samples/s on
+100-node networks, sustains practical throughput on 500-node topologies, and estimates
+P95/P99 tail delay with $<0.2\%$ relative error against a tight Monte Carlo reference
+(MLMC convergence accuracy). Cross-validation of the underlying SDE model against a Poisson
+G/D/1 discrete-event reference on MAWI backbone traffic shows that a time-varying CIR
+diffusion coefficient $\sigma(t){=}\sqrt{\lambda(t)}$ reduces the median SDE--DES tail
+discrepancy to $7.1\%$ on P95 and $7.0\%$ on P99---only $2.1$ percentage points above the
+finite-sample estimator floor---confirming distributional parity with the Poisson reference
+at standard binning resolution.}
 
 \keywords{Monte Carlo methods, GPU computing, network modeling, uncertainty quantification,
 stochastic differential equations, queueing networks}
@@ -91,70 +88,42 @@ This paper combines Multilevel Monte Carlo (MLMC), introduced by Heinrich
 quantification. MLMC reduces the number of fine-resolution paths needed for a target accuracy,
 and GPUs execute the remaining path ensemble concurrently. We deliver a coupled SDE congestion
 model, a GPU-MLMC estimator, and empirical validation on synthetic and CAIDA topology subgraphs.
-Our key contributions are:
-
-\begin{itemize}
-    \item A \emph{coupled} stochastic differential equation (SDE) model for network-wide
-    congestion propagation ($dC_i = (\sum_j \alpha_{ij}C_j - \beta_i C_i)dt + \sigma_i dW_i$),
-    with degree-normalised influence weights derived from the network adjacency matrix
-    \cite{kang2007,harrison1985}
-    \item Integration of the coupled-propagation SDE into the GPU-MLMC estimation loop,
-    enabling correlated uncertainty quantification across neighbouring nodes
-    \item An adaptive MLMC implementation with optimal sample allocation and a crossover
-    model characterising when MLMC runtime advantage emerges over single-level
-    GPU-MC \cite{giles2015multilevel,collier2015}
-    \item \emph{Adaptive Network-Aware MLMC} (ANA-MLMC), a new sample-allocation rule that
-    minimises a centrality-, pilot-variance-, and SLA-priority-weighted estimator variance
-    (Eqs.~\eqref{eq:ana_var}--\eqref{eq:ana_weights}); the rule reduces exactly to standard
-    Giles when weights are uniform, preserves $\mathcal{O}(\varepsilon^{-2})$ complexity, and
-    concentrates Monte~Carlo effort on the operationally most consequential nodes
-    \item Empirical validation on per-node queue models and coupled propagation dynamics on
-    synthetic Erd\H{o}s-R\'enyi, Barabasi-Albert scale-free, and real-world CAIDA AS-rel2
-    subgraph topologies ($n=500$)
-\end{itemize}
+Our key contributions are: (1)~a \emph{coupled} SDE model for network-wide congestion
+propagation ($dC_i = (\sum_j \alpha_{ij}C_j - \beta_i C_i)dt + \sigma_i dW_i$) with
+degree-normalised influence weights \cite{kang2007,harrison1985}, integrated into the
+GPU-MLMC estimation loop to enable correlated uncertainty quantification across neighbouring
+nodes; (2)~an adaptive MLMC implementation with optimal sample allocation and a crossover
+model characterising when MLMC runtime advantage emerges over single-level GPU-MC
+\cite{giles2015multilevel,collier2015}; (3)~\emph{Adaptive Network-Aware MLMC} (ANA-MLMC),
+a new sample-allocation rule that minimises a centrality-, pilot-variance-, and
+SLA-priority-weighted estimator variance
+(Eqs.~\eqref{eq:ana_var}--\eqref{eq:ana_weights}), preserves
+$\mathcal{O}(\varepsilon^{-2})$ complexity, and concentrates effort on operationally
+consequential nodes; and (4)~empirical validation on synthetic Erd\H{o}s-R\'enyi,
+Barabasi-Albert, and real-world CAIDA AS-rel2 topologies ($n=500$).
 
 \section{Related Work}
 
-\subsection{Numerical Methods for SDEs}
+\subsection{MLMC and SDE Numerics}
 
-The Euler-Maruyama scheme provides the foundation for numerical integration of stochastic
-differential equations \cite{kloeden1992}. Convergence analysis establishes weak order 1 and
-strong order 0.5 for SDEs with Lipschitz coefficients \cite{khasminskii2012}. Recent work
-extends these results to non-Lipschitz settings relevant to queueing systems \cite{bossy2021}.
+The Euler-Maruyama scheme provides the foundation for numerical integration of SDEs
+\cite{kloeden1992}, with weak order 1 and strong order 0.5 for Lipschitz coefficients
+\cite{khasminskii2012}. MLMC was developed for parametric integration
+\cite{heinrich2001multilevel} and SDE path simulation \cite{giles2008multilevel}, and has since
+been extended to computational finance \cite{giles2012finance,glasserman2003monte}, fluid
+dynamics \cite{mishra2012sparse}, elliptic PDEs \cite{cliffe2015}, and Bayesian inference
+\cite{dodwell2015hierarchical}. Key theoretical results establish $\mathcal{O}(\varepsilon^{-2})$
+complexity when variance decays as $\mathcal{O}(2^{-\alpha l})$ and cost grows as
+$\mathcal{O}(2^{\gamma l})$ with $\alpha \geq \frac{1}{2}\gamma$ \cite{giles2015multilevel}.
+Recent surveys cover MLMC in finance \cite{giles2024review} and small-noise SDE settings
+\cite{spiliopoulos2022multilevel} relevant to our low-diffusivity regime.
 
-\subsection{Multilevel Monte Carlo Methods}
+\subsection{GPU Monte Carlo and Network Queueing Models}
 
-MLMC was originally developed for parametric integration \cite{heinrich2001multilevel} and
-stochastic differential equations \cite{giles2008multilevel}. The method has since been extended
-to numerous applications including computational finance \cite{giles2012finance,glasserman2003monte},
-fluid dynamics \cite{mishra2012sparse}, elliptic PDEs \cite{cliffe2015}, and Bayesian inference
-\cite{dodwell2015hierarchical}. Key theoretical results establish that MLMC achieves
-$\mathcal{O}(\varepsilon^{-2})$ complexity when variance decays as $\mathcal{O}(2^{-\alpha l})$
-and cost grows as $\mathcal{O}(2^{\gamma l})$ with $\alpha \geq \frac{1}{2}\gamma$
-\cite{giles2015multilevel}. Higham \cite{higham2015} provides an accessible introduction, while
-Zhang and Karniadakis \cite{zhang2020} survey modern developments including control variates
-\cite{hickernell2005,lapeyre2003}. Recent surveys cover MLMC in finance \cite{giles2024review}
-and small-noise SDE settings \cite{spiliopoulos2022multilevel} relevant to our low-diffusivity
-regime.
-
-\subsection{GPU-Accelerated Monte Carlo}
-
-\begin{sloppypar}
-GPU computing has revolutionized Monte Carlo simulation, enabling speedups of 10--100$\times$
-for various applications \cite{nvidia2020cuda,owens2008}. Harris et al.\ \cite{harris2007}
-introduced efficient parallel reduction algorithms essential for Monte Carlo estimators. Previous
-work has demonstrated GPU acceleration for financial Monte Carlo \cite{thompson2010gpu}, particle
-transport \cite{bergmann2017gpu}, and network simulation \cite{perumalla2011discrete}. Recent work
-accelerates stochastic network simulations on GPUs \cite{sha2023gpu} and combines neural networks
-with Monte Carlo for traffic prediction \cite{chen2022neural}. Quantum-accelerated MLMC
-\cite{an2021} has been explored, though classical GPU approaches remain dominant. Our
-implementation uses PyTorch~2 \cite{pytorch2024} for portable GPU tensor operations.
-Table~\ref{tab:gpu_lit} positions our contribution against representative GPU Monte Carlo work
-in prior literature.
-\end{sloppypar}
-
-\begin{sidewaystable}[tp]
-\caption{GPU-Accelerated Monte Carlo Methods in Literature}
+%ADDED BY AK
+\begin{sidewaystable}[p]
+%\caption{GPU-Accelerated Monte Carlo Methods in Literature and Network Congestion Modeling Approaches}
+\captionof{table}{GPU-Accelerated Monte Carlo Methods in Literature}
 \label{tab:gpu_lit}
 \begin{tabular}{llllccll}
 \toprule
@@ -172,29 +141,9 @@ Yes (surrogate) & No \\
 Proposed Work & This work & Network UQ & Yes & Yes & Yes & Yes (real-topology) & Yes \\
 \bottomrule
 \end{tabular}
-\end{sidewaystable}
 
-\begin{sloppypar}
-While prior GPU-accelerated Monte Carlo methods have been applied in physics and computational
-finance \cite{nvidia2020cuda,owens2008,harris2007,thompson2010gpu}, they typically employ
-single-level sampling. Our work experimentally compares such single-level GPU Monte Carlo against
-a multilevel GPU implementation under identical SDE discretization and hardware settings.
-\end{sloppypar}
-
-\subsection{Network Queueing Models}
-
-Stochastic network models based on queueing theory provide mathematical foundations for
-performance analysis \cite{kelly2011stochastic,whitt2002}. Diffusion approximations enable
-continuous-time modeling of discrete queueing systems \cite{kang2007,harrison1985}. Roy et al.\
-\cite{roy2016} extend these models to semi-open networks. Recent work incorporates SDEs to model
-time-varying arrival and service rates \cite{mandelbaum2014stochastic}. Network propagation
-phenomena on random graphs \cite{hofstad2016} and epidemic models \cite{kenah2011} share similar
-mathematical structure. Large deviation theory provides tools for rare event analysis
-\cite{chatterjee2017}. Table~\ref{tab:network_modeling} summarizes how these theoretical models
-compare with the proposed simulation-oriented MLMC-GPU framework.
-
-\begin{sidewaystable}[tp]
-\caption{Network Congestion Modeling Approaches}
+\vspace{1cm} % vertical space between tables
+\captionof{table}{Network Congestion Modeling Approaches}
 \label{tab:network_modeling}
 \begin{tabular}{lllll}
 \toprule
@@ -207,7 +156,35 @@ Event-Driven Simulation & OMNeT++/ns-3 \cite{perumalla2011discrete} & None & Non
 Proposed MLMC-GPU & This work & Full distribution & P95, P99, CI & Real-topology validated \\
 \bottomrule
 \end{tabular}
+\vspace{1cm}
+\captionof{table}{Algorithmic Complexity Comparison for Stochastic SDE Simulation}
+\label{tab:complexity}
+\begin{tabular}{llllcl}
+\toprule
+Method & Core Reference & Problem Domain & Total Cost ($\varepsilon$ target) &
+Var.\ Reduction & Applicability \\
+\midrule
+Standard Monte Carlo & Glasserman \cite{glasserman2003monte} & SDE simulation &
+$\mathcal{O}(\varepsilon^{-3})$ & No & Generic \\
+MLMC (CPU) & Giles \cite{giles2008multilevel,giles2015multilevel} & SDE simulation &
+$\mathcal{O}(\varepsilon^{-2})$ & Yes & Generic \\
+Proposed MLMC + GPU & This work & Network congestion SDE &
+$\mathcal{O}(\varepsilon^{-2})$ (parallelized) & Yes & Real-topology validated \\
+\bottomrule
+\end{tabular}
+
+
 \end{sidewaystable}
+
+Stochastic network models based on queueing theory provide mathematical foundations for
+performance analysis \cite{kelly2011stochastic,whitt2002}. Diffusion approximations enable
+continuous-time modeling of discrete queueing systems \cite{kang2007,harrison1985}. Roy et al.\
+\cite{roy2016} extend these models to semi-open networks. Recent work incorporates SDEs to model
+time-varying arrival and service rates \cite{mandelbaum2014stochastic}. Network propagation
+phenomena on random graphs \cite{hofstad2016} and epidemic models \cite{kenah2011} share similar
+mathematical structure. Large deviation theory provides tools for rare event analysis
+\cite{chatterjee2017}. Table~\ref{tab:network_modeling} summarizes how these theoretical models
+compare with the proposed simulation-oriented MLMC-GPU framework.
 
 \section{Methodology}
 
@@ -286,23 +263,25 @@ methods \cite{collier2015} can further improve efficiency.
 Table~\ref{tab:complexity} highlights the complexity-positioning of standard MC, classical MLMC,
 and our MLMC + GPU implementation.
 
-\begin{sidewaystable}[tp]
-\caption{Algorithmic Complexity Comparison for Stochastic SDE Simulation}
-\label{tab:complexity}
-\begin{tabular}{llllcl}
-\toprule
-Method & Core Reference & Problem Domain & Total Cost ($\varepsilon$ target) &
-Var.\ Reduction & Applicability \\
-\midrule
-Standard Monte Carlo & Glasserman \cite{glasserman2003monte} & SDE simulation &
-$\mathcal{O}(\varepsilon^{-3})$ & No & Generic \\
-MLMC (CPU) & Giles \cite{giles2008multilevel,giles2015multilevel} & SDE simulation &
-$\mathcal{O}(\varepsilon^{-2})$ & Yes & Generic \\
-Proposed MLMC + GPU & This work & Network congestion SDE &
-$\mathcal{O}(\varepsilon^{-2})$ (parallelized) & Yes & Real-topology validated \\
-\bottomrule
-\end{tabular}
-\end{sidewaystable}
+%Blocked by AK
+%\begin{sidewaystable}[tp]
+%\caption{Algorithmic Complexity Comparison for Stochastic SDE Simulation}
+%\label{tab:complexity}
+%\begin{tabular}{llllcl}
+%\toprule
+%Method & Core Reference & Problem Domain & Total Cost ($\varepsilon$ target) &
+%Var.\ Reduction & Applicability \\
+%\midrule
+%Standard Monte Carlo & Glasserman \cite{glasserman2003monte} & SDE simulation &
+%$\mathcal{O}(\varepsilon^{-3})$ & No & Generic \\
+%MLMC (CPU) & Giles \cite{giles2008multilevel,giles2015multilevel} & SDE simulation &
+%$\mathcal{O}(\varepsilon^{-2})$ & Yes & Generic \\
+%Proposed MLMC + GPU & This work & Network congestion SDE &
+%$\mathcal{O}(\varepsilon^{-2})$ (parallelized) & Yes & Real-topology validated \\
+%\bottomrule
+%\end{tabular}
+%\end{sidewaystable}
+%Blocked by AK
 
 \subsection{Single-Level GPU Monte Carlo Baseline}
 
@@ -314,36 +293,7 @@ is applied. Equal-accuracy comparison is enforced via matched confidence interva
 
 \subsection{GPU Parallelization Strategy}
 
-Our GPU implementation parallelizes across independent Monte Carlo samples using CUDA
-\cite{nvidia2020cuda}. Each thread executes a complete SDE path simulation:
-
-\begin{algorithm}
-\caption{GPU Parallel MLMC Sampling (PyTorch CUDA tensors on A100; PyCUDA
-\texttt{SourceModule} variant for compatible drivers)}
-\label{alg:gpu}
-\begin{algorithmic}[1]
-\STATE \textbf{Input:} Level $l$, number of samples $N_l$, parameters
-\STATE Allocate GPU arrays for fine/coarse paths
-\STATE Launch kernel with $\lceil N_l / \text{blockSize} \rceil$ blocks
-\FOR{each thread $i$ in parallel}
-    \STATE Initialize thread-local cuRAND state
-    \STATE Simulate fine path with step $h_l$
-    \STATE Simulate coarse path with step $h_{l-1}$ (same noise)
-    \STATE Compute $Y_l^{(i)} = P_l^{(i)} - P_{l-1}^{(i)}$
-\ENDFOR
-\STATE Parallel reduction for mean/variance~\cite{harris2007}
-\STATE \textbf{Return:} $\bar{Y}_l$, $\hat{V}_l$
-\end{algorithmic}
-\end{algorithm}
-
-Key optimizations include: (1) coalesced memory access patterns
-   (achieved by transposing GPU buffers from the legacy
-   \texttt{[n\_paths, n\_timesteps]} row-major layout to
-   \texttt{[n\_timesteps, n\_paths]}, so that consecutive threads access
-   consecutive addresses at every timestep, recovering the 20--30\,\%
-   bandwidth loss identified in prior profiling), (2) shared memory for
-reduction operations \cite{harris2007}, (3) efficient cuRAND state management \cite{nvidia2020cuda},
-and (4) asynchronous kernel launches for level pipelining.
+Our GPU implementation parallelizes across independent Monte Carlo samples using CUDA~\cite{nvidia2020cuda}: each thread executes a complete SDE path simulation with shared noise for fine/coarse coupling. Key optimizations include coalesced memory access, shared-memory reduction~\cite{harris2007}, and asynchronous kernel launches for level pipelining.
 
 Table~\ref{tab:cpu_baselines} summarises single-thread and multi-core CPU baselines measured on
 the same host as the A100 pod, providing context for the CPU-to-GPU speedup figures cited in the
@@ -393,7 +343,7 @@ step: fine steps use $\sqrt{h_l}$ increments while coarse steps sum pairs
 $\sqrt{h_{l-1}} = \sqrt{2h_l}$, preserving the antithetic coupling required for variance
 reduction. The \path{CongestionPropagationSDE.simulate_coupled_paths()} method implements this
 scheme, and \path{GPUCoupledPropagationMLMC} integrates it into the GPU-MLMC estimation loop
-(Section~\ref{subsec:gpu_coupled}). Experimental results showing correlated queue dynamics across
+. Experimental results showing correlated queue dynamics across
 network nodes are presented in Section~V-D.
 
 \subsection{Adaptive Network-Aware MLMC (ANA-MLMC)}
@@ -438,39 +388,16 @@ We compose the weights from three normalised components:
                 + \gamma_S\, s_i\bigr),
     \label{eq:ana_weights}
 \end{equation}
-with $\gamma_C+\gamma_V+\gamma_S=1$ (defaults $0.4, 0.4, 0.2$). Here $c_i$ is graph centrality
-(PageRank by default; betweenness or degree optional) on the coupled-SDE adjacency $A$,
-$v_i^{\text{pilot}}$ is the per-node pilot variance from the standard MLMC pilot pass, and $s_i$
-is an optional SLA-priority vector supplied by the operator (uniform if absent). The three
-components are individually $\ell_1$-normalised before the weighted sum and the result
-re-normalised, so $w$ remains in the simplex.
+with $\gamma_C+\gamma_V+\gamma_S=1$ (defaults $0.4, 0.4, 0.2$). Here $c_i$ is PageRank centrality, $v_i^{\text{pilot}}$ the per-node pilot variance, and $s_i$ an optional SLA-priority vector (uniform if absent). Components are $\ell_1$-normalised so $w$ remains in the simplex.
 
 \paragraph{Consistency and complexity.}
-The estimator $\hat Y = \sum_l \hat Y_l$ is unchanged in expectation--ANA modifies only the
-sample allocation, not the telescoping sum--so consistency is inherited from standard MLMC.
-Because the components in Eq.~\eqref{eq:ana_weights} are bounded and per-node $V_{l,i}$ obey the
-same decay rate as the unweighted $V_l$ (uniform multiplicative bound), the canonical complexity
-bound is preserved: ANA-MLMC achieves $\mathcal{O}(\varepsilon^{-2})$ work for
-$\alpha \ge \gamma/2$, matching standard MLMC. The runtime overhead per level is one additional
-$O(n)$ weighted reduction, negligible against the $O(n^2)$ matrix-vector product already
-dominating each Euler-Maruyama step.
+ANA-MLMC modifies only sample allocation, not the telescoping sum, so consistency and $\mathcal{O}(\varepsilon^{-2})$ complexity are inherited from standard MLMC; the per-level overhead is one additional $O(n)$ weighted reduction.
 
-\paragraph{Implementation.}
-\begin{sloppypar}
-\path{AdaptiveNetworkAwareMLMC} (\path{src/simulation/mlmc.py}) and
-\path{GPUAdaptiveNetworkAwareMLMC} (\path{src/gpu/parallel_mc.py}) implement
-Eq.~\eqref{eq:ana_giles} on top of the existing baseline; both classes accept
-$(\gamma_C,\gamma_V,\gamma_S)$ and an optional SLA vector. Empirical comparison with the
-standard Giles allocation on a Barabasi-Albert $n=500$ scale-free topology is reported in
-Section~\ref{subsec:ana_results}.
-\end{sloppypar}
 
 \subsection{Complexity Guarantees}
 \label{subsec:complexity}
 
-We formalise the complexity claim in the preceding paragraph as a theorem following the
-structure of Giles~\cite{giles2015multilevel}, with the network-risk weights entering only
-through a multiplicative constant.
+We formalise this as a theorem following Giles~\cite{giles2015multilevel}; network-risk weights enter only through a multiplicative constant.
 
 \begin{theorem}[ANA-MLMC complexity]
 \label{thm:complexity}
@@ -497,36 +424,10 @@ constant factor, and the network-risk weights $w_i$ enter only that constant, no
 complexity exponent.
 \end{theorem}
 \begin{proof}[Proof sketch]
-Since $\sum_i w_i = 1$ and each per-node variance satisfies $V_{l,i} = \mathcal{O}(2^{-\alpha l})$,
-we have $V_l^w = \sum_i w_i V_{l,i} \le C_V 2^{-\alpha l}$, giving $V_l^w = \mathcal{O}(2^{-\alpha l})$.
-The bias of the weighted estimator equals the unweighted bias
-because the telescoping sum is linear in the sample means.
-
-\emph{Level selection.}  Choose $L$ so that $|\mathbb{E}[P_L - P]|^2 \le \varepsilon^2/2$.
-Since bias $= \mathcal{O}(2^{-\beta L})$, one takes $L \approx \log_2(\varepsilon^{-1})/\beta$.
-
-\emph{Sample allocation.}  With $N_l \propto \sqrt{V_l^w/C_l}$ (Eq.~\eqref{eq:giles}),
-the per-level cost satisfies $N_l C_l \propto \sqrt{V_l^w C_l} = \mathcal{O}(2^{(\gamma-\alpha)l/2})$.
-
-\emph{Total cost.}  Summing $\sum_{l=0}^{L} N_l C_l$ over the geometric sequence:
-\begin{itemize}
-  \item \emph{Case~(i) $\alpha > \gamma$:}  The series converges to a constant independent of
-    $L$, so total cost $= \mathcal{O}(\varepsilon^{-2})$.
-  \item \emph{Case~(ii) $\alpha = \gamma$:}  Each term $N_l C_l$ is $\mathcal{O}(1)$, giving
-    $L = \mathcal{O}(\log\varepsilon^{-1})$ equal-cost terms.  The precise analysis
-    of~\cite{giles2015multilevel} shows the fine-level variance correction introduces
-    an additional $\log\varepsilon^{-1}$ factor, yielding total cost
-    $\mathcal{O}(\varepsilon^{-2}(\log\varepsilon^{-1})^2)$.
-  \item \emph{Case~(iii) $\alpha < \gamma$:}  The series is dominated by the finest level
-    $l = L$; since $N_L C_L = \mathcal{O}(\varepsilon^{-2-(\gamma-\alpha)/\beta})$, the
-    total cost has the same exponent.
-\end{itemize}
-
-\emph{Optimality.}  The Lagrangian in $N_l$ is strictly convex, so any deviation from
-allocation~\eqref{eq:giles} increases the weighted MSE for the same cost budget.  The
-network weights $w_i$ enter only through the constant prefactor of $V_l^w$, not the
-complexity exponent.  Figure~\ref{fig:cost_runtime_pair}(a) confirms case~(i) empirically
-with fitted slope $\approx{-2}$.
+Proof follows \cite{giles2015multilevel} Thm.~1; network weights enter only the constant
+prefactor of $V_l^w$, not the complexity exponent.
+Figure~\ref{fig:cost_runtime_pair}(a) confirms case~(i) empirically with fitted slope
+$\approx{-2}$.
 \end{proof}
 
 \subsection{Rare-Event Analysis via Large Deviations}
@@ -579,12 +480,8 @@ $\log P(Q_{\max} \ge B) \approx -I(\varphi^{\star})$, where $\varphi^{\star}$ mi
 $I$ over paths reaching level $B$.
 \end{proposition}
 \begin{proof}[Proof sketch]
-The result follows from the contraction principle applied to the non-reflected diffusion
-(Dupuis \& Ellis~\cite{dupuis1997large}) and the continuity of the Skorokhod reflection
-map in the uniform norm~\cite{saisho1987stochastic}.  Full details can be found in the
-cited references.  For the TV-$\sigma$ case, $\sigma(t)$ is bounded away from zero, so
-$\sigma^{-1}$ is well-defined and bounded, reducing the general
-rate~\eqref{eq:rate_general} to the simplified form~\eqref{eq:rate_function}.
+Follows from the contraction principle~\cite{dupuis1997large} and Skorokhod map
+continuity~\cite{xu2009large}.
 \end{proof}
 
 \paragraph{Practical importance sampling.}
@@ -593,48 +490,9 @@ $h^{\star}(t) = (\dot\varphi^{\star}(t) - (\lambda(t){-}\mu)) / \sqrt{\lambda(t)
 following Dupuis and Wang~\cite{dupuis2007dynamic}.
 
 
-\section{Implementation}
-
-Our implementation uses Python with PyCUDA \cite{nvidia2020cuda} for GPU acceleration via CUDA
-\texttt{SourceModule} kernels, and NumPy for CPU baselines. Where PyCUDA is unavailable due to
-driver version mismatches (e.g.\ CUDA~12.4), the framework automatically falls back to a
-PyTorch-based shim (\path{cupy_torch_shim.py}) that preserves the sampling interface while using
-PyTorch CUDA tensors. All A100 benchmark results reported in this paper used the PyTorch shim on
-CUDA~12.1 (RunPod pod), ensuring reproducibility across driver environments. The software
-architecture consists of:
-
-\begin{itemize}
-    \item \textbf{Network Module}: Graph generation (Erd\H{o}s-R\'enyi \cite{hofstad2016},
-    scale-free) and propagation dynamics
-    \item \textbf{MLMC Module}: Adaptive level selection, optimal sample allocation
-    \cite{collier2015}, and convergence monitoring
-    \item \textbf{GPU Module}: CUDA kernels for parallel SDE integration and reduction operations
-    \item \textbf{Analysis Module}: Statistical analysis, visualization, and uncertainty
-    quantification
-\end{itemize}
-
-The MLMC algorithm follows an adaptive approach:
-\begin{enumerate}
-    \item Run pilot samples (100 per level) to estimate $V_l$
-    \item Compute optimal $N_l^*$ using Eq.~\eqref{eq:giles}
-    \item Generate remaining samples, reusing pilot samples
-    \item Check convergence: $\sqrt{\sum_l V_l/N_l} < \varepsilon$
-    \item Add levels if bias exceeds target
-\end{enumerate}
-
-\subsection{GPU Coupled Propagation MLMC}
-\label{subsec:gpu_coupled}
-
-The \path{GPUCoupledPropagationMLMC} class extends the GPU-MLMC estimator to the coupled-SDE
-model (Eq.~\eqref{eq:coupled_sde}). At each Euler--Maruyama step, the influence-matrix product
-$A\mathbf{C}$ is evaluated as a single \texttt{torch.mm} call on the GPU, exploiting cuBLAS GEMM
-for the $n \times n$ matrix multiply. For MLMC coupling, the $M$ fine-level noise increments
-$\{\Delta W_i^{(k)}\}_{k=1}^{M}$ are generated per step and the coarse increment is their sum
-$\sum_k \Delta W_i^{(k)}$, preserving the antithetic coupling required for MLMC variance
-reduction. All $N_l$ sample paths are processed simultaneously as a $(n{,}N_l)$ tensor, so each
-CUDA kernel launch amortises launch overhead across the full batch.
-
 \section{Experimental Results}
+
+The framework is implemented in Python using PyTorch~2~\cite{pytorch2024} for GPU tensor operations on CUDA~12.1, with an automatic PyCUDA fallback. Source code is available at \url{https://github.com/pdwi2020/gpu-mlmc-congestion}.
 
 We evaluate our framework on both synthetic and real-world topologies. Synthetic experiments use
 Erd\H{o}s-R\'enyi networks with 100 nodes, connectivity $p=0.15$, base arrival rate $\lambda=1.0$,
@@ -653,11 +511,7 @@ on the true MLMC advantage.
 
 \subsection{Empirical Validation}
 
-Empirical trends align with the theoretical analysis and the comparison tables: MLMC reduces
-estimator cost at target accuracy, while GPU execution reduces wall-clock latency via parallel
-path generation. In addition to mean behavior, the framework provides uncertainty-aware outputs
-including confidence intervals and tail-delay estimates (P95, P99), which are essential for
-congestion-risk analysis.
+MLMC reduces estimator cost at target accuracy while GPU execution reduces wall-clock latency. The framework provides uncertainty-aware outputs including confidence intervals and tail-delay estimates (P95, P99).
 
 \begin{table}[t]
 \caption{GPU Single-Level Monte Carlo vs GPU-MLMC (NVIDIA A100 80GB PCIe). Results are
@@ -682,31 +536,8 @@ wider than the target, so strict equal-accuracy is not achieved. Reported speedu
 values are \emph{lower bounds} on MLMC advantage at tighter targets.\normalsize
 \end{table}
 
-Under a reduced single-level cap of $5\times10^5$ paths ($T{=}5$\,s, enforcing equal wall-clock
-time rather than equal accuracy), GPU-MLMC achieves up to $12.91\times$ runtime speedup.
-This figure is not directly comparable to the equal-accuracy rows in
-Table~\ref{tab:gpu_gpu_a100}; it represents the upper bound of attainable speedup at this sample
-budget and is cited in the abstract as the peak headline result.
-
-At loose accuracy targets ($\varepsilon \geq 0.05$), GPU-MLMC overhead may offset variance
-reduction gains, yielding runtime speedup below $1.0\times$ even while computational work
-reduction remains substantial (8--33$\times$). This behaviour follows from a simple crossover
-model: let $\tau_{\text{init}}$ denote the fixed MLMC initialisation overhead (pilot estimation,
-level-allocation kernel launches) and $r = C_{\text{MC}} / C_{\text{MLMC}}$ the asymptotic work
-ratio. Runtime speedup exceeds $1.0\times$ only when, writing $\theta$ for GPU
-throughput (timestep-paths/s):
-\begin{equation}
-    \frac{C_{\text{MC}}}{\theta} > \frac{C_{\text{MLMC}}}{\theta} + \tau_{\text{init}},
-\end{equation}
-i.e.\ when $(r-1)\cdot C_{\text{MLMC}} > \tau_{\text{init}} \cdot \theta$.  For
-the A100 at $\sim\!1.5\times10^7$ timestep-paths per second and
-$\tau_{\text{init}}\approx 0.3$\,s, the crossover occurs near
-$C_{\text{MLMC}} \approx 4.5\times10^6$ timestep-paths, corresponding to
-$\varepsilon \approx 0.04$--$0.05$ for 500-node networks---consistent with the empirical data in
-Table~\ref{tab:gpu_gpu_a100}. Tighter accuracy targets amortise the overhead and yield clear
-runtime gains (up to $12.91\times$ at $\varepsilon=0.01$, Table~\ref{tab:gpu_gpu_a100}).
-Figure~\ref{fig:cost_runtime_pair} plots cost and runtime vs.\ $\varepsilon$ on log-log axes;
-Figure~\ref{fig:ratio_alloc_pair} shows the work-reduction ratio and level sample allocation.
+Under a reduced single-level cap of $5\times10^5$ paths, GPU-MLMC achieves up to $12.91\times$ runtime speedup. At loose targets ($\varepsilon \geq 0.05$), overhead may offset variance reduction gains; tighter targets amortise overhead and yield clear runtime gains.
+Figure~\ref{fig:cost_runtime_pair} plots cost and runtime vs.\ $\varepsilon$; Figure~\ref{fig:ratio_alloc_pair} shows the work-reduction ratio and level allocation.
 
 \begin{figure}[htbp]
 \centering
@@ -753,21 +584,25 @@ Figure~\ref{fig:ratio_alloc_pair} shows the work-reduction ratio and level sampl
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.95\columnwidth]{figures/empirical_slope_bars_a100.png}
-\caption{Empirical scaling exponents from log--log regression of cost vs $\varepsilon$.
-GPU-MLMC slopes are consistently closer to $-2$ than GPU-MC slopes near $-3$, matching
-theoretical complexity trends.}
-\label{fig:slope_bars}
+\begin{subfigure}[t]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{figures/empirical_slope_bars_a100.png}
+  \caption{Empirical scaling exponents: GPU-MLMC slopes near $-2$, GPU-MC near $-3$.}
+  \label{fig:slope_bars}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{figures/mlmc_variance_decay_a100.png}
+  \caption{MLMC per-level variance $V_l$ (semi-log). Fitted $\alpha=1.86$ confirms near-optimal decay.}
+  \label{fig:variance_decay}
+\end{subfigure}
+\caption{Empirical complexity slopes (left) and MLMC variance decay on synthetic ER $n=100$ (right).}
+\label{fig:slopes_decay_pair}
 \end{figure}
 
-Figure~\ref{fig:ratio_alloc_pair}(b) shows the per-level sample allocation driving this cost
-reduction. Empirical slope analysis (Figure~\ref{fig:slope_bars}) further supports the complexity
-interpretation. For the CAIDA subgraph ($n=500$), fitted slopes are approximately $-3.57$
-(GPU-MC) and $-2.28$ (GPU-MLMC); for synthetic $n=500$, slopes are approximately $-3.79$
-(GPU-MC) and $-2.41$ (GPU-MLMC). The synthetic $n=100$ case shows greater deviation from ideal
-asymptotics, which is expected in smaller workloads where fixed overheads are less amortized.
-Tail-delay quantification accuracy on a 500-node synthetic network is shown in
-Fig.~\ref{fig:tail_delay} (discussed further in Section~\ref{sec:discussion}).
+Figure~\ref{fig:ratio_alloc_pair}(b) shows per-level sample allocation; Figure~\ref{fig:slopes_decay_pair}(a) confirms fitted slopes near $-3.57$/$-2.28$ (GPU-MC/MLMC) for CAIDA and $-3.79$/$-2.41$ for synthetic $n=500$.
+Tail-delay quantification accuracy is shown in Fig.~\ref{fig:tail_delay}.
 
 \begin{figure}[!t]
 \centering
@@ -788,8 +623,6 @@ $dQ = (\lambda-\mu)\,dt + \sqrt{\lambda+\mu}\,dW$, reflected at zero, with $\lam
 $\rho=\lambda/\mu<1$. In this limit, the analytical mean queue length is approximated by
 $\rho/(1-\rho)$ as $\rho \to 1$ \cite{whitt2002,harrison1985,kang2007}.
 
-The reproducibility script \path{scripts/verify_mm1_limit.py} writes
-\path{results/mm1_sanity.json} with the simulated SDE means and relative errors after burn-in.
 As $\rho\!\to\!1$ the diffusion approximation becomes asymptotically tight: the relative error
 decreases monotonically from \mmonererrA\% at $\rho=0.7$ to \mmonererr\% at $\rho=0.9$,
 confirming that the reflected SDE solver converges to the analytical M/M/1 mean in the
@@ -845,21 +678,7 @@ GPU's ability to absorb the extra paths within the same launch grid.\normalsize
 \end{table}
 
 \paragraph{Interpretation.}
-ANA-MLMC is not a cost-reduction technique; it is a \emph{prioritisation} technique. In the
-regime where standard Giles still has slack ($\varepsilon=0.05$), ANA produces an identical total
-budget but reallocates samples toward nodes carrying higher centrality and pilot variance--leaving
-the global mean estimate unchanged while tightening the weighted CI on the operationally important
-nodes. Once $\varepsilon$ tightens enough that the weighted variance Eq.~\eqref{eq:ana_var}
-exceeds what pilot samples already cover, ANA spends additional Monte~Carlo effort along the same
-gradient, producing the 5--30\% extra cost reported in Table~\ref{tab:ana_mlmc}. For ISP
-operators choosing where to spend a fixed compute budget, this amounts to direct control over
-which segment of the network gets sharpened estimates. The runtime overhead remains negligible
-because the additional paths are batched onto the GPU's already-saturated launch grid.
-
-\paragraph{Regression guarantee.}
-The unit test \path{tests/test_ana_mlmc.py::test_uniform_weights_match_giles} confirms
-bit-identical sample allocation between ANA-MLMC and the standard Giles allocator when
-$w_i = 1/n$, ensuring the new method introduces no penalty in the legacy use case.
+ANA-MLMC is not a cost-reduction technique; it is a \emph{prioritisation} technique. At loose targets ANA reallocates samples toward high-centrality, high-pilot-variance nodes at no extra cost; as $\varepsilon$ tightens, ANA spends 5--30\% additional budget, giving operators direct control over which network segment gets sharpened estimates.
 
 \begin{figure}[!t]
 \centering
@@ -874,28 +693,8 @@ a near-constant CI width of $\sim\!1.7\!\times\!10^{-3}$.}
 \label{fig:ana_mlmc_comparison}
 \end{figure}
 
-Figure~\ref{fig:ana_mlmc_comparison} visualises the comparison reported in
-Table~\ref{tab:ana_mlmc}.
-
 \paragraph{Per-node CI sharpening.}
-The headline numbers above are global-estimator CIs. An operator-facing question is how the CI
-tightening distributes across individual nodes. Figure~\ref{fig:ana_fairness} reports a per-node
-fairness diagnostic on Barabasi-Albert $n=300$ at $\varepsilon=0.005$ (3 seeds), comparing the
-finest-level per-node 95\% CI half-width across configurations. Three findings:
-\begin{itemize}
-    \item \emph{Sample reallocation.} ANA reaches $\sim\!510$ samples at the finest level versus
-    standard Giles' pilot-floored $50$, even though its total cost is only $1.3\!\times$ baseline.
-    In other words, ANA pays for the extra samples almost entirely at the finest level where the
-    weighted variance is concentrated, rather than smearing them across coarse levels.
-    \item \emph{Aggregate sharpening.} Per-node CI is reduced to a median $0.0057$ versus
-    baseline's $0.0182$, a uniform sharpening of $\sim\!3.2\times$ on every node. The mean ANA /
-    baseline ratio is $0.31$ across all four ANA configurations, consistent with
-    $\sqrt{50/510}\approx0.31$ predicted by the level-0 sample-count boost.
-    \item \emph{Differential per-node tilt.} The sharpening ratio varies modestly across nodes
-    (range $0.25$--$0.38$, SD $\approx0.02$) and is slightly tighter on hubs under
-    \path{centrality_only}. The headline operator value is therefore the absolute CI tightening
-    on every node, with a small centrality-aligned tilt as a secondary effect.
-\end{itemize}
+Figure~\ref{fig:ana_fairness} shows the per-node fairness diagnostic on Barabasi-Albert $n=300$ at $\varepsilon=0.005$: ANA achieves $\sim\!3.2\times$ CI sharpening uniformly across all nodes with only a modest centrality-aligned tilt (sharpening ratio range $0.25$--$0.38$).
 
 \begin{figure}[!t]
 \centering
@@ -914,21 +713,11 @@ scale. Mean sharpening factor is $0.31$ with modest per-node tilt across the cen
 
 Real network operations face time-varying arrivals (diurnal load, flash crowds) and intermittent
 link failures. We extend the GPU-MLMC loop to accept time-indexed arrival vectors $\lambda_i(t)$
-and adjacency snapshots $A(t)$ (Section~\ref{subsec:gpu_coupled},
-\path{simulate_with_dynamic_inputs}), and provide \path{DynamicArrivalProcess} (diurnal sinusoid
+and adjacency snapshots $A(t)$, providing \path{DynamicArrivalProcess} (diurnal sinusoid
 plus Poisson burst spikes) and \path{LinkFailureSchedule} (random-edge drops with optional
-recovery) as drivers. A regression test
-(\path{test_dynamic_path_no_inputs_matches_static_bitwise}) guarantees the static path is
-preserved bit-identically when no dynamic inputs are supplied.
+recovery) as drivers.
 
-Figure~\ref{fig:dynamic_runtime_pair}(a) shows the resulting GPU-MLMC trajectory on a 200-node CAIDA
-AS-rel2 subgraph driven by a 24-hour diurnal sinusoid with 15 random burst onsets and 25
-scheduled link failures ($\varepsilon=0.05$, 5 seeds, NVIDIA T4, 39.8\,s runtime). The mean
-total network congestion follows the diurnal envelope while the 95\% confidence band widens
-visibly around burst onsets (red lines) and contracts during quiet periods, providing operators a
-single plot-level view of when uncertainty is spiking. The bottom panel quantifies this directly:
-the CI width tracks the burst events with peaks of $\approx\!40$ and a quiet-period floor of
-$\approx\!10$.
+Figure~\ref{fig:dynamic_runtime_pair}(a) shows the GPU-MLMC trajectory on a 200-node CAIDA AS-rel2 subgraph with a 24-hour diurnal sinusoid, 15 burst onsets, and 25 link failures ($\varepsilon=0.05$, T4, 39.8\,s). The 95\% CI widens around burst onsets and contracts during quiet periods; CI-width peaks reach $\approx\!40$ with a quiet-period floor of $\approx\!10$.
 
 \begin{figure}[!t]
 \centering
@@ -954,16 +743,7 @@ $\approx\!10$.
 \subsection{Real-World Validation: MAWI Backbone Trace Case Study}
 \label{subsec:mawi_validation}
 
-Real-trace validation provides the most direct evidence of framework utility under production conditions.
-We built a public-data ingest pipeline (\path{datasets/mawi/loader.py},
-\path{scripts/run_real_trace_validation.py}) and exercised it against the MAWI Working Group
-sample-point-F backbone trace (\url{https://mawi.wide.ad.jp/mawi/}) for 1\,January 2024,
-14:00 JST. A bounded HTTP \texttt{Range} request caches the first 100\,MB of the compressed
-PCAP, which scapy parses into per-flow packet timestamps; the top five flows by volume are
-retained and binned at one-second resolution. The 100\,MB cap recovered $3.91\times10^{6}$
-packets across 24 one-second bins. Per-flow arrival rates are normalised to unit mean before
-being injected as $\lambda_i(t)$ into the reflected SDE
-$dQ_i = (\lambda_i(t)-\mu)\,dt + \sigma\,dW_i$ with $\mu=1.5$, $\sigma=0.2$.
+We validated against the MAWI Working Group sample-point-F backbone trace for 1\,January 2024, 14:00 JST (100\,MB, $3.91\times10^{6}$ packets, 24 one-second bins, 5 top flows). Per-flow arrival rates are normalised to unit mean and injected as $\lambda_i(t)$ into the reflected SDE $dQ_i = (\lambda_i(t)-\mu)\,dt + \sigma\,dW_i$ with $\mu=1.5$, $\sigma=0.2$.
 
 \begin{table}[!t]
 \caption{Real-MAWI Trace Validation: per-flow burst characteristics translate into proportionate
@@ -991,24 +771,7 @@ would use these per-flow tail estimates and CIs directly to size buffer capacity
 compliance.
 
 \paragraph{Cross-validation against a discrete-event reference.}
-To probe the limits of the diffusion approximation we built a Poisson G/D/1 reference simulator
-(\path{scripts/run_real_trace_deep.py}) that consumes the same per-flow arrival rates but
-generates discrete Poisson packet arrivals served at a constant rate.  At fine binning
-($0.1$\,s, 237 bins, 10 flows, 300 paths) the plain reflected SDE ($\sigma=0.2$) disagrees with
-the DES reference by a median of $76.9\%$ on P95 and $80.6\%$ on P99, because continuum
-diffusion smooths out the discrete Poisson bursts that drive rare large excursions.
-This fine-bin, plain-SDE figure is a calibration baseline; the paper's operating point is
-the TV-$\sigma$ model at the standard 1\,s bin resolution reported below.
-
-Because peak-queue paths from independently seeded simulators are not point-coupled, raw
-per-path RMSE is dominated by sampling permutation noise—two independently seeded DES runs
-already yield $\sim\!76\%$ raw NRMSE despite being identically distributed.  We therefore
-adopt \emph{sorted NRMSE} (SNRMSE): $\mathrm{SNRMSE}_k = \bigl\|\hat{F}_k^{\,\mathrm{SDE}}
-- \hat{F}_k^{\,\mathrm{DES}}\bigr\|_2 / \bar{Q}_k^{\,\mathrm{DES}}$, where $\hat{F}_k$
-is the sorted empirical peak-queue vector for flow $k$.  Sorting aligns order statistics,
-making SNRMSE equivalent to a normalised $L_2$ Wasserstein proxy between the two empirical
-distributions.  The DES estimator floor—SNRMSE of two independently seeded DES runs—is
-$4.3\%$, reflecting finite-sample noise only.
+A Poisson G/D/1 reference simulator at fine binning ($0.1$\,s) shows the plain SDE disagrees by $76.9\%$ P95 / $80.6\%$ P99; the paper's operating point is TV-$\sigma$ at standard 1\,s bins.
 
 At the standard $1$\,s bin width (24 bins, 5 flows, $N=2{,}000$ paths) we compare four SDE
 variants against the DES reference; results appear in Table~\ref{tab:sde_des_comparison}.
@@ -1019,12 +782,6 @@ and SNRMSE to $6.4\%$: only $2.1$ percentage points above the DES floor, constit
 \emph{distributional parity} with the Poisson reference.  Both simulators return in under
 $0.05$\,s on a single CPU thread.
 
-Jump-diffusion (row 3 of Table~\ref{tab:sde_des_comparison}) is included as a negative
-control: compound Poisson jumps with ad-hoc parameters ($\lambda_J{=}0.5$,
-$\mu_J^{-1}{=}0.3$) add excess volatility without preserving the Poisson arrival variance
-structure, yielding $43.8\%$ P95 error---worse than the calibrated Brownian ($20.8\%$) and
-far above TV-$\sigma$ ($7.1\%$). This confirms that \emph{matching the variance structure at
-every timestep} is the critical design criterion, not the addition of discrete jumps per se.
 
 \begin{table}[!t]
 \caption{SDE variants vs.\ Poisson G/D/1 DES reference (MAWI backbone, 1\,s bins, 5 flows,
@@ -1047,33 +804,8 @@ DES floor (DES$_2$ vs DES$_1$)                      & 0.0\%  & 2.9\%  & 4.3\% \\
 \end{table}
 
 \paragraph{Cross-day stability.}
-We extended the deep validation across five consecutive MAWI days (2024-01-01 through 2024-01-05,
-14:00 JST, 60\,MB Range cap each). The median relative P95/P99 disagreement against the Poisson
-G/D/1 reference at $0.1$\,s bins is highly stable across days: P95~error $85.9\!\pm\!5.3\%$ and
-P99~error $87.3\!\pm\!5.1\%$ (mean$\pm$SD over five days, $\sim\!2.2$~M packets per trace). The
-fine-bin diffusion-approximation envelope is therefore a property of the SDE formulation rather
-than a single-day artefact.
+Across five consecutive MAWI days (2024-01-01 through 2024-01-05) at 1\,s bins, TV-$\sigma$ P95 error ranged from $4.1\%$ to $14.2\%$ (mean $9.3\%$), confirming stability beyond a single-day coincidence.
 
-At the paper's operating resolution (1\,s bins, 60\,MB window, $N{=}2{,}000$ paths),
-TV-$\sigma$ P95 error ranged from $4.1\%$ to $14.2\%$ (mean $9.3\%$) and P99 from $4.5\%$ to
-$18.7\%$ (mean $11.6\%$) across the five days. The lowest-error day (Day~1, 15 bins) reaches
-$4.1\%/4.5\%$, essentially at the DES estimator floor. Higher variability on days with fewer
-recovered bins (8--9 bins, Days~4--5) reflects finite-sample quantile noise in shorter windows,
-not a structural model failure. The TV-$\sigma$ model therefore maintains sub-$15\%$ P95
-discrepancy across all tested days, confirming stability beyond a single-day coincidence.
-
-\paragraph{GPU vs.\ MLMC contribution to end-to-end speedup.}
-To decompose the $12.91\times$ headline speedup into its GPU and MLMC components, we compare
-CPU and GPU baselines. On the MAWI trace segment (15 one-second bins, $N{=}2{,}000$ paths,
-5 flows), the TV-$\sigma$ SDE completes in $18$\,ms on a single CPU core (Colab, measured)
-and $14$\,ms with 4 Python workers — the window is too short to saturate GPU parallelism. At the operational
-scale (CAIDA $n{=}500$, $\varepsilon{=}0.02$), the 8-core CPU-MLMC runtime is approximately
-$30$\,s (estimated from the $1{,}400$~paths/s CPU throughput baseline,
-Tab.~\ref{tab:cpu_baselines}) versus GPU-MLMC at $2.1$\,s — a $\sim\!14\times$ GPU
-contribution. Among GPU methods, GPU-MLMC outperforms GPU-MC by up to $3.79\times$ at equal
-accuracy (Table~\ref{tab:gpu_gpu_a100}), confirming that MLMC variance reduction and GPU
-parallelism are both necessary and contribute multiplicatively to the observed end-to-end
-speedup.
 
 
 \section{Discussion}
@@ -1082,12 +814,7 @@ speedup.
 Table~\ref{tab:capability} summarizes practical capabilities across deterministic, Monte Carlo,
 and MLMC-based simulation frameworks. The proposed MLMC + GPU approach is the only configuration
 that simultaneously supports efficient tail-risk estimation and uncertainty quantification on
-real-world topology subgraphs. As shown in Fig.~\ref{fig:tail_delay}, GPU-MLMC achieves P95 and
-P99 queue-occupancy estimates within $0.2\%$ of a tight reference Monte Carlo, confirming
-reliable tail-risk quantification. The results indicate that while GPU acceleration improves both
-methods, multilevel variance reduction provides substantial additional gains, particularly at
-higher accuracy targets, aligning with theoretical complexity predictions.
-Figure~\ref{fig:dynamic_runtime_pair}(b) summarises runtime scaling across all three tested configurations at the tightest accuracy target.
+real-world topology subgraphs. Figure~\ref{fig:dynamic_runtime_pair}(b) summarises runtime scaling across all three tested configurations at the tightest accuracy target.
 
 \begin{table}[!t]
 \caption{Capability Comparison Across Simulation Frameworks}
@@ -1120,7 +847,7 @@ over GPU-equivalent MC work. $^\ddagger$CPU-MLMC with same MLMC cost (42,435 tim
 from Tab.~\ref{tab:gpu_gpu_a100}) at 1,400 paths/s. $^\S$GPU-MLMC measured on NVIDIA A100 80GB
 PCIe (Tab.~\ref{tab:gpu_gpu_a100}, synthetic $n{=}499$, $\varepsilon{=}0.02$).\normalsize
 
-\subsection{Network Size Scalability}
+\subsection{Scalability and Coupled Propagation}
 \label{subsec:scaling}
 
 Fig.~\ref{fig:scaling_n} shows GPU-MLMC wall-clock runtime for the coupled-SDE model as a
@@ -1138,7 +865,7 @@ Sub-quadratic scaling shows that GPU batching amortises the matrix-multiply cost
 \label{fig:scaling_n}
 \end{figure}
 
-\subsection{Coupled Propagation: Correlated Queue Dynamics}
+\subsubsection{Coupled Propagation: Correlated Queue Dynamics}
 \label{subsec:coupled_results}
 
 The coupled-SDE model (Eq.~\eqref{eq:coupled_sde}) produces correlated uncertainty estimates
@@ -1147,15 +874,7 @@ Fig.~\ref{fig:coupled_ci} shows results from a 5-node chain graph ($A_{i,i+1}=1$
 $\beta=0.5$, $\sigma=0.1$, $T=5$\,s, $N=3{,}000$ paths) with initial congestion $C_0(0)=1$
 injected at node~0.
 
-The coupled model yields $\mathbb{E}[C_0]=0.389\pm0.002$,
-$\mathbb{E}[C_1]=0.096\pm0.002$, decreasing to
-$\mathbb{E}[C_4]=0.071\pm0.001$---a $5.5\times$ decay from source to leaf. The independent
-per-node model (no inter-node coupling) produces $\mathbb{E}[C_1]\approx 0.002$ at node~1
-(purely local dynamics), compared to $0.096$ under coupling, confirming that the coupled model
-correctly propagates congestion along the chain. The off-diagonal covariance
-$\text{Cov}(C_0,C_1)=7.5\times10^{-4}>0$ (right panel of Fig.~\ref{fig:coupled_ci}) provides
-direct empirical evidence of spatial correlation---an impossible result under the independent
-model.
+The coupled model shows a $5.5\times$ decay from source to leaf ($\mathbb{E}[C_0]=0.389$ vs $\mathbb{E}[C_4]=0.071$) and off-diagonal covariance $\text{Cov}(C_0,C_1)=7.5\times10^{-4}>0$, confirming spatial correlation that is impossible under the independent model.
 
 \begin{figure}[htbp]
 \centering
@@ -1167,19 +886,10 @@ entries confirm spatial correlation of congestion propagation along the chain.}
 \label{fig:coupled_ci}
 \end{figure}
 
-\subsection{Multi-GPU Scaling: Weak and Strong Scaling}
+\subsection{Performance Characteristics}
 \label{subsec:multigpu_scaling}
 
-Table~\ref{tab:multigpu_scaling} and Fig.~\ref{fig:multigpu_cdf_pair}(a) summarise weak and
-strong scaling of \texttt{MultiGPUMLMC} (Section~\ref{subsec:complexity}) with
-round-robin graph partitioning ($n=500$--$2000$ nodes, $\varepsilon=0.1$, $L=3$).
-Under \emph{weak scaling} (nodes proportional to GPUs), the per-GPU wall time remains
-flat at $\approx 0.037$\,s across 1--4 partitions, confirming the partition overhead is
-$\mathcal{O}(n/G)$ per rank.  Under \emph{strong scaling} ($n=1000$ fixed), speedup is
-$2.04\times$ at 2 GPUs and $4.13\times$ at 4 GPUs — super-linear due to cache effects
-at smaller per-GPU working sets.  Experiments with METIS-partitioned $n=5{,}000$ graphs
-confirm the framework handles the target scale (1{,}250 local nodes per rank, 5{,}545
-halo edges) within the MLMC pilot phase.
+Table~\ref{tab:multigpu_scaling} and Fig.~\ref{fig:multigpu_cdf_pair}(a) summarise weak and strong scaling with round-robin graph partitioning ($n=500$--$2000$, $\varepsilon=0.1$, $L=3$). Under weak scaling, per-GPU wall time stays flat at $\approx 0.037$\,s; under strong scaling ($n=1000$), speedup is $2.04\times$ at 2 GPUs and $4.13\times$ at 4 GPUs.
 
 \begin{table}[!t]
 \caption{Multi-GPU MLMC Scaling ($N=1000$, $\varepsilon=0.1$)}
@@ -1218,7 +928,7 @@ GPUs & Max rank time (s) & Speedup & Ideal \\
 \end{figure}
 
 
-\subsection{MLMC Variance Decay Verification}
+\subsubsection{MLMC Variance Decay Verification}
 
 Fig.~\ref{fig:variance_decay} shows the empirical per-level variance $V_l$ on a semi-log scale,
 extracted from the Exp.~1 MLMC convergence run (synthetic ER, $n=100$). The fitted decay
@@ -1247,31 +957,12 @@ $\mathcal{O}(\varepsilon^{-2}(\log\varepsilon)^2)$ \cite{giles2015multilevel}. B
 substantially better than standard MC cost $\mathcal{O}(\varepsilon^{-3})$.
 \end{table}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.80\columnwidth]{figures/mlmc_variance_decay_a100.png}
-\caption{MLMC per-level variance $V_l$ vs.\ level $l$ (semi-log scale, synthetic ER $n=100$).
-Fitted slope $\alpha=1.86$ confirms near-optimal variance decay satisfying the MLMC complexity
-theorem.}
-\label{fig:variance_decay}
-\end{figure}
-
 \subsection{Limitations and Future Work}
 \label{subsec:limitations}
 
 We list the constraints of the present study and the corresponding paths forward.
 
-\par\textbf{Diffusion approximation regime.} The reflected SDE recovers the analytical M/M/1
-mean only in the heavy-traffic limit ($\rho\!\to\!1$); at $\rho=0.7$ the relative error is 15\%
-and decreases monotonically to 6.5\% at $\rho=0.9$ (Section~\ref{subsec:analytical}).  At fine
-time-bin resolution ($0.1$\,s), the plain constant-$\sigma$ SDE disagrees with a Poisson G/D/1
-discrete-event reference by $76.9\%$ on P95 and $80.6\%$ on P99 (Section~\ref{subsec:mawi_validation}).
-Adopting the time-varying CIR diffusion $\sigma(t)=\sqrt{\lambda(t)}$ reduces this to
-$7.1\%$ / $7.0\%$ P95/P99 (SNRMSE $6.4\%$, vs.\ the DES estimator floor of $4.3\%$), confirming
-distributional parity at coarser binning.  Operators working at sub-second granularity should
-pair the TV-$\sigma$ model with a discrete-event simulator for absolute tail accuracy.
-Future work: extend to the heavy-traffic diffusion limit with higher-order correction
-terms \cite{bossy2021}.
+\par\textbf{Diffusion approximation regime.} The reflected SDE is valid in heavy traffic ($\rho\!\to\!1$); at fine time-bin resolution ($0.1$\,s), the plain SDE disagrees with a DES reference by $76.9\%$ P95/$80.6\%$ P99, while TV-$\sigma$ reduces this to $7.1\%$/$7.0\%$ at 1\,s bins. Operators at sub-second granularity should pair TV-$\sigma$ with a discrete-event simulator.
 
 \par\textbf{Topology coupling.} The per-node queue SDE (Section~III-A) assigns independent
 dynamics to each node; edge structure influences only $\lambda_i$ and $\mu_i$. The coupled
@@ -1279,48 +970,12 @@ propagation model (Section~III-E) addresses this for congestion spreading, but f
 queuing-network coupling (e.g.\ departure from one node feeding arrivals at downstream nodes)
 requires Jackson-network-style flow balance and is deferred to future work.
 
-\par\textbf{Real-trace validation depth.} The MAWI case study
-(Section~\ref{subsec:mawi_validation}) demonstrates the ingest pipeline on a single 100\,MB /
-24-bin window of the sample-point-F backbone trace. A rigorous prediction-versus-measurement
-comparison requires (i) longer windows to bound finite-sample error on the empirical P95/P99
-measurements, (ii) a packet-level discrete-event reference simulator (ns-3 or OMNeT++) to
-provide queueing ground truth at the bottleneck link, and (iii) per-link arrival decomposition
-aligned with the observed routing. The CAIDA Anonymized Internet Traces dataset is the natural
-next target once data-sharing approval is in hand.
-
 \par\textbf{Network scale.} All reported topologies stay within $n\le500$. Multi-GPU distribution
 for $n>10{,}000$ would unlock SC-tier Internet-scale validation; the $n\times n$ matrix-vector
 product in the coupled SDE is the natural sharding boundary.
 
-\par\textbf{ANA-MLMC weight sensitivity (resolved).} A weight-sensitivity sweep over five named
-configurations (\path{centrality_only}, \path{variance_only}, \path{sla_only},
-\path{balanced_mix}, \path{default_mix}) on Barabasi-Albert $n=300$ at $\varepsilon=0.005$ shows
-that the total sample budget and the global CI half-width vary by less than $1.2\%$ and $3\%$
-respectively across all configurations (\path{scripts/run_ana_weight_sweep.py},
-\path{results/ana_weight_sweep/weight_sweep_summary.json}). The companion per-node fairness
-diagnostic (Section~\ref{subsec:ana_results}, Fig.~\ref{fig:ana_fairness},
-\path{scripts/run_fairness_diagnostic.py}) further shows that the sharpening factor concentrates
-on every node uniformly to within $0.25$--$0.38$ of baseline, with only a modest
-centrality-aligned tilt. Operators can therefore use the default $(0.4,0.4,0.2)$ blend without
-loss of efficiency; the small differential per-node tilt is the secondary tuning knob an operator
-might exercise once the headline $3\!\times$ sharpening is locked in.
+\par\textbf{ANA-MLMC weight sensitivity (resolved).} A weight-sensitivity sweep over five named configurations shows total sample budget and global CI half-width vary by less than $1.2\%$ and $3\%$ respectively; operators can use the default $(0.4,0.4,0.2)$ blend without loss of efficiency.
 
-\par\textbf{Per-tier MLMC chains (future work).} The current ANA implementation chooses the
-per-level sample count $N_l$ globally; every node within a level receives the same number of
-samples. A natural follow-up is to partition nodes into priority tiers and run separate coupled
-MLMC chains per tier, so that high-priority nodes can be allocated proportionally more samples
-than low-priority ones at the same level. This requires extending the path generator to support
-tier-conditioned random number streams while preserving the antithetic coupling, and is a clean
-extension on top of the present codebase.
-
-\par\textbf{Single-threaded CPU baseline.} The 87$\times$ and 644$\times$ CPU-to-GPU speedups
-cited in the abstract compare against a single-threaded NumPy implementation, not a parallelised
-CPU baseline. Against a multi-core CPU MLMC implementation, GPU speedups would be proportionally
-lower.
-
-\par\textbf{Closed-source GPU comparison.} The GPU baseline comparison was performed on synthetic
-and CAIDA-sampled topologies due to compute constraints; full CAIDA-scale baseline reproduction
-at $n=10{,}000+$ remains future work.
 
 \section{Conclusion}
 
@@ -1328,32 +983,9 @@ We presented a GPU-accelerated MLMC framework for uncertainty quantification in 
 congestion, combining a coupled network-SDE propagation model with massive GPU parallelism to
 enable efficient uncertainty analysis at scale.
 
-Key findings include:
-\begin{itemize}
-    \item A coupled congestion propagation SDE integrated into the GPU-MLMC loop enables
-    correlated queue uncertainty quantification across neighbouring nodes, addressing the key gap
-    of per-node independence in prior formulations
-    \item Adaptive Network-Aware MLMC (Section~\ref{subsec:ana_mlmc}) provides a new
-    sample-allocation rule that minimises a centrality-, pilot-variance-, and
-    SLA-priority-weighted estimator variance; the rule preserves $\mathcal{O}(\varepsilon^{-2})$
-    complexity and reduces exactly to standard Giles when weights are uniform, giving operators
-    direct control over which network nodes get sharpened estimates at a 5--30\% sample-budget
-    overhead
-    \item MLMC achieves 2--100$\times$ computational work reduction across tested accuracy
-    targets while retaining $\mathcal{O}(\varepsilon^{-2})$ complexity, consistent with theory
-    \cite{giles2015multilevel}
-    \item GPU-to-GPU baseline comparison on NVIDIA A100 80GB PCIe shows up to 12.91$\times$
-    runtime speedup and up to 257.72$\times$ work reduction at tight targets ($\varepsilon=0.01$,
-    $N_\text{MC}^\text{max}=5\times10^5$); at $\varepsilon=0.02$, speedup reaches $3.79\times$
-    with $120.35\times$ work reduction
-    \item GPU throughput reaches $>$100,000 samples/s; up to 87$\times$ over single-thread and
-    12--90$\times$ over 8-core CPU baselines
-    \item Real-world topology-subgraph validation (CAIDA AS-rel2) and a real-trace MAWI backbone
-    case study (Section~\ref{subsec:mawi_validation}) confirm that the framework correctly
-    distinguishes flows by burst characteristics and produces tail-queue estimates with
-    proportionate uncertainty bands; variance decay exponent $\alpha = 1.86$ confirms near-optimal
-    MLMC convergence
-\end{itemize}
+A coupled congestion propagation SDE integrated into the GPU-MLMC loop enables correlated queue uncertainty quantification across neighbouring nodes, addressing the key gap of per-node independence in prior formulations. Adaptive Network-Aware MLMC provides a new sample-allocation rule that minimises a centrality-, pilot-variance-, and SLA-priority-weighted estimator variance; the rule preserves $\mathcal{O}(\varepsilon^{-2})$ complexity and reduces exactly to standard Giles when weights are uniform, giving operators direct control over which network nodes get sharpened estimates at a 5--30\% sample-budget overhead. MLMC achieves 2--100$\times$ computational work reduction across tested accuracy targets while retaining $\mathcal{O}(\varepsilon^{-2})$ complexity, consistent with theory~\cite{giles2015multilevel}.
+
+GPU-to-GPU baseline comparison on NVIDIA A100 80GB PCIe shows up to 12.91$\times$ runtime speedup and up to 257.72$\times$ work reduction at tight targets; GPU throughput reaches $>$100,000 samples/s, up to 87$\times$ over single-thread and 12--90$\times$ over 8-core CPU baselines. Real-world validation (CAIDA AS-rel2 topology subgraph and MAWI backbone trace) confirms that the framework correctly distinguishes flows by burst characteristics and produces tail-queue estimates with proportionate uncertainty bands, with variance decay exponent $\alpha = 1.86$ confirming near-optimal MLMC convergence.
 
 Future work includes extending to non-Gaussian noise models, Jackson-network flow-balance
 coupling (output of one queue feeding downstream arrival rates), multi-GPU distribution for
