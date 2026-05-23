@@ -140,7 +140,6 @@ def main():
     args = parser.parse_args()
 
     if args.distributed:
-        import os
         import torch
         import torch.distributed as dist
         # torchrun sets LOCAL_RANK; each process sees exactly one GPU remapped to cuda:0
