@@ -1348,6 +1348,14 @@ class MultiGPUMLMC(GPUCoupledPropagationMLMC):
             N_l = max(1, int(np.ceil(2 / epsilon**2 * np.sqrt(v / c) * S)))
             optimal_N.append(N_l)
 
+        # Synchronize optimal_N across all ranks: every rank must call
+        # _step_with_halo with the SAME batch size for the collective all_reduce
+        # to receive matching tensor shapes.
+        if _DIST_AVAILABLE and dist.is_initialized() and dist.get_world_size() > 1:
+            opt_t = t.tensor(optimal_N, dtype=t.long, device=self._device)
+            dist.broadcast(opt_t, src=0)
+            optimal_N = opt_t.tolist()
+
         # Main estimation pass
         level_estimates = []
         level_stats = []
