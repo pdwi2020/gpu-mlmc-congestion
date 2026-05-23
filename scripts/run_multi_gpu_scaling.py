@@ -143,25 +143,22 @@ def main():
         import os
         import torch
         import torch.distributed as dist
-        # torchrun sets LOCAL_RANK; each process sees exactly one GPU as cuda:0
+        # torchrun sets LOCAL_RANK; each process sees exactly one GPU remapped to cuda:0
         local_rank = int(os.environ.get("LOCAL_RANK", 0))
         torch.cuda.set_device(local_rank)
-        dist.init_process_group("nccl", device_id=torch.device(f"cuda:{local_rank}"))
+        dist.init_process_group("nccl")
         rank = dist.get_rank()
         world_size = dist.get_world_size()
-        print(f"Distributed mode: rank {rank}/{world_size} on cuda:{local_rank}")
-        # In distributed mode, each rank runs independently and all_reduce gathers
+        print(f"Distributed mode: rank {rank}/{world_size} local_rank={local_rank}", flush=True)
         adj = erdos_renyi_adj(args.strong_n, seed=args.seed)
         t0 = time.perf_counter()
         sim = MultiGPUMLMC(adj, world_size=world_size, rank=rank, seed=args.seed)
         result = sim.mlmc_estimate_multigpu(args.epsilon, args.L_max, args.N_pilot)
         elapsed = time.perf_counter() - t0
-        # Gather max time across all ranks using CUDA tensor (required by NCCL)
-        t_tensor = torch.tensor([elapsed], device=f"cuda:{local_rank}")
-        dist.all_reduce(t_tensor, op=dist.ReduceOp.MAX)
-        if rank == 0:
-            print(f"Max time across {world_size} GPUs: {t_tensor.item():.3f}s")
-            print(f"Estimate: {result['estimate']:.4f}")
+        # Synchronize then print per-rank timing (avoids all_reduce device type issues)
+        dist.barrier()
+        print(f"[rank {rank}] time={elapsed:.3f}s  estimate={result['estimate']:.4f}", flush=True)
+        dist.destroy_process_group()
         dist.destroy_process_group()
         return
 
