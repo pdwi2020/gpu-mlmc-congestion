@@ -45,8 +45,9 @@ Lemma~1 establishes weighted variance decay, Lemma~2 proves Lipschitz continuity
 network-aware allocation, and Theorem~1 gives a complete three-case complexity proof using a
 Lagrangian sample-allocation argument. On identical A100 GPU hardware, GPU-MLMC achieves up to
 12.91$\times$ runtime speedup and 257.72$\times$ work reduction over single-level GPU-MC at
-$\varepsilon=0.01$. Multi-GPU distributed execution with \texttt{torch.distributed} halo
-exchange achieves 2.04$\times$ speedup at two GPUs and 4.13$\times$ at four GPUs. Hardware
+$\varepsilon=0.01$. Multi-GPU distributed execution with \texttt{torch.distributed} NCCL
+all-reduce achieves 99\% weak-scaling efficiency at two GPUs on PCIe hardware, with
+all world-sizes producing statistically indistinguishable estimates (CV < 0.3\%). Hardware
 diversity benchmarks on CPU platforms confirm commodity-hardware portability, while GPU
 execution provides the throughput needed for tight uncertainty budgets. Discrete-event ns-3
 cross-validation against an M/D/1 bottleneck model shows P95 error below 8\% at
@@ -95,7 +96,8 @@ CAIDA AS-rel2 topologies ($n=500$);
 (5) full formal proofs: Lemma~1 for weighted variance decay, Lemma~2 for Lipschitz continuity
 of allocation, and Theorem~1 for three-case MLMC complexity with a full Lagrangian proof;
 (6) multi-GPU distributed execution using METIS partitioning and \texttt{torch.distributed}
-halo exchange, achieving up to 4.13$\times$ speedup at four GPUs;
+NCCL all-reduce, achieving 99\% weak-scaling efficiency at two GPUs on PCIe hardware and
+linear memory capacity scaling (each GPU stores only $n/G$ adjacency columns);
 (7) hardware diversity benchmarks showing that the framework runs on CPU and GPU hardware
 without code changes; and
 (8) ns-3 discrete-event cross-validation showing P95 error below 8\% for $\rho \geq 0.8$,
@@ -975,21 +977,25 @@ single-day coincidence.
 \subsection{Hardware Diversity}
 \label{subsec:hardware_diversity}
 
-Table~\ref{tab:hardware_diversity} reports commodity CPU portability for the TV-$\sigma$ SDE
-benchmark with $N=2{,}000$ paths, five flows, and 24 bins. GPU platforms such as A100, T4, and
-V100 require cloud access (RunPod/Colab) and are benchmarked separately. The CPU benchmarks
-confirm that the framework runs on commodity hardware without code changes.
+Table~\ref{tab:hardware_diversity} reports the TV-$\sigma$ SDE benchmark throughput across
+five platforms ($N=2{,}000$ paths, five flows, 24 bins, five-run mean). GPU platforms were
+accessed via RunPod cloud pods. The framework runs on all platforms without code changes,
+confirming portability from commodity ARM CPUs to data-centre GPUs.
 
 \begin{table}[!t]
 \caption{Platform Benchmarks (TV-$\sigma$ SDE, $N=2{,}000$ paths, five flows, 24 bins)}
 \label{tab:hardware_diversity}
 \centering
-\begin{tabular}{@{}l c c c@{}}
+\begin{tabular}{@{}l c r r r@{}}
 \toprule
-Platform & Backend & Throughput (ksamples/s) & GPU mem (MB) \\
+Platform & Backend & Throughput & Power & Energy/sample \\
+         &         & (Mpath/s) & (W) & ($\mu$J) \\
 \midrule
-MacBook M1 CPU & torch-cpu & 16.88 & N/A \\
-Apple M2 Air CPU & torch-cpu & 16.78 & N/A \\
+MacBook M1 (CPU)  & torch-cpu  & 16.88 & ---  & ---   \\
+Apple M2 Air (CPU)& torch-cpu  & 16.78 & ---  & ---   \\
+RTX 3090          & torch-cuda & 11.51 & 11.3 & 0.98  \\
+V100 PCIe 16\,GB  & torch-cuda & 17.67 & 26.9 & 1.52  \\
+A100 80\,GB PCIe  & torch-cuda & 25.75 & 44.6 & 1.73  \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1176,23 +1182,35 @@ off-diagonal entries confirm spatial correlation of congestion propagation along
 \subsection{Performance Characteristics}
 \label{subsec:multigpu_scaling}
 
-Table~\ref{tab:multigpu_scaling} and Fig.~\ref{fig:multigpu_scaling} summarise weak and strong
-scaling with graph partitioning ($n=500$--$2000$, $\varepsilon=0.1$, $L=3$). Under weak scaling,
-per-GPU wall time stays flat at approximately 0.037 s; under strong scaling ($n=1000$), speedup
-is 2.04$\times$ at two GPUs and 4.13$\times$ at four GPUs. The near-ideal speedup confirms that
-halo-exchange overhead is negligible relative to per-node SDE computation.
+Table~\ref{tab:multigpu_scaling} reports distributed MLMC performance on a 4$\times$RTX\,3090
+pod (PCIe, no NVLink), measured after NCCL warmup ($\varepsilon{=}0.1$, $L_{\max}{=}2$,
+$N_{\mathrm{pilot}}{=}20$, seed 42). Under \emph{weak scaling} (each GPU processes a fixed
+base of $n{=}500$ nodes), the two-GPU run handles twice the graph in only 1\,ms more
+(99\% efficiency). At four GPUs the all-reduce latency over PCIe dominates, yielding 43\%
+efficiency; NVLink-connected hardware (e.g.\ DGX A100) would drop per-call latency from
+$\approx$5\,ms to $<$0.5\,ms, restoring near-linear scaling. Regardless of world size, all
+distributed runs produce statistically indistinguishable estimates for $n{=}1000$:
+$\bar{E}{=}12.89\pm0.04$ (CV\,$<$\,0.3\%), confirming distributed correctness. The primary
+multi-GPU benefit on PCIe hardware is \emph{memory capacity}: with $G$ GPUs each storing
+$n/G$ adjacency matrix columns, graphs too large for a single device are handled transparently.
 
 \begin{table}[!t]
-\caption{Multi-GPU MLMC Scaling ($N=1000$, $\varepsilon=0.1$)}
+\caption{Distributed MLMC on 4$\times$RTX\,3090 (post-NCCL-warmup, PCIe)}
 \label{tab:multigpu_scaling}
 \centering
-\begin{tabular}{@{}r r r r@{}}
+\begin{tabular}{@{}r r r r r@{}}
 \toprule
-GPUs & Max rank time (s) & Speedup & Ideal \\
+GPUs & $n$ & Time (s) & Efficiency & Estimate \\
 \midrule
-1 & 0.062 & $1.00\times$ & $1.00\times$ \\
-2 & 0.030 & $2.04\times$ & $2.00\times$ \\
-4 & 0.015 & $4.13\times$ & $4.00\times$ \\
+\multicolumn{5}{@{}l}{\textit{Weak scaling (base $n/G = 500$ per GPU)}} \\
+1 & 500  & 0.075 & 100\% & --- \\
+2 & 1000 & 0.076 & 99\%  & --- \\
+4 & 2000 & 0.175 & 43\%  & --- \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Estimate consistency ($n=1000$, strong scaling)}} \\
+1 & 1000 & 0.062 & --- & 12.902 \\
+2 & 1000 & 0.076 & --- & 12.923 \\
+4 & 1000 & 0.096 & --- & 12.845 \\
 \bottomrule
 \end{tabular}
 \end{table}

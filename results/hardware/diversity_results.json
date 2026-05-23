@@ -28,5 +28,50 @@
     "power_draw_w": null,
     "energy_j": null,
     "backend": "torch-cpu"
+  },
+  {
+    "device_label": "RTX_3090",
+    "gpu_name": "NVIDIA GeForce RTX 3090",
+    "platform": "Linux-6.8.0-111-generic-x86_64-with-glibc2.35",
+    "n_paths": 2000,
+    "n_flows": 5,
+    "n_bins": 24,
+    "elapsed_mean_s": 0.004170203208923340,
+    "elapsed_std_s": 2.1e-04,
+    "throughput_mean": 11507095.0,
+    "peak_gpu_mem_mb": 0.1943359375,
+    "power_draw_w": 11.29,
+    "energy_j": 0.04709,
+    "backend": "torch-cuda"
+  },
+  {
+    "device_label": "V100_PCIe_16GB",
+    "gpu_name": "Tesla V100-PCIE-16GB",
+    "platform": "Linux-6.8.0-45-generic-x86_64-with-glibc2.35",
+    "n_paths": 2000,
+    "n_flows": 5,
+    "n_bins": 24,
+    "elapsed_mean_s": 0.0027173444628715514,
+    "elapsed_std_s": 6.239936327304679e-05,
+    "throughput_mean": 17673660.6404667,
+    "peak_gpu_mem_mb": 0.1943359375,
+    "power_draw_w": 26.9,
+    "energy_j": 0.07309656605124473,
+    "backend": "torch-cuda"
+  },
+  {
+    "device_label": "A100_80GB_PCIe",
+    "gpu_name": "NVIDIA A100 80GB PCIe",
+    "platform": "Linux-6.5.0-35-generic-x86_64-with-glibc2.35",
+    "n_paths": 2000,
+    "n_flows": 5,
+    "n_bins": 24,
+    "elapsed_mean_s": 0.001864480972290039,
+    "elapsed_std_s": 1.211118733115757e-05,
+    "throughput_mean": 25745514.54300328,
+    "peak_gpu_mem_mb": 0.1943359375,
+    "power_draw_w": 44.63,
+    "energy_j": 0.08321178579330445,
+    "backend": "torch-cuda"
   }
 ]

@@ -1,0 +1,42 @@
+{
+  "description": "Real distributed NCCL results on 4×RTX3090 pod (RunPod), post-warmup timing. Warmup run executed before each timed run to exclude NCCL initialization (~1.3s) from measurement.",
+  "hardware": "4× NVIDIA GeForce RTX 3090 (24 GB each), PCIe-connected (no NVLink), CUDA 12.4, PyTorch 2.4.0",
+  "params": {"epsilon": 0.1, "L_max": 2, "N_pilot": 20, "seed": 42},
+  "strong_scaling": {
+    "description": "Fixed n_nodes, varying world_size",
+    "n_nodes": 1000,
+    "results": [
+      {"world_size": 1, "time_s": 0.062, "speedup": 1.00, "estimate": 12.9021},
+      {"world_size": 2, "time_s": 0.076, "speedup": 0.82, "estimate": 12.9230},
+      {"world_size": 4, "time_s": 0.096, "speedup": 0.65, "estimate": 12.8451}
+    ],
+    "note": "Communication-bound: all_reduce latency (~5ms warm) dominates compute for n=1000"
+  },
+  "weak_scaling": {
+    "description": "n_nodes = base_n × world_size, each GPU processes base_n=500 nodes",
+    "base_n": 500,
+    "results": [
+      {"world_size": 1, "n_nodes": 500,  "time_s": 0.075, "efficiency_pct": 100},
+      {"world_size": 2, "n_nodes": 1000, "time_s": 0.076, "efficiency_pct": 99},
+      {"world_size": 4, "n_nodes": 2000, "time_s": 0.175, "efficiency_pct": 43}
+    ],
+    "note": "ws=2 achieves near-ideal weak scaling (99%); ws=4 reduces to 43% due to PCIe all_reduce overhead"
+  },
+  "estimate_consistency": {
+    "n_nodes": 1000,
+    "world_sizes": [1, 2, 4],
+    "estimates": [12.9021, 12.9230, 12.8451],
+    "mean": 12.890,
+    "std": 0.040,
+    "note": "All world sizes produce statistically indistinguishable estimates, confirming distributed correctness"
+  },
+  "first_run_timing": {
+    "description": "Cold start timing (includes ~1.3s NCCL initialization on first all_reduce)",
+    "n_nodes": 1000,
+    "results": [
+      {"world_size": 1, "max_time_s": 0.541},
+      {"world_size": 2, "max_time_s": 1.350},
+      {"world_size": 4, "max_time_s": 1.690}
+    ]
+  }
+}
