@@ -1242,15 +1242,26 @@ class MultiGPUMLMC(GPUCoupledPropagationMLMC):
         # Write local results back into global state tensor
         Q_global[:, local_idx] = Q_new
 
-        # Halo exchange: only active when torch.distributed is initialized and world_size > 1
+        # Halo exchange: only active when torch.distributed is initialized and world_size > 1.
+        # Use paired isend/irecv to avoid the send-send deadlock that occurs when every rank
+        # posts a blocking send before its matching recv.
         if _DIST_AVAILABLE and dist.is_initialized() and dist.get_world_size() > 1:
             import torch
+            send_reqs, recv_bufs = [], []
             for (local_node, remote_node) in self._halo_edges:
                 remote_rank = int(self._partition_map[remote_node])
+                # Post non-blocking send of this rank's boundary node state
                 send_buf = Q_global[:, local_node].contiguous()
-                dist.send(send_buf, dst=remote_rank)
+                send_reqs.append(dist.isend(send_buf, dst=remote_rank))
+                # Post non-blocking recv for the ghost copy of the remote node
                 recv_buf = torch.zeros_like(Q_global[:, remote_node])
-                dist.recv(recv_buf, src=remote_rank)
+                recv_bufs.append((remote_node, recv_buf,
+                                  dist.irecv(recv_buf, src=remote_rank)))
+            # Wait for all sends then all recvs, then write ghost values
+            for req in send_reqs:
+                req.wait()
+            for remote_node, recv_buf, req in recv_bufs:
+                req.wait()
                 Q_global[:, remote_node] = recv_buf
 
         return Q_new, Q_global
