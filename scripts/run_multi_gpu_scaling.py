@@ -159,7 +159,6 @@ def main():
         dist.barrier()
         print(f"[rank {rank}] time={elapsed:.3f}s  estimate={result['estimate']:.4f}", flush=True)
         dist.destroy_process_group()
-        dist.destroy_process_group()
         return
 
     os.makedirs(args.out_dir, exist_ok=True)
