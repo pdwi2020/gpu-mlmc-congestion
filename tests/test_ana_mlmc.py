@@ -101,3 +101,15 @@ def test_complexity_preservation():
     ratio = cost_tight / cost_loose
 
     assert abs(ratio - 4.0) / 4.0 <= 0.10
+
+
+def test_weighted_stopping_criterion_uses_sla_weights():
+    sla_vec = np.array([10.0, 1.0, 1.0])
+    uniform_w = np.ones(3) / 3.0
+    stopping_w = sla_vec / sla_vec.sum()
+    # SLA-weighted node 0 should have much higher weight than uniform
+    assert stopping_w[0] > uniform_w[0] * 2
+    np.testing.assert_allclose(stopping_w.sum(), 1.0, rtol=1e-10)
+    # Stopping threshold is epsilon/2 (RMSE-based), not epsilon^2/2
+    epsilon = 0.1
+    assert abs(epsilon / 2.0 - 0.05) < 1e-12

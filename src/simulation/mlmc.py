@@ -866,9 +866,9 @@ class AdaptiveNetworkAwareMLMC(MLMCSimulator):
         """Run ANA-MLMC estimation for the weighted network quantity.
 
         Adaptive level selection: levels are added until the stopping criterion
-        max(|bias_l^w|, V_l^w / N_pilot) < epsilon^2 / 2 is satisfied or L_max
+        max(|bias_l^w|, V_l^w / N_pilot) < epsilon / 2 is satisfied or L_max
         is reached.  This ensures both the weighted bias and the weighted pilot
-        variance are below the MSE half-budget before committing to the full
+        variance are below the RMSE half-budget before committing to the full
         allocation.
         """
         if verbose:
@@ -877,8 +877,9 @@ class AdaptiveNetworkAwareMLMC(MLMCSimulator):
         per_node_variances = []
         costs = []
         pilot_diffs = []
-        mse_half = epsilon ** 2 / 2.0  # stopping threshold
+        stop_thresh = epsilon / 2.0  # RMSE half-budget per paper spec
         uniform_w = np.ones(network.n_nodes, dtype=float) / network.n_nodes
+        stopping_w = sla_vec / sla_vec.sum() if (sla_vec is not None and float(np.sum(sla_vec)) > 0) else uniform_w
 
         for l in range(L_max + 1):
             _, var_diff, cost, diffs = self.estimate_level_variance_per_node(
@@ -895,24 +896,24 @@ class AdaptiveNetworkAwareMLMC(MLMCSimulator):
             costs.append(cost)
             pilot_diffs.append(diffs)
 
-            # Weighted quantities for stopping check (use uniform weights at pilot stage;
-            # full ANA weights are computed after all pilot levels are complete)
-            V_lw = float(np.dot(uniform_w, var_diff))
-            bias_lw = float(abs(np.dot(uniform_w, np.mean(diffs, axis=0))))
+            # Weighted quantities for stopping check use SLA weights when provided;
+            # full ANA weights are computed after all pilot levels are complete.
+            V_lw = float(np.dot(stopping_w, var_diff))
+            bias_lw = float(abs(np.dot(stopping_w, np.mean(diffs, axis=0))))
 
             if verbose:
                 logger.info(
                     f"  Level {l}: V_lw={V_lw:.3e}  bias_lw={bias_lw:.3e}  "
-                    f"threshold={mse_half:.3e}  C={cost:.2e}"
+                    f"threshold={stop_thresh:.3e}  C={cost:.2e}"
                 )
 
-            # Adaptive stopping: both weighted variance and bias below half MSE budget
-            if l > 0 and max(bias_lw, V_lw / pilot_samples) < mse_half:
+            # Adaptive stopping: both weighted variance and bias below half RMSE budget
+            if l > 0 and max(bias_lw, V_lw / pilot_samples) < stop_thresh:
                 if verbose:
                     logger.info(
                         f"  Adaptive stopping at level {l}: "
                         f"max(bias_lw={bias_lw:.3e}, V_lw/N={V_lw/pilot_samples:.3e}) "
-                        f"< ε²/2={mse_half:.3e}"
+                        f"< ε/2={stop_thresh:.3e}"
                     )
                 break
 

@@ -17,6 +17,12 @@ import time
 from pathlib import Path
 import sys
 
+try:
+    import torch.distributed as dist
+    _DIST_AVAILABLE = True
+except ImportError:
+    _DIST_AVAILABLE = False
+
 # Add parent directory
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -1236,13 +1242,16 @@ class MultiGPUMLMC(GPUCoupledPropagationMLMC):
         # Write local results back into global state tensor
         Q_global[:, local_idx] = Q_new
 
-        # Halo exchange: in distributed mode, send/recv boundary values
-        # In single-process simulation, no exchange is needed (Q_global is shared)
-        # In true multi-GPU (torchrun), this would be:
-        #   for (local_node, remote_node) in self._halo_edges:
-        #       remote_rank = self._partition_map[remote_node]
-        #       dist.send(Q_global[:, local_node], dst=remote_rank)
-        #       dist.recv(Q_global[:, remote_node], src=remote_rank)
+        # Halo exchange: only active when torch.distributed is initialized and world_size > 1
+        if _DIST_AVAILABLE and dist.is_initialized() and dist.get_world_size() > 1:
+            import torch
+            for (local_node, remote_node) in self._halo_edges:
+                remote_rank = int(self._partition_map[remote_node])
+                send_buf = Q_global[:, local_node].contiguous()
+                dist.send(send_buf, dst=remote_rank)
+                recv_buf = torch.zeros_like(Q_global[:, remote_node])
+                dist.recv(recv_buf, src=remote_rank)
+                Q_global[:, remote_node] = recv_buf
 
         return Q_new, Q_global
 
@@ -1369,78 +1378,36 @@ class MultiGPUMLMC(GPUCoupledPropagationMLMC):
         }
 
 
-if __name__ == "__main__":
-    # Example usage
-    logging.basicConfig(level=logging.INFO)
+if __name__ == '__main__':
+    import argparse, json
+    parser = argparse.ArgumentParser(description='MultiGPUMLMC torchrun entry point')
+    parser.add_argument('--world-size', type=int, default=1)
+    parser.add_argument('--epsilon', type=float, default=0.05)
+    parser.add_argument('--L-max', type=int, default=5)
+    parser.add_argument('--n-nodes', type=int, default=500)
+    parser.add_argument('--seed', type=int, default=42)
+    args = parser.parse_args()
 
-    print("=" * 60)
-    print("GPU-Accelerated Monte Carlo - Example Usage")
-    print("=" * 60)
+    import numpy as np
+    import sys, os
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+    from network.topology import TopologyGenerator
 
-    if not PYCUDA_AVAILABLE:
-        print("\nPyCUDA not available. GPU acceleration disabled.")
-    else:
-        from network.topology import TopologyGenerator
-        from network.traffic import PoissonTraffic
+    rng = np.random.default_rng(args.seed)
+    graph = TopologyGenerator(seed=args.seed).generate_erdos_renyi(
+        n_nodes=args.n_nodes, p=0.3)
+    adj = graph.get_adjacency_matrix()
 
-        # Create network and traffic
-        gen = TopologyGenerator(seed=42)
-        network = gen.generate_erdos_renyi(n_nodes=50, p=0.1)
-        network.set_link_properties(seed=42)
+    rank = 0
+    if _DIST_AVAILABLE and args.world_size > 1:
+        dist.init_process_group(backend='gloo')
+        rank = dist.get_rank()
 
-        traffic = PoissonTraffic(rate=10.0, seed=42)
+    sim = MultiGPUMLMC(adj, world_size=args.world_size, rank=rank)
+    result = sim.mlmc_estimate_multigpu(
+        epsilon=args.epsilon, L_max=args.L_max)
+    if rank == 0:
+        print(json.dumps(result, default=float, indent=2))
 
-        # GPU Monte Carlo
-        print("\n1. GPU Monte Carlo Simulation")
-        print("-" * 60)
-
-        gpu_mc = GPUMonteCarloSimulator()
-        result = gpu_mc.estimate(
-            network=network,
-            traffic=traffic,
-            n_samples=10000,
-            T=10.0,
-            dt=0.1,
-            verbose=True
-        )
-
-        print(f"\nResult: {result.summary()}")
-        print(f"GPU throughput: {result.metadata['throughput_samples_per_sec']:.0f} samples/sec")
-
-        # GPU MLMC
-        print("\n2. GPU MLMC Simulation")
-        print("-" * 60)
-
-        gpu_mlmc = GPUMLMCSimulator(refinement_factor=2)
-        mlmc_result = gpu_mlmc.mlmc_estimate_gpu(
-            network=network,
-            traffic=traffic,
-            epsilon=0.01,
-            L_max=3,
-            T=10.0,
-            base_dt=0.1,
-            pilot_samples=50,
-            verbose=True
-        )
-
-        print(f"\nResult: {mlmc_result.summary()}")
-
-        # Speedup benchmark
-        print("\n3. GPU Speedup Benchmark")
-        print("-" * 60)
-
-        benchmark = gpu_mc.benchmark_speedup(
-            network=network,
-            traffic=traffic,
-            n_samples_list=[100, 500, 1000, 5000],
-            T=5.0,
-            dt=0.1
-        )
-
-        print("\nSpeedup results:")
-        for i, n in enumerate(benchmark['n_samples']):
-            print(f"  N={n:5d}: GPU={benchmark['gpu_time'][i]:.2f}s, "
-                  f"CPU={benchmark['cpu_time'][i]:.2f}s, "
-                  f"Speedup={benchmark['speedup'][i]:.1f}x")
-
-    print("\n" + "=" * 60)
+    if _DIST_AVAILABLE and dist.is_initialized():
+        dist.destroy_process_group()
