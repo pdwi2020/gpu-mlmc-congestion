@@ -56,6 +56,13 @@ def bench_rank(adj, world_size, rank, epsilon, L_max, N_pilot, seed):
     t0 = time.perf_counter()
     result = sim.mlmc_estimate_multigpu(epsilon=epsilon, L_max=L_max, N_pilot=N_pilot)
     elapsed = time.perf_counter() - t0
+    del sim
+    try:
+        import torch
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    except ImportError:
+        pass
     return elapsed, result
 
 
