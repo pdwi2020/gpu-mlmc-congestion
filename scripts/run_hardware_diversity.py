@@ -138,7 +138,7 @@ def main():
     parser.add_argument("--n-paths", type=int, default=2000)
     parser.add_argument("--n-flows", type=int, default=5)
     parser.add_argument("--n-bins", type=int, default=24)
-    parser.add_argument("--n-runs", type=int, default=3,
+    parser.add_argument("--n-runs", type=int, default=5,
                         help="Repeat runs to get stable timing")
     parser.add_argument("--out-dir", default="results/hardware")
     args = parser.parse_args()

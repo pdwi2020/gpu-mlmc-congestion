@@ -118,14 +118,14 @@ def strong_scaling(n, world_sizes, epsilon, L_max, N_pilot, seed):
 
 def main():
     parser = argparse.ArgumentParser(description="MultiGPUMLMC scaling benchmark")
-    parser.add_argument("--base-n", type=int, default=100,
-                        help="Base number of nodes for weak scaling")
-    parser.add_argument("--strong-n", type=int, default=200,
+    parser.add_argument("--base-n", type=int, default=1250,
+                        help="Base number of nodes for weak scaling (×world_size gives 1250/2500/5000)")
+    parser.add_argument("--strong-n", type=int, default=5000,
                         help="Fixed node count for strong scaling")
     parser.add_argument("--world-sizes", type=int, nargs="+", default=[1, 2, 4])
-    parser.add_argument("--epsilon", type=float, default=0.1)
-    parser.add_argument("--L-max", type=int, default=3)
-    parser.add_argument("--N-pilot", type=int, default=50)
+    parser.add_argument("--epsilon", type=float, default=0.05)
+    parser.add_argument("--L-max", type=int, default=4)
+    parser.add_argument("--N-pilot", type=int, default=200)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--out-dir", default="results/multi_gpu")
     parser.add_argument("--distributed", action="store_true",
