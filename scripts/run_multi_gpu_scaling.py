@@ -151,9 +151,10 @@ def main():
         sim = MultiGPUMLMC(adj, world_size=world_size, rank=rank, seed=args.seed)
         result = sim.mlmc_estimate_multigpu(args.epsilon, args.L_max, args.N_pilot)
         elapsed = time.perf_counter() - t0
-        # Gather timing across all ranks
+        # Gather timing across all ranks (must be CUDA tensor for NCCL backend)
         import torch
-        t_tensor = torch.tensor([elapsed])
+        device = torch.device(f"cuda:{rank}" if torch.cuda.is_available() else "cpu")
+        t_tensor = torch.tensor([elapsed], device=device)
         dist.all_reduce(t_tensor, op=dist.ReduceOp.MAX)
         if rank == 0:
             print(f"Max time across {world_size} GPUs: {t_tensor.item():.3f}s")
