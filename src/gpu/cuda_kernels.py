@@ -18,7 +18,10 @@ logger = logging.getLogger(__name__)
 # Check PyCUDA availability
 try:
     import pycuda.autoinit
-    import pycuda.curand as curand
+    try:
+        import pycuda.curand as curand
+    except ImportError:
+        import pycuda.curandom as curand  # newer pycuda renamed the module
     import pycuda.driver as cuda
     from pycuda import gpuarray
     from pycuda.compiler import SourceModule
@@ -287,7 +290,7 @@ class GPUQueueSimulator:
         # For production use requiring better RNG, consider generating noise
         # on CPU with numpy and transferring to GPU, or using cuRAND host API
         # with MRG32k3a generator.
-        self.rng = curand.XORWOWRandomNumberGenerator(seed=seed if seed else 0)
+        self.rng = curand.XORWOWRandomNumberGenerator(offset=seed if seed else 0)
 
     def simulate_paths(
         self,
@@ -326,8 +329,8 @@ class GPUQueueSimulator:
         noise = gpuarray.empty((n_timesteps, n_paths), dtype=np.float32)
         self.rng.fill_normal(noise)
 
-        # Scale noise by sqrt(dt) for Brownian increments
-        noise = noise * np.sqrt(dt)
+        # Scale noise by sqrt(dt) for Brownian increments (keep float32)
+        noise = noise * np.float32(np.sqrt(dt))
 
         # Configure grid
         grid_size = (n_paths + block_size - 1) // block_size
@@ -416,7 +419,7 @@ class GPUQueueSimulator:
         # for all path_id values — fully coalesced reads in the CUDA kernel.
         noise_fine = gpuarray.empty((n_timesteps_fine, n_paths), dtype=np.float32)
         self.rng.fill_normal(noise_fine)
-        noise_fine = noise_fine * np.sqrt(dt_fine)
+        noise_fine = noise_fine * np.float32(np.sqrt(dt_fine))
 
         # Configure grid
         grid_size = (n_paths + block_size - 1) // block_size
@@ -597,14 +600,14 @@ __global__ void simulate_queue_dynamics_transposed(
     # ------------------------------------------------------------------
     # Benchmark legacy layout
     # ------------------------------------------------------------------
-    rng = curand.XORWOWRandomNumberGenerator(seed=0)
+    rng = curand.XORWOWRandomNumberGenerator(offset=0)
 
     legacy_times = []
     for _ in range(n_repeats):
         states_legacy = gpuarray.zeros((n_paths, n_timesteps), dtype=np.float32)
         noise_legacy = gpuarray.empty((n_paths, n_timesteps), dtype=np.float32)
         rng.fill_normal(noise_legacy)
-        noise_legacy = noise_legacy * float(np.sqrt(dt))
+        noise_legacy = noise_legacy * np.float32(np.sqrt(dt))
 
         cuda.Context.synchronize()
         t0 = time.perf_counter()
@@ -635,7 +638,7 @@ __global__ void simulate_queue_dynamics_transposed(
         states_transposed = gpuarray.zeros((n_timesteps, n_paths), dtype=np.float32)
         noise_transposed = gpuarray.empty((n_timesteps, n_paths), dtype=np.float32)
         rng.fill_normal(noise_transposed)
-        noise_transposed = noise_transposed * float(np.sqrt(dt))
+        noise_transposed = noise_transposed * np.float32(np.sqrt(dt))
 
         cuda.Context.synchronize()
         t0 = time.perf_counter()

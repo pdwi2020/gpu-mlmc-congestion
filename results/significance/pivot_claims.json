@@ -1,0 +1,504 @@
+{
+  "provenance": {
+    "git_sha": "539fd856f1847518587bec0657e59f9d59cd23b3",
+    "timestamp_utc": "2026-07-24T06:40:48.366500+00:00",
+    "numpy": "2.3.4"
+  },
+  "crossover_claims": [
+    {
+      "claim_id": "crossover_eps_0.002",
+      "epsilon": 0.002,
+      "n_seeds": 3,
+      "W_MC_mean": 8000.0,
+      "W_MC_sd": 0.0,
+      "W_MLMC_mean": 23000.0,
+      "W_MLMC_sd": 0.0,
+      "ratio_MC_over_MLMC": {
+        "point_estimate": 0.34782608695652173,
+        "ci_lower": 0.34782608695652173,
+        "ci_upper": 0.34782608695652173,
+        "standard_error": 0.0,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 10000,
+        "method": "percentile (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": "BCa warnings: invalid value encountered in scalar divide; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; BCa produced a non-finite CI (degenerate statistic, e.g. zero variance); BCa was degenerate for this sample; used percentile bootstrap instead",
+        "paired": true
+      },
+      "mlmc_cheaper": false
+    },
+    {
+      "claim_id": "crossover_eps_0.001",
+      "epsilon": 0.001,
+      "n_seeds": 3,
+      "W_MC_mean": 8000.0,
+      "W_MC_sd": 0.0,
+      "W_MLMC_mean": 23236.666666666668,
+      "W_MLMC_sd": 115.03622617824931,
+      "ratio_MC_over_MLMC": {
+        "point_estimate": 0.34428346004877347,
+        "ci_lower": 0.3426124197002141,
+        "ci_upper": 0.3460207612456747,
+        "standard_error": 0.0008091327043755229,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 10000,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "mlmc_cheaper": false
+    },
+    {
+      "claim_id": "crossover_eps_0.0005",
+      "epsilon": 0.0005,
+      "n_seeds": 3,
+      "W_MC_mean": 13440.0,
+      "W_MC_sd": 2421.239352067449,
+      "W_MLMC_mean": 25433.333333333332,
+      "W_MLMC_sd": 445.2340208624374,
+      "ratio_MC_over_MLMC": {
+        "point_estimate": 0.5284403669724771,
+        "ci_lower": 0.46223604093794535,
+        "ci_upper": 0.6469175340272217,
+        "standard_error": 0.048898808182477306,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 10000,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "mlmc_cheaper": false
+    },
+    {
+      "claim_id": "crossover_eps_0.0002",
+      "epsilon": 0.0002,
+      "n_seeds": 3,
+      "W_MC_mean": 83466.66666666667,
+      "W_MC_sd": 15052.193638580835,
+      "W_MLMC_mean": 46530.0,
+      "W_MLMC_sd": 4049.493795525559,
+      "ratio_MC_over_MLMC": {
+        "point_estimate": 1.7938247725481768,
+        "ci_lower": 1.4995598293492245,
+        "ci_upper": 2.352168815943728,
+        "standard_error": 0.2231541124956484,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 10000,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "mlmc_cheaper": true
+    },
+    {
+      "claim_id": "crossover_eps_0.0001",
+      "epsilon": 0.0001,
+      "n_seeds": 3,
+      "W_MC_mean": 333546.6666666667,
+      "W_MC_sd": 60208.77455432334,
+      "W_MLMC_mean": 153113.33333333334,
+      "W_MLMC_sd": 20986.722786879644,
+      "ratio_MC_over_MLMC": {
+        "point_estimate": 2.1784299211912743,
+        "ci_lower": 1.6348623853211008,
+        "ci_upper": 3.0274841437632136,
+        "standard_error": 0.33150623027373294,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 10000,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "mlmc_cheaper": true
+    }
+  ],
+  "rare_event_claims": [
+    {
+      "claim_id": "rare_event_B10",
+      "B": 10.0,
+      "exact_P": 0.028399003017115926,
+      "methods": {
+        "plain_mc": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 0.028298,
+          "work_mean": 10000000.0,
+          "efficiency": {
+            "point_estimate": 9653.494779350387,
+            "ci_lower": 4658.379917937711,
+            "ci_upper": 17012.87470107121,
+            "standard_error": 3069.513724309184,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        },
+        "gpu_mlmc_is": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 0.029082134635609668,
+          "work_mean": 10000000.0,
+          "efficiency": {
+            "point_estimate": 54142.20929014523,
+            "ci_lower": 22091.358103280912,
+            "ci_upper": 140449.16298032762,
+            "standard_error": 25326.540251390903,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        },
+        "ams": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 0.027788749999999994,
+          "work_mean": 877714.5,
+          "efficiency": {
+            "point_estimate": 1044.714286861633,
+            "ci_lower": 516.7556055133197,
+            "ci_upper": 1915.496579180441,
+            "standard_error": 338.7192020976846,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        },
+        "cross_entropy": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 0.028271773920676445,
+          "work_mean": 15000000.0,
+          "efficiency": {
+            "point_estimate": 31527.119342023983,
+            "ci_lower": 16642.2469085462,
+            "ci_upper": 58836.57554288371,
+            "standard_error": 10051.30093630918,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        },
+        "fixed_splitting": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 0.028021502097563662,
+          "work_mean": 2126870.7,
+          "efficiency": {
+            "point_estimate": 6900.077582276613,
+            "ci_lower": 3330.6599469459384,
+            "ci_upper": 11296.073469256073,
+            "standard_error": 2043.1636513994029,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        }
+      },
+      "ams_efficiency_gain_over_is": 51.82489602280713
+    },
+    {
+      "claim_id": "rare_event_B15",
+      "B": 15.0,
+      "exact_P": 0.0006341026683676603,
+      "methods": {
+        "plain_mc": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 0.0006119999999999999,
+          "work_mean": 10000000.0,
+          "efficiency": {
+            "point_estimate": 336856.3295641769,
+            "ci_lower": 132077.94409539254,
+            "ci_upper": 1022377.9327251799,
+            "standard_error": 169273.4113574315,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        },
+        "gpu_mlmc_is": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 0.0008276322165088315,
+          "work_mean": 10000000.0,
+          "efficiency": {
+            "point_estimate": 2086996.2154954222,
+            "ci_lower": 667306.4832811869,
+            "ci_upper": 5690992.461673998,
+            "standard_error": 1087442.4958497395,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        },
+        "ams": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 0.000631640625,
+          "work_mean": 1068903.0,
+          "efficiency": {
+            "point_estimate": 4328.051876311035,
+            "ci_lower": 2205.588685726267,
+            "ci_upper": 10081.245584092954,
+            "standard_error": 1705.3067577392376,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        },
+        "cross_entropy": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 0.0007046900755294245,
+          "work_mean": 16000000.0,
+          "efficiency": {
+            "point_estimate": 751323.856571161,
+            "ci_lower": 329175.15417687397,
+            "ci_upper": 1495766.075078002,
+            "standard_error": 280034.18074615253,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        },
+        "fixed_splitting": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 0.0006136331955552208,
+          "work_mean": 1719972.2,
+          "efficiency": {
+            "point_estimate": 34641.23740172475,
+            "ci_lower": 16377.791133357781,
+            "ci_upper": 66929.29927564727,
+            "standard_error": 12075.581483675998,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        }
+      },
+      "ams_efficiency_gain_over_is": 482.2022182585874
+    },
+    {
+      "claim_id": "rare_event_B20",
+      "B": 20.0,
+      "exact_P": 4.247501142726173e-06,
+      "methods": {
+        "plain_mc": {
+          "frac_nondegenerate": 0.3,
+          "mean_estimate": 2e-05,
+          "work_mean": 10000000.0,
+          "efficiency": {
+            "point_estimate": 137540913.61078006,
+            "ci_lower": 137540913.61078006,
+            "ci_upper": 137540913.61078006,
+            "standard_error": 2.9803812615582716e-08,
+            "confidence": 0.95,
+            "n": 3,
+            "n_resamples": 10000,
+            "method": "percentile",
+            "insufficient_n": true,
+            "note": "BCa warnings: invalid value encountered in scalar divide; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; BCa produced a non-finite CI (degenerate statistic, e.g. zero variance); BCa was degenerate for this sample; used percentile bootstrap instead"
+          },
+          "degenerate": false
+        },
+        "gpu_mlmc_is": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 1.3918928686254188e-05,
+          "work_mean": 10000000.0,
+          "efficiency": {
+            "point_estimate": 89656397.77095567,
+            "ci_lower": 31349544.15667606,
+            "ci_upper": 240169355.7457525,
+            "standard_error": 44693557.732671134,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        },
+        "ams": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 4.267578125e-06,
+          "work_mean": 1239457.2,
+          "efficiency": {
+            "point_estimate": 42871.54023153162,
+            "ci_lower": 22917.569312682415,
+            "ci_upper": 71843.6071149492,
+            "standard_error": 12226.74618019119,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        },
+        "cross_entropy": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 1.1322330395110909e-05,
+          "work_mean": 17000000.0,
+          "efficiency": {
+            "point_estimate": 74931835.28371252,
+            "ci_lower": 30691402.09500353,
+            "ci_upper": 138239456.05799654,
+            "standard_error": 26965310.112272587,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        },
+        "fixed_splitting": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 5.171164976326691e-06,
+          "work_mean": 1462372.9,
+          "efficiency": {
+            "point_estimate": 166027.1426642156,
+            "ci_lower": 59155.75398247155,
+            "ci_upper": 419368.2990779299,
+            "standard_error": 78681.85978922698,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        }
+      },
+      "ams_efficiency_gain_over_is": 2091.280072671945
+    },
+    {
+      "claim_id": "rare_event_B25",
+      "B": 25.0,
+      "exact_P": 8.29109774195764e-09,
+      "methods": {
+        "plain_mc": {
+          "frac_nondegenerate": 0.0,
+          "degenerate": true
+        },
+        "gpu_mlmc_is": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 1.9446813012372336e-07,
+          "work_mean": 10000000.0,
+          "efficiency": {
+            "point_estimate": 10468757667.503706,
+            "ci_lower": 2794180512.135925,
+            "ci_upper": 35756804245.58571,
+            "standard_error": 6443876896.002266,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        },
+        "ams": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 8.613169193267824e-09,
+          "work_mean": 1378289.9,
+          "efficiency": {
+            "point_estimate": 220007.99720263426,
+            "ci_lower": 92561.14055899701,
+            "ci_upper": 443846.99051965645,
+            "standard_error": 84797.54495452465,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        },
+        "cross_entropy": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 1.4010741151528067e-07,
+          "work_mean": 18000000.0,
+          "efficiency": {
+            "point_estimate": 6062758022.658961,
+            "ci_lower": 3178286087.9373755,
+            "ci_upper": 11704004031.381874,
+            "standard_error": 2016423824.4293387,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        },
+        "fixed_splitting": {
+          "frac_nondegenerate": 1.0,
+          "mean_estimate": 7.991085343839616e-09,
+          "work_mean": 1266094.4,
+          "efficiency": {
+            "point_estimate": 192123.19508516873,
+            "ci_lower": 76074.13055411083,
+            "ci_upper": 394672.006805597,
+            "standard_error": 75930.38194002933,
+            "confidence": 0.95,
+            "n": 10,
+            "n_resamples": 10000,
+            "method": "BCa",
+            "insufficient_n": false,
+            "note": null
+          },
+          "degenerate": false
+        }
+      },
+      "ams_efficiency_gain_over_is": 47583.53241978587
+    }
+  ]
+}

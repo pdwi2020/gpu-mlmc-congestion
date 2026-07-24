@@ -1,0 +1,12 @@
+# git_sha=unknown
+# timestamp_utc=2026-07-24T07:03:18.827665+00:00
+# device=cuda (NVIDIA A100-PCIE-40GB)
+# torch=2.4.0 numpy=1.26.4 python=3.11.9
+# config={"L_max": 4, "T": 1.0, "adaptive_rtol": 0.001, "base_dt": 0.1, "decay_rate": 0.5, "epsilon": 0.0005, "influence_strength": 0.1, "is_n_paths": 5000, "is_strength": 1.0, "is_target_node": null, "is_threshold_k": 4.0, "multi_gpu_world_size": 2, "n_nodes": 500, "noise_intensity": 0.433, "pilot_samples": 50, "quick": false, "reference_L_max_bonus": 1, "reference_epsilon_factor": 5.0, "reference_pilot_samples": 200, "rungs": ["R0", "R1"], "seeds": [0, 1, 2], "topologies": ["ba"]}
+topology_requested,topology_used,rung,rung_label,estimand_family,seed,status,estimate,variance,ci_half_width,work_units,wall_s,reference,achieved_mse,samples_per_level,comparable,comparable_note
+ba,ba,R0,single-level GPU MC baseline,uniform_mean,0,ok,0.2677651345729828,2.3604252999846606e-07,0.0009522329856298642,75200.0,0.05718484986573458,0.27172560384497046,1.5685316854358597e-05,[470],True,
+ba,ba,R0,single-level GPU MC baseline,uniform_mean,1,ok,0.2672351002693176,2.71417674914336e-07,0.001021097361367645,53600.0,0.05390190053731203,0.2719203340820968,2.195141588040941e-05,[335],True,
+ba,ba,R0,single-level GPU MC baseline,uniform_mean,2,ok,0.26716530323028564,2.61551313112341e-07,0.0010023664992504155,59040.0,0.05305549222975969,0.27185172913596034,2.1962587769378894e-05,[369],True,
+ba,ba,R1,"+ MLMC, uniform Giles allocation",uniform_mean,0,ok,0.26784319151192904,1.254869207434486e-07,0.0006943002510237666,36510.0,0.0616155881434679,0.27172560384497046,1.5073125523752196e-05,"[1158, 99, 66, 50, 50]",True,
+ba,ba,R1,"+ MLMC, uniform Giles allocation",uniform_mean,1,ok,0.2677770680747926,1.0089110260340094e-07,0.0006225504124369292,42530.0,0.06209634430706501,0.2719203340820968,1.7166653207282417e-05,"[1577, 134, 79, 50, 50]",True,
+ba,ba,R1,"+ MLMC, uniform Giles allocation",uniform_mean,2,ok,0.2678377307020128,1.0905683600324532e-07,0.0006472536941738219,39180.0,0.06225383747369051,0.27185172913596034,1.611218342773349e-05,"[1380, 118, 64, 50, 50]",True,
