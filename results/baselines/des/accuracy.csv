@@ -1,0 +1,10 @@
+# git_sha=f8d896188ed1f1623eca99e5a8bf300d2381abc4-dirty
+# timestamp_utc=2026-07-24T06:42:40.843115+00:00
+# device=cpu
+# cpu_model=Apple M2  os_cpu_count=8  requested_threads=8
+# torch=2.10.0 numpy=2.3.4 scipy=1.16.3 python=3.14.3
+# config={"L_max": 3, "T": 2.0, "alpha": 0.1, "avg_degree": 10.0, "base_dt": 0.05, "beta": 0.5, "epsilons": [0.1], "lam": 0.3, "max_reps": 50, "min_reps": 8, "mode": "all", "n_nodes": [12], "p_er": null, "pilot_samples": 30, "quick": true, "sample_dt": 0.1, "sde_compare_reps": 10, "seeds": [0, 1, 2], "service_dist": "exponential", "sigma": 0.1, "topologies": ["er"], "warmup_frac": 0.2}
+topology,topology_note,n_nodes,seed,epsilon,des_estimate,des_ci_halfwidth,des_converged,des_replications,des_total_events,des_wall_s,mlmc_estimate,mlmc_ci_halfwidth,mlmc_total_work_w,mlmc_wall_s,des_to_mlmc_wall_ratio
+er,,12,0,0.1,0.2216393849206349,0.09341783224186681,True,8,83,0.0024627079983474687,0.4240861477478976,0.012078120628686023,18000.0,0.1680443329969421,0.014655108889582623
+er,,12,1,0.1,0.22190231643356645,0.07741361095306261,True,8,77,0.0018481669976608828,0.41177775709136355,0.011571658425066508,18000.0,0.16662016699410742,0.01109209665914117
+er,,12,2,0.1,0.2353278151889263,0.09833685287271292,True,9,80,0.0018635840024217032,0.4253430286989827,0.011083839035873627,18000.0,0.16745954100042582,0.011128562704091996

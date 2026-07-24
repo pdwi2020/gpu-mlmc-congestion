@@ -265,7 +265,7 @@ class GPUMemoryPool:
         Returns:
             GPUArray (reused or newly allocated)
         """
-        key = (shape, dtype)
+        key = (shape, np.dtype(dtype))
 
         # Check if available in pool
         if key in self.pools and len(self.pools[key]) > 0:
@@ -287,7 +287,7 @@ class GPUMemoryPool:
         """
         shape = array.shape
         dtype = array.dtype
-        key = (shape, dtype)
+        key = (shape, np.dtype(dtype))
 
         if key not in self.pools:
             self.pools[key] = []

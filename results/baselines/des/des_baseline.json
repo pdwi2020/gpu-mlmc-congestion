@@ -1,0 +1,106 @@
+{
+  "provenance": {
+    "git_sha": "f8d896188ed1f1623eca99e5a8bf300d2381abc4-dirty",
+    "timestamp_utc": "2026-07-24T06:43:12.515016+00:00",
+    "device": "cpu",
+    "cpu_model": "Apple M2",
+    "os_cpu_count": 8,
+    "thread_config": {
+      "requested_threads": 8,
+      "os_cpu_count": 8,
+      "threadpoolctl_pools": []
+    },
+    "torch_version": "2.10.0",
+    "numpy_version": "2.3.4",
+    "scipy_version": "1.16.3",
+    "python_version": "3.14.3",
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "config": {
+      "mode": "sde-compare",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "n_nodes": [
+        200
+      ],
+      "topologies": [
+        "er"
+      ],
+      "epsilons": [
+        0.05,
+        0.02,
+        0.01
+      ],
+      "lam": 0.3,
+      "alpha": 0.1,
+      "beta": 0.5,
+      "sigma": 0.1,
+      "service_dist": "exponential",
+      "T": 20.0,
+      "base_dt": 0.05,
+      "sample_dt": 0.1,
+      "warmup_frac": 0.2,
+      "L_max": 3,
+      "pilot_samples": 30,
+      "sde_compare_reps": 200,
+      "min_reps": 8,
+      "max_reps": 20000,
+      "avg_degree": 10.0,
+      "p_er": null,
+      "quick": false
+    }
+  },
+  "accuracy": [],
+  "sde_compare": [
+    {
+      "topology": "er",
+      "topology_note": null,
+      "n_nodes": 200,
+      "seed": 0,
+      "n_reps": 200,
+      "des_mean": 0.7236365624999999,
+      "des_var": 0.0010116816142234615,
+      "des_wall_s": 6.569418125000084,
+      "sde_mean": 0.7494324383323994,
+      "sde_var": 5.3907759506856533e-05,
+      "sde_wall_s": 1.5196377920001396,
+      "rel_diff_mean_pct": 3.564755730871395,
+      "welch_z_stat": -11.175586777204277,
+      "diverges_wildly": true
+    },
+    {
+      "topology": "er",
+      "topology_note": null,
+      "n_nodes": 200,
+      "seed": 1,
+      "n_reps": 200,
+      "des_mean": 0.727798125,
+      "des_var": 0.00116004614714196,
+      "des_wall_s": 6.641050999998697,
+      "sde_mean": 0.7492331261842969,
+      "sde_var": 6.714754828277423e-05,
+      "sde_wall_s": 1.5037350420025177,
+      "rel_diff_mean_pct": 2.9451849967732433,
+      "welch_z_stat": -8.653303815044568,
+      "diverges_wildly": true
+    },
+    {
+      "topology": "er",
+      "topology_note": null,
+      "n_nodes": 200,
+      "seed": 2,
+      "n_reps": 200,
+      "des_mean": 0.7248750000000002,
+      "des_var": 0.0012159684751884424,
+      "des_wall_s": 6.6266755830001784,
+      "sde_mean": 0.749228661077239,
+      "sde_var": 5.9262298216514514e-05,
+      "sde_wall_s": 1.5046324170034495,
+      "rel_diff_mean_pct": 3.3597049252959192,
+      "welch_z_stat": -9.644614279178155,
+      "diverges_wildly": true
+    }
+  ]
+}

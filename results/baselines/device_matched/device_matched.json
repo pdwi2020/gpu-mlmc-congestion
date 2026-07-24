@@ -1,0 +1,58 @@
+{
+  "provenance": {
+    "git_sha": "128b356ad9791b78b95b510e05dee6872b62a951-dirty",
+    "timestamp_utc": "2026-07-24T09:02:14.969356+00:00",
+    "device": "cpu",
+    "cpu_model": "Apple M2",
+    "os_cpu_count": 8,
+    "thread_config": {
+      "requested_threads": 8,
+      "os_cpu_count": 8,
+      "threadpoolctl_pools": []
+    },
+    "torch_version": "2.10.0",
+    "numpy_version": "2.3.4",
+    "scipy_version": "1.16.3",
+    "python_version": "3.14.3",
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "config": {
+      "devices": [
+        "cpu"
+      ],
+      "n_nodes": [
+        100
+      ],
+      "epsilons": [
+        0.02
+      ],
+      "seeds": [
+        0
+      ],
+      "topology": "ba",
+      "alpha": 0.1,
+      "beta": 0.5,
+      "sigma": 0.433,
+      "T": 1.0,
+      "base_dt": 0.1,
+      "L_max": 4,
+      "pilot_samples": 50,
+      "metric": "mean_congestion",
+      "agreement_rtol": 0.05,
+      "threads": null,
+      "quick": true,
+      "out": "/Users/paritoshdwivedi/projects/GPU-Acc-Net-Prop-Congestion-Multi-Monte-Carlo/results/baselines/device_matched"
+    }
+  },
+  "rows": [
+    {
+      "topology": "ba",
+      "n_nodes": 100,
+      "epsilon": 0.02,
+      "seed": 0,
+      "cpu_wall_s": 0.3862048329974641,
+      "cpu_estimate": 0.2698929035104811,
+      "cpu_work_units": 15500.0,
+      "cpu_throughput_work_per_s": 40134.14301343499
+    }
+  ]
+}

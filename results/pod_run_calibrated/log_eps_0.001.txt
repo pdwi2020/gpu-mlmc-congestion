@@ -1,0 +1,50 @@
+PyCUDA not available. GPU kernels will not be compiled.
+PyCUDA not available. GPU acceleration disabled.
+====================================================================================================
+GPU-MLMC component-ablation ladder (R0-R6)
+====================================================================================================
+  git sha    : unknown
+  device     : cuda (NVIDIA A100-PCIE-40GB)
+  torch      : 2.4.0
+  seeds      : [0, 1, 2]
+  topologies : ['ba']  n_nodes=500
+  epsilon    : 0.001
+  rungs      : ['R0', 'R1']
+  out        : /workspace/repo/results/crossover_calibrated_pod/eps_0.001
+
+##########################################################################################
+# topology: ba
+##########################################################################################
+
+[R0] single-level GPU MC baseline
+    seed 0  (0.8s)
+    seed 1  (0.3s)
+    seed 2  (0.3s)
+
+[R1] + MLMC, uniform Giles allocation
+    seed 0  (0.1s)
+    seed 1  (0.1s)
+    seed 2  (0.1s)
+
+======================================================================================================================
+ABLATION LADDER
+======================================================================================================================
+
+--- topology: ba ---
+rung label                                         work(mean) wall_s(mean)  ci_hw(mean)    mse(mean)  comparable
+R0   single-level GPU MC baseline                   1.573e+04        0.055     0.001942    2.128e-05        True
+R1   + MLMC, uniform Giles allocation               2.593e+04        0.051     0.001143    1.745e-05        True
+
+======================================================================================================================
+TRANSITIONS  (paired t-test vs previous rung; * marks a real effect at p<0.05, |d|>0.5)
+======================================================================================================================
+topology  from->to   work ratio  p(work) wall ratio  p(wall)  ci comparable    p(ci)
+ba        R0->R1          1.648x   0.0338     0.920x    0.267            yes   0.0032
+
+Note: R3 (SIMT-adaptive stepping) is measured honestly here -- if it adds work/wall-clock
+rather than reducing it, that is reported as such, not reframed as a speed win.
+
+Total wall clock: 1.5s
+  json             results/crossover_calibrated_pod/eps_0.001/ablation_ladder.json
+  rungs_csv        results/crossover_calibrated_pod/eps_0.001/rungs.csv
+  transitions_csv  results/crossover_calibrated_pod/eps_0.001/transitions.csv
