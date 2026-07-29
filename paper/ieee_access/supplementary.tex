@@ -82,6 +82,50 @@ Both devices confirm the same trend: GPU utilisation recovers as workload grows.
 \label{fig:roofline_t4_a100}
 \end{figure}
 
+\section{Single-GPU Kernel Phase Breakdown}
+
+Table~\ref{tab:phase_breakdown} gives the \texttt{torch.profiler} phase decomposition of one
+fine-level path loop referenced from the main text, measured on a Tesla~T4 over three seeds by
+device-side (CUPTI) kernel time. The degenerate single-rank all-reduce phase is omitted, as it
+measures nothing communicable and is not part of the single-GPU cost. The trend is that kernel
+launch/dispatch dominates at small graph size and the drift matrix multiply overtakes it as the
+kernels grow, while the Skorokhod reflection and the multilevel bookkeeping remain negligible
+throughout---so the reflected-boundary treatment and the telescoping sum, the two
+problem-specific additions, cost almost nothing. The two dominant kernels at $n{=}5{,}000$ are
+\texttt{aten::mm} and the underlying \texttt{sgemm} (the drift matmul), each $\approx$19\,ms per
+loop; every elementwise kernel (reflection clamp, noise scaling, level differencing) is under
+0.25\,ms combined.
+
+A measured peak-memory pass in the same run shows the manuscript's adjacency-only memory model
+($n^2$ bytes at single precision) is accurate only once the adjacency dominates: at $n{=}500$ the
+true allocator peak is $13.6\times$ the model (fixed ensemble and predictor--corrector buffers
+the model omits), but by $n{=}5{,}000$ the ratio is $1.10\times$, confirming the model as a valid
+large-$n$ scaling driver rather than an absolute figure. Achieved SM occupancy is not reported:
+it requires Nsight Compute (\texttt{ncu}), which the CUPTI trace does not expose, and we do not
+estimate it.
+
+\begin{table}[!t]
+\caption{Single-GPU phase breakdown of one fine-level path loop (Tesla~T4, three seeds, mean
+percentage of traced device-side kernel time). All values MEASURED. Raw per-seed data in
+\texttt{results/profiling\_gpu/}.}
+\label{tab:phase_breakdown}
+\centering\small
+\begin{tabular}{@{}l r r@{}}
+\toprule
+Phase & $n{=}500$ (\%) & $n{=}5{,}000$ (\%) \\
+\midrule
+Kernel launch / dispatch     & 65.3 & 50.5 \\
+Drift matrix multiply        & 27.6 & 48.9 \\
+Random-number generation     & 5.0  & 0.4  \\
+Skorokhod reflection         & 1.4  & 0.2  \\
+MLMC level bookkeeping       & 0.7  & 0.1  \\
+\bottomrule
+\end{tabular}
+\vspace{2pt}
+\footnotesize Measured peak memory (same run): $n{=}500$, 13.6\,MB ($13.6\times$ the
+adjacency-only model); $n{=}5{,}000$, 109.8\,MB ($1.10\times$ the model).
+\end{table}
+
 \section{Multi-GPU Measurements}
 
 The main text reports the multi-GPU contribution as \emph{memory scalability}

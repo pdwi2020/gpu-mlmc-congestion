@@ -1466,6 +1466,20 @@ GPU count from an analytical memory model; that table has been removed, since it
 modelled rather than measured quantity. The measured memory ceiling is the one we report:
 $n{=}50{,}000$ at 30.9\,GB peak on a single 80\,GB A100 (Table~\ref{tab:large_scale}).
 
+\textit{Single-GPU kernel bottleneck.}
+A \texttt{torch.profiler} breakdown of one fine-level path loop (Tesla T4, three seeds,
+device-side kernel time) locates the single-GPU bottleneck and confirms it is not where the
+multilevel machinery might have placed it. At $n{=}500$, kernel launch/dispatch dominates
+($65\%$ of traced device time) and the degree-normalised drift matrix multiply accounts for
+$28\%$; by $n{=}5{,}000$ the matmul becomes the primary cost at $49\%$ as the launch overhead is
+amortised over larger kernels---the same workload-saturation trend the roofline analysis
+predicts. Critically, the Skorokhod reflection and the MLMC level-difference bookkeeping are
+\emph{negligible} throughout ($<1.5\%$ and $<0.8\%$ respectively, falling below $0.2\%$ at
+$n{=}5{,}000$), so neither the reflected-boundary treatment nor the multilevel telescoping is a
+performance concern. The per-phase measurements and the top-kernel durations are given in the
+supplementary material; achieved SM occupancy is not reported, as it requires Nsight Compute
+rather than the CUPTI trace \texttt{torch.profiler} exposes, and we do not estimate it.
+
 \textit{Why strong scaling does not improve at $n{=}1000$.}
 Under strong scaling (Table~\ref{tab:multigpu_scaling} rows S), time increases from 0.062\,s
 at $G{=}1$ to 0.076\,s at $G{=}2$ (+23\%). The root cause is overhead-dominated compute at
