@@ -1,0 +1,4060 @@
+{
+  "provenance": {
+    "git_sha": "71f7b6d1d7a755663ae9af67f9aed31fa3fadaf5-dirty",
+    "timestamp_utc": "2026-07-23T16:14:15.995296+00:00",
+    "device": "mps (available; unused -- this script is CPU-only)",
+    "compute_device": "cpu (numpy/scipy bootstrap; --device is informational only)",
+    "torch_version": "2.10.0",
+    "scipy_version": "1.16.3",
+    "numpy_version": "2.3.4",
+    "python_version": "3.14.3",
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "config": {
+      "seeds_filter": null,
+      "n_resamples": 500,
+      "rng_seed": 0,
+      "min_n": 10,
+      "quick": true,
+      "results_root": "results"
+    }
+  },
+  "registry": {
+    "ana_vs_baseline_speedup__ba_n500_eps0.005": {
+      "description": "ANA-MLMC vs Giles-baseline runtime speedup, BA n=500, eps=0.005 (ratio=baseline/ANA runtime, seed-paired, n=5 seeds [0, 1, 2, 3, 4])",
+      "source": [
+        "results/ana_mlmc/ana_mlmc_results.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "ana_vs_baseline_speedup__ba_n500_eps0.01": {
+      "description": "ANA-MLMC vs Giles-baseline runtime speedup, BA n=500, eps=0.01 (ratio=baseline/ANA runtime, seed-paired, n=5 seeds [0, 1, 2, 3, 4])",
+      "source": [
+        "results/ana_mlmc/ana_mlmc_results.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "ana_vs_baseline_speedup__ba_n500_eps0.02": {
+      "description": "ANA-MLMC vs Giles-baseline runtime speedup, BA n=500, eps=0.02 (ratio=baseline/ANA runtime, seed-paired, n=5 seeds [0, 1, 2, 3, 4])",
+      "source": [
+        "results/ana_mlmc/ana_mlmc_results.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "ana_vs_baseline_speedup__ba_n500_eps0.05": {
+      "description": "ANA-MLMC vs Giles-baseline runtime speedup, BA n=500, eps=0.05 (ratio=baseline/ANA runtime, seed-paired, n=5 seeds [0, 1, 2, 3, 4])",
+      "source": [
+        "results/ana_mlmc/ana_mlmc_results.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "ana_vs_baseline_speedup__pooled_all_conditions": {
+      "description": "ANA-MLMC vs Giles-baseline runtime speedup, POOLED across every network/n_nodes/epsilon cell (heterogeneous conditions -- kept only for continuity with the pre-extension significance_tests.json; the per-condition claims above are the statistically appropriate ones)",
+      "source": [
+        "results/ana_mlmc/ana_mlmc_results.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "mlmc_runtime__n50": {
+      "description": "GPU-MLMC wall-clock runtime, n=50 nodes",
+      "source": [
+        "results/scaling_results.json"
+      ],
+      "kind": "single_sample"
+    },
+    "mlmc_runtime__n100": {
+      "description": "GPU-MLMC wall-clock runtime, n=100 nodes",
+      "source": [
+        "results/scaling_results.json"
+      ],
+      "kind": "single_sample"
+    },
+    "mlmc_runtime__n200": {
+      "description": "GPU-MLMC wall-clock runtime, n=200 nodes",
+      "source": [
+        "results/scaling_results.json"
+      ],
+      "kind": "single_sample"
+    },
+    "mlmc_runtime__n500": {
+      "description": "GPU-MLMC wall-clock runtime, n=500 nodes",
+      "source": [
+        "results/scaling_results.json"
+      ],
+      "kind": "single_sample"
+    },
+    "ana_weight_sweep_cost_reduction__balanced_mix": {
+      "description": "ANA weight config 'balanced_mix' vs baseline_giles: total-cost reduction factor (ratio=baseline_cost/config_cost, seed-paired, n=3)",
+      "source": [
+        "results/ana_weight_sweep/weight_sweep.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "ana_weight_sweep_runtime_speedup__balanced_mix": {
+      "description": "ANA weight config 'balanced_mix' vs baseline_giles: runtime speedup (ratio=baseline_runtime/config_runtime, seed-paired, n=3)",
+      "source": [
+        "results/ana_weight_sweep/weight_sweep.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "ana_weight_sweep_cost_reduction__centrality_only": {
+      "description": "ANA weight config 'centrality_only' vs baseline_giles: total-cost reduction factor (ratio=baseline_cost/config_cost, seed-paired, n=3)",
+      "source": [
+        "results/ana_weight_sweep/weight_sweep.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "ana_weight_sweep_runtime_speedup__centrality_only": {
+      "description": "ANA weight config 'centrality_only' vs baseline_giles: runtime speedup (ratio=baseline_runtime/config_runtime, seed-paired, n=3)",
+      "source": [
+        "results/ana_weight_sweep/weight_sweep.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "ana_weight_sweep_cost_reduction__default_mix": {
+      "description": "ANA weight config 'default_mix' vs baseline_giles: total-cost reduction factor (ratio=baseline_cost/config_cost, seed-paired, n=3)",
+      "source": [
+        "results/ana_weight_sweep/weight_sweep.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "ana_weight_sweep_runtime_speedup__default_mix": {
+      "description": "ANA weight config 'default_mix' vs baseline_giles: runtime speedup (ratio=baseline_runtime/config_runtime, seed-paired, n=3)",
+      "source": [
+        "results/ana_weight_sweep/weight_sweep.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "ana_weight_sweep_cost_reduction__sla_only": {
+      "description": "ANA weight config 'sla_only' vs baseline_giles: total-cost reduction factor (ratio=baseline_cost/config_cost, seed-paired, n=3)",
+      "source": [
+        "results/ana_weight_sweep/weight_sweep.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "ana_weight_sweep_runtime_speedup__sla_only": {
+      "description": "ANA weight config 'sla_only' vs baseline_giles: runtime speedup (ratio=baseline_runtime/config_runtime, seed-paired, n=3)",
+      "source": [
+        "results/ana_weight_sweep/weight_sweep.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "ana_weight_sweep_cost_reduction__variance_only": {
+      "description": "ANA weight config 'variance_only' vs baseline_giles: total-cost reduction factor (ratio=baseline_cost/config_cost, seed-paired, n=3)",
+      "source": [
+        "results/ana_weight_sweep/weight_sweep.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "ana_weight_sweep_runtime_speedup__variance_only": {
+      "description": "ANA weight config 'variance_only' vs baseline_giles: runtime speedup (ratio=baseline_runtime/config_runtime, seed-paired, n=3)",
+      "source": [
+        "results/ana_weight_sweep/weight_sweep.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "per_topology_runtime_speedup__BA": {
+      "description": "GPU-MC vs GPU-MLMC runtime speedup, topology=BA, n_nodes=500, eps=0.02 (as reported by source; not recomputed)",
+      "source": [
+        "results/per_topology/per_topology_speedup.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "per_topology_work_reduction__BA": {
+      "description": "GPU-MLMC work reduction factor, topology=BA, n_nodes=500, eps=0.02 (as reported by source; not recomputed)",
+      "source": [
+        "results/per_topology/per_topology_speedup.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "per_topology_runtime_speedup__CAIDA": {
+      "description": "GPU-MC vs GPU-MLMC runtime speedup, topology=CAIDA, n_nodes=500, eps=0.02 (as reported by source; not recomputed)",
+      "source": [
+        "results/per_topology/per_topology_speedup.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "per_topology_work_reduction__CAIDA": {
+      "description": "GPU-MLMC work reduction factor, topology=CAIDA, n_nodes=500, eps=0.02 (as reported by source; not recomputed)",
+      "source": [
+        "results/per_topology/per_topology_speedup.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "per_topology_runtime_speedup__ER": {
+      "description": "GPU-MC vs GPU-MLMC runtime speedup, topology=ER, n_nodes=500, eps=0.02 (as reported by source; not recomputed)",
+      "source": [
+        "results/per_topology/per_topology_speedup.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "per_topology_work_reduction__ER": {
+      "description": "GPU-MLMC work reduction factor, topology=ER, n_nodes=500, eps=0.02 (as reported by source; not recomputed)",
+      "source": [
+        "results/per_topology/per_topology_speedup.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "halo_sweep_elapsed__K1": {
+      "description": "Multi-GPU halo-exchange wall-clock, K=1 (halo depth), world_size=4, eps=0.05 (as reported by source; not recomputed)",
+      "source": [
+        "results/halo_sweep/halo_k_sweep.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "halo_sweep_elapsed__K2": {
+      "description": "Multi-GPU halo-exchange wall-clock, K=2 (halo depth), world_size=4, eps=0.05 (as reported by source; not recomputed)",
+      "source": [
+        "results/halo_sweep/halo_k_sweep.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "halo_sweep_elapsed__K4": {
+      "description": "Multi-GPU halo-exchange wall-clock, K=4 (halo depth), world_size=4, eps=0.05 (as reported by source; not recomputed)",
+      "source": [
+        "results/halo_sweep/halo_k_sweep.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "halo_sweep_elapsed__K8": {
+      "description": "Multi-GPU halo-exchange wall-clock, K=8 (halo depth), world_size=4, eps=0.05 (as reported by source; not recomputed)",
+      "source": [
+        "results/halo_sweep/halo_k_sweep.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_weak_scaling_time__ws1_n500": {
+      "description": "Multi-GPU weak scaling wall-clock, world_size=1, n_nodes=500 (local CPU/MPS smoke run, repeats=1)",
+      "source": [
+        "results/multi_gpu/scaling_results.json"
+      ],
+      "kind": "single_sample"
+    },
+    "multi_gpu_weak_scaling_time__ws2_n1000": {
+      "description": "Multi-GPU weak scaling wall-clock, world_size=2, n_nodes=1000 (local CPU/MPS smoke run, repeats=2)",
+      "source": [
+        "results/multi_gpu/scaling_results.json"
+      ],
+      "kind": "single_sample"
+    },
+    "multi_gpu_weak_scaling_time__ws4_n2000": {
+      "description": "Multi-GPU weak scaling wall-clock, world_size=4, n_nodes=2000 (local CPU/MPS smoke run, repeats=4)",
+      "source": [
+        "results/multi_gpu/scaling_results.json"
+      ],
+      "kind": "single_sample"
+    },
+    "multi_gpu_strong_scaling_time__ws1_n1000": {
+      "description": "Multi-GPU strong scaling wall-clock, world_size=1, n_nodes=1000 (local CPU/MPS smoke run, repeats=1)",
+      "source": [
+        "results/multi_gpu/scaling_results.json"
+      ],
+      "kind": "single_sample"
+    },
+    "multi_gpu_strong_scaling_time__ws2_n1000": {
+      "description": "Multi-GPU strong scaling wall-clock, world_size=2, n_nodes=1000 (local CPU/MPS smoke run, repeats=2)",
+      "source": [
+        "results/multi_gpu/scaling_results.json"
+      ],
+      "kind": "single_sample"
+    },
+    "multi_gpu_strong_scaling_time__ws4_n1000": {
+      "description": "Multi-GPU strong scaling wall-clock, world_size=4, n_nodes=1000 (local CPU/MPS smoke run, repeats=4)",
+      "source": [
+        "results/multi_gpu/scaling_results.json"
+      ],
+      "kind": "single_sample"
+    },
+    "multi_gpu_distributed_strong_scaling_time__ws1": {
+      "description": "Multi-GPU strong scaling wall-clock, world_size=1, real hardware (4\u00d7 NVIDIA GeForce RTX 3090 (24 GB each), PCIe-connected (no NVLink), CUDA 12.4, PyTorch 2.4.0); n=1, no repeated measurement in source",
+      "source": [
+        "results/multi_gpu/distributed_scaling_results.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_distributed_strong_scaling_time__ws2": {
+      "description": "Multi-GPU strong scaling wall-clock, world_size=2, real hardware (4\u00d7 NVIDIA GeForce RTX 3090 (24 GB each), PCIe-connected (no NVLink), CUDA 12.4, PyTorch 2.4.0); n=1, no repeated measurement in source",
+      "source": [
+        "results/multi_gpu/distributed_scaling_results.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_distributed_strong_scaling_time__ws4": {
+      "description": "Multi-GPU strong scaling wall-clock, world_size=4, real hardware (4\u00d7 NVIDIA GeForce RTX 3090 (24 GB each), PCIe-connected (no NVLink), CUDA 12.4, PyTorch 2.4.0); n=1, no repeated measurement in source",
+      "source": [
+        "results/multi_gpu/distributed_scaling_results.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_distributed_weak_scaling_time__ws1": {
+      "description": "Multi-GPU weak scaling wall-clock, world_size=1, real hardware (4\u00d7 NVIDIA GeForce RTX 3090 (24 GB each), PCIe-connected (no NVLink), CUDA 12.4, PyTorch 2.4.0); n=1, no repeated measurement in source",
+      "source": [
+        "results/multi_gpu/distributed_scaling_results.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_distributed_weak_scaling_time__ws2": {
+      "description": "Multi-GPU weak scaling wall-clock, world_size=2, real hardware (4\u00d7 NVIDIA GeForce RTX 3090 (24 GB each), PCIe-connected (no NVLink), CUDA 12.4, PyTorch 2.4.0); n=1, no repeated measurement in source",
+      "source": [
+        "results/multi_gpu/distributed_scaling_results.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_distributed_weak_scaling_time__ws4": {
+      "description": "Multi-GPU weak scaling wall-clock, world_size=4, real hardware (4\u00d7 NVIDIA GeForce RTX 3090 (24 GB each), PCIe-connected (no NVLink), CUDA 12.4, PyTorch 2.4.0); n=1, no repeated measurement in source",
+      "source": [
+        "results/multi_gpu/distributed_scaling_results.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_memory_measured_vs_model__n500_G1": {
+      "description": "Multi-GPU peak memory, n=500 nodes, G=1 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": [
+        "results/multi_gpu/memory_scaling.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_memory_measured_vs_model__n500_G2": {
+      "description": "Multi-GPU peak memory, n=500 nodes, G=2 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": [
+        "results/multi_gpu/memory_scaling.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_memory_measured_vs_model__n500_G4": {
+      "description": "Multi-GPU peak memory, n=500 nodes, G=4 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": [
+        "results/multi_gpu/memory_scaling.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_memory_measured_vs_model__n1000_G1": {
+      "description": "Multi-GPU peak memory, n=1000 nodes, G=1 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": [
+        "results/multi_gpu/memory_scaling.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_memory_measured_vs_model__n1000_G2": {
+      "description": "Multi-GPU peak memory, n=1000 nodes, G=2 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": [
+        "results/multi_gpu/memory_scaling.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_memory_measured_vs_model__n1000_G4": {
+      "description": "Multi-GPU peak memory, n=1000 nodes, G=4 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": [
+        "results/multi_gpu/memory_scaling.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_memory_measured_vs_model__n2000_G1": {
+      "description": "Multi-GPU peak memory, n=2000 nodes, G=1 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": [
+        "results/multi_gpu/memory_scaling.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_memory_measured_vs_model__n2000_G2": {
+      "description": "Multi-GPU peak memory, n=2000 nodes, G=2 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": [
+        "results/multi_gpu/memory_scaling.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_memory_measured_vs_model__n2000_G4": {
+      "description": "Multi-GPU peak memory, n=2000 nodes, G=4 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": [
+        "results/multi_gpu/memory_scaling.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_memory_measured_vs_model__n5000_G1": {
+      "description": "Multi-GPU peak memory, n=5000 nodes, G=1 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": [
+        "results/multi_gpu/memory_scaling.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_memory_measured_vs_model__n5000_G2": {
+      "description": "Multi-GPU peak memory, n=5000 nodes, G=2 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": [
+        "results/multi_gpu/memory_scaling.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_memory_measured_vs_model__n5000_G4": {
+      "description": "Multi-GPU peak memory, n=5000 nodes, G=4 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": [
+        "results/multi_gpu/memory_scaling.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_memory_measured_vs_model__n10000_G1": {
+      "description": "Multi-GPU peak memory, n=10000 nodes, G=1 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": [
+        "results/multi_gpu/memory_scaling.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_memory_measured_vs_model__n10000_G2": {
+      "description": "Multi-GPU peak memory, n=10000 nodes, G=2 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": [
+        "results/multi_gpu/memory_scaling.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "multi_gpu_memory_measured_vs_model__n10000_G4": {
+      "description": "Multi-GPU peak memory, n=10000 nodes, G=4 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": [
+        "results/multi_gpu/memory_scaling.json"
+      ],
+      "kind": "aggregate_only"
+    },
+    "adaptive_stepping_cost_reduction__bimodal_load__adaptive_embedded_rtol0.0001": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=bimodal_load, uniform vs adaptive_embedded_rtol0.0001, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.0001_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__bimodal_load__adaptive_embedded_rtol0.001": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=bimodal_load, uniform vs adaptive_embedded_rtol0.001, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.001_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__bimodal_load__adaptive_embedded_rtol0.01": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=bimodal_load, uniform vs adaptive_embedded_rtol0.01, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.01_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__bimodal_load__adaptive_embedded_rtol1e-05": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=bimodal_load, uniform vs adaptive_embedded_rtol1e-05, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol1e-05_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__bimodal_load__adaptive_halfstep_rtol1e-03": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=bimodal_load, uniform vs adaptive_halfstep_rtol1e-03, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_halfstep_rtol1e-03_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_embedded_rtol0.0001": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=heterogeneous_rho, uniform vs adaptive_embedded_rtol0.0001, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.0001_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_embedded_rtol0.001": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=heterogeneous_rho, uniform vs adaptive_embedded_rtol0.001, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.001_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_embedded_rtol0.01": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=heterogeneous_rho, uniform vs adaptive_embedded_rtol0.01, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.01_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_embedded_rtol1e-05": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=heterogeneous_rho, uniform vs adaptive_embedded_rtol1e-05, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol1e-05_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_halfstep_rtol1e-03": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=heterogeneous_rho, uniform vs adaptive_halfstep_rtol1e-03, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_halfstep_rtol1e-03_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_embedded_rtol0.0001": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=homogeneous_chain, uniform vs adaptive_embedded_rtol0.0001, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.0001_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_embedded_rtol0.001": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=homogeneous_chain, uniform vs adaptive_embedded_rtol0.001, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.001_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_embedded_rtol0.01": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=homogeneous_chain, uniform vs adaptive_embedded_rtol0.01, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.01_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_embedded_rtol1e-05": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=homogeneous_chain, uniform vs adaptive_embedded_rtol1e-05, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol1e-05_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_halfstep_rtol1e-03": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=homogeneous_chain, uniform vs adaptive_halfstep_rtol1e-03, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_halfstep_rtol1e-03_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__reflection_active__adaptive_embedded_rtol0.0001": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=reflection_active, uniform vs adaptive_embedded_rtol0.0001, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.0001_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__reflection_active__adaptive_embedded_rtol0.001": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=reflection_active, uniform vs adaptive_embedded_rtol0.001, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.001_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__reflection_active__adaptive_embedded_rtol0.01": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=reflection_active, uniform vs adaptive_embedded_rtol0.01, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.01_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__reflection_active__adaptive_embedded_rtol1e-05": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=reflection_active, uniform vs adaptive_embedded_rtol1e-05, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol1e-05_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_cost_reduction__reflection_active__adaptive_halfstep_rtol1e-03": {
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=reflection_active, uniform vs adaptive_halfstep_rtol1e-03, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_halfstep_rtol1e-03_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv"
+      ],
+      "kind": "paired_ratio"
+    },
+    "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_embedded_rtol0.0001": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=bimodal_load, adaptive-minus-uniform (adaptive_embedded_rtol0.0001 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_embedded_rtol0.001": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=bimodal_load, adaptive-minus-uniform (adaptive_embedded_rtol0.001 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_embedded_rtol0.01": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=bimodal_load, adaptive-minus-uniform (adaptive_embedded_rtol0.01 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_embedded_rtol1e-05": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=bimodal_load, adaptive-minus-uniform (adaptive_embedded_rtol1e-05 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_halfstep_rtol1e-03": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=bimodal_load, adaptive-minus-uniform (adaptive_halfstep_rtol1e-03 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_embedded_rtol0.0001": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=heterogeneous_rho, adaptive-minus-uniform (adaptive_embedded_rtol0.0001 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_embedded_rtol0.001": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=heterogeneous_rho, adaptive-minus-uniform (adaptive_embedded_rtol0.001 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_embedded_rtol0.01": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=heterogeneous_rho, adaptive-minus-uniform (adaptive_embedded_rtol0.01 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_embedded_rtol1e-05": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=heterogeneous_rho, adaptive-minus-uniform (adaptive_embedded_rtol1e-05 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_halfstep_rtol1e-03": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=heterogeneous_rho, adaptive-minus-uniform (adaptive_halfstep_rtol1e-03 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_embedded_rtol0.0001": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=homogeneous_chain, adaptive-minus-uniform (adaptive_embedded_rtol0.0001 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_embedded_rtol0.001": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=homogeneous_chain, adaptive-minus-uniform (adaptive_embedded_rtol0.001 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_embedded_rtol0.01": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=homogeneous_chain, adaptive-minus-uniform (adaptive_embedded_rtol0.01 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_embedded_rtol1e-05": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=homogeneous_chain, adaptive-minus-uniform (adaptive_embedded_rtol1e-05 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_halfstep_rtol1e-03": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=homogeneous_chain, adaptive-minus-uniform (adaptive_halfstep_rtol1e-03 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__reflection_active__adaptive_embedded_rtol0.0001": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=reflection_active, adaptive-minus-uniform (adaptive_embedded_rtol0.0001 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__reflection_active__adaptive_embedded_rtol0.001": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=reflection_active, adaptive-minus-uniform (adaptive_embedded_rtol0.001 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__reflection_active__adaptive_embedded_rtol0.01": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=reflection_active, adaptive-minus-uniform (adaptive_embedded_rtol0.01 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__reflection_active__adaptive_embedded_rtol1e-05": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=reflection_active, adaptive-minus-uniform (adaptive_embedded_rtol1e-05 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "adaptive_stepping_beta_var_shift__reflection_active__adaptive_halfstep_rtol1e-03": {
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=reflection_active, adaptive-minus-uniform (adaptive_halfstep_rtol1e-03 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": [
+        "results/adaptive_stepping_full/mlmc_exponents.csv"
+      ],
+      "kind": "paired_difference"
+    },
+    "paper_headline_work_reduction_geomean_57x": {
+      "description": "Table 'work_units' + Sec. Empirical Validation (2): computational work reduction GPU-MC -> GPU-MLMC, geometric mean ~57x (range 28-120x across 6 A100 configurations: ER/CAIDA n=500 at eps in {0.05, 0.02, 0.01}); text separately claims 'rising above 250x at the tightest target when the single-level baseline is capped at 5e5 paths'.",
+      "source": [
+        "paper/ieee_access/main.tex"
+      ],
+      "kind": "known_gap"
+    },
+    "paper_gpu_mc_vs_mlmc_speedup_tab_gpu_gpu_a100": {
+      "description": "Table 'gpu_gpu_a100': GPU-MC vs GPU-MLMC wall-clock speedup, same 6 (topology, epsilon) cells as the work-reduction table; text reports geometric mean ~3.0x runtime speedup where both methods meet the CI target (eps>=0.02).",
+      "source": [
+        "paper/ieee_access/main.tex"
+      ],
+      "kind": "known_gap"
+    }
+  },
+  "claims": {
+    "ana_vs_baseline_speedup__ba_n500_eps0.005": {
+      "claim_id": "ana_vs_baseline_speedup__ba_n500_eps0.005",
+      "description": "ANA-MLMC vs Giles-baseline runtime speedup, BA n=500, eps=0.005 (ratio=baseline/ANA runtime, seed-paired, n=5 seeds [0, 1, 2, 3, 4])",
+      "source": "results/ana_mlmc/ana_mlmc_results.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "baseline_runtime_s",
+      "denominator_label": "ana_runtime_s",
+      "higher_is_better": true,
+      "n": 5,
+      "mean_numerator": 0.32310824900005175,
+      "mean_denominator": 0.339203672199983,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.9525493839864979,
+        "ci_lower": 0.9071595973691239,
+        "ci_upper": 0.9988248744618472,
+        "standard_error": 0.0236263269553776,
+        "confidence": 0.95,
+        "n": 5,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 5,
+        "df": 4,
+        "mean_diff": -0.016095423199931246,
+        "sd_diff": 0.020541092970068228,
+        "statistic": -1.7521200285747947,
+        "pvalue": 0.1546328690196767,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 5,
+        "statistic": 3.0,
+        "pvalue": 0.3125,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -0.7835718977264229,
+      "insufficient_n": true
+    },
+    "ana_vs_baseline_speedup__ba_n500_eps0.01": {
+      "claim_id": "ana_vs_baseline_speedup__ba_n500_eps0.01",
+      "description": "ANA-MLMC vs Giles-baseline runtime speedup, BA n=500, eps=0.01 (ratio=baseline/ANA runtime, seed-paired, n=5 seeds [0, 1, 2, 3, 4])",
+      "source": "results/ana_mlmc/ana_mlmc_results.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "baseline_runtime_s",
+      "denominator_label": "ana_runtime_s",
+      "higher_is_better": true,
+      "n": 5,
+      "mean_numerator": 0.3107942089997778,
+      "mean_denominator": 0.33587491779981066,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.9253272350185388,
+        "ci_lower": 0.7897036218926894,
+        "ci_upper": 0.9939258073512547,
+        "standard_error": 0.0477419235788045,
+        "confidence": 0.95,
+        "n": 5,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 5,
+        "df": 4,
+        "mean_diff": -0.02508070880003288,
+        "sd_diff": 0.04392394615332586,
+        "statistic": -1.2768017155149034,
+        "pvalue": 0.2707569215782328,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 5,
+        "statistic": 3.0,
+        "pvalue": 0.3125,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -0.5710030859359344,
+      "insufficient_n": true
+    },
+    "ana_vs_baseline_speedup__ba_n500_eps0.02": {
+      "claim_id": "ana_vs_baseline_speedup__ba_n500_eps0.02",
+      "description": "ANA-MLMC vs Giles-baseline runtime speedup, BA n=500, eps=0.02 (ratio=baseline/ANA runtime, seed-paired, n=5 seeds [0, 1, 2, 3, 4])",
+      "source": "results/ana_mlmc/ana_mlmc_results.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "baseline_runtime_s",
+      "denominator_label": "ana_runtime_s",
+      "higher_is_better": true,
+      "n": 5,
+      "mean_numerator": 0.32782954120002616,
+      "mean_denominator": 0.3046537048000573,
+      "ratio_bca_ci_95": {
+        "point_estimate": 1.0760727213712338,
+        "ci_lower": 0.9987724499061671,
+        "ci_upper": 1.2890947413535592,
+        "standard_error": 0.06697165404550147,
+        "confidence": 0.95,
+        "n": 5,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 5,
+        "df": 4,
+        "mean_diff": 0.02317583639996883,
+        "sd_diff": 0.047196528056044504,
+        "statistic": 1.0980202942938155,
+        "pvalue": 0.3338513138001081,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 5,
+        "statistic": 6.0,
+        "pvalue": 0.8125,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": 0.4910496037430592,
+      "insufficient_n": true
+    },
+    "ana_vs_baseline_speedup__ba_n500_eps0.05": {
+      "claim_id": "ana_vs_baseline_speedup__ba_n500_eps0.05",
+      "description": "ANA-MLMC vs Giles-baseline runtime speedup, BA n=500, eps=0.05 (ratio=baseline/ANA runtime, seed-paired, n=5 seeds [0, 1, 2, 3, 4])",
+      "source": "results/ana_mlmc/ana_mlmc_results.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "baseline_runtime_s",
+      "denominator_label": "ana_runtime_s",
+      "higher_is_better": true,
+      "n": 5,
+      "mean_numerator": 0.500592769800096,
+      "mean_denominator": 0.4177908284001205,
+      "ratio_bca_ci_95": {
+        "point_estimate": 1.198189945234211,
+        "ci_lower": 0.8782395480003835,
+        "ci_upper": 1.6376121274017088,
+        "standard_error": 0.2163748541982489,
+        "confidence": 0.95,
+        "n": 5,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 5,
+        "df": 4,
+        "mean_diff": 0.08280194139997547,
+        "sd_diff": 0.26407223142004627,
+        "statistic": 0.7011368391278875,
+        "pvalue": 0.5218617523261481,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 5,
+        "statistic": 6.0,
+        "pvalue": 0.8125,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": 0.3135579267638582,
+      "insufficient_n": true
+    },
+    "ana_vs_baseline_speedup__pooled_all_conditions": {
+      "claim_id": "ana_vs_baseline_speedup__pooled_all_conditions",
+      "description": "ANA-MLMC vs Giles-baseline runtime speedup, POOLED across every network/n_nodes/epsilon cell (heterogeneous conditions -- kept only for continuity with the pre-extension significance_tests.json; the per-condition claims above are the statistically appropriate ones)",
+      "source": "results/ana_mlmc/ana_mlmc_results.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "baseline_runtime_s",
+      "denominator_label": "ana_runtime_s",
+      "higher_is_better": true,
+      "n": 20,
+      "mean_numerator": 0.3655811922499879,
+      "mean_denominator": 0.34938078079999285,
+      "ratio_bca_ci_95": {
+        "point_estimate": 1.0463689256544113,
+        "ci_lower": 0.9489648514658824,
+        "ci_upper": 1.285525644000406,
+        "standard_error": 0.07705241180053297,
+        "confidence": 0.95,
+        "n": 20,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": false,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 20,
+        "df": 19,
+        "mean_diff": 0.016200411449995046,
+        "sd_diff": 0.13246836398966882,
+        "statistic": 0.5469263781121364,
+        "pvalue": 0.5907957572429059,
+        "insufficient_n": false,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 20,
+        "statistic": 79.0,
+        "pvalue": 0.34881019592285156,
+        "insufficient_n": false,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": 0.12229645601464899,
+      "insufficient_n": false
+    },
+    "mlmc_runtime__n50": {
+      "claim_id": "mlmc_runtime__n50",
+      "description": "GPU-MLMC wall-clock runtime, n=50 nodes",
+      "source": "results/scaling_results.json",
+      "kind": "single_sample",
+      "unit": "seconds",
+      "n": 3,
+      "mean": 0.005469139335521807,
+      "sd": 0.00015013749427728257,
+      "min": 0.005368500002077781,
+      "max": 0.005641708994517103,
+      "bca_ci_95": {
+        "point_estimate": 0.005469139335521807,
+        "ci_lower": 0.005378069671375367,
+        "ci_upper": 0.005641708994517103,
+        "standard_error": 6.465706992937142e-05,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "insufficient_n": true
+    },
+    "mlmc_runtime__n100": {
+      "claim_id": "mlmc_runtime__n100",
+      "description": "GPU-MLMC wall-clock runtime, n=100 nodes",
+      "source": "results/scaling_results.json",
+      "kind": "single_sample",
+      "unit": "seconds",
+      "n": 3,
+      "mean": 0.005695319327060133,
+      "sd": 9.366342611976958e-05,
+      "min": 0.0055874999961815774,
+      "max": 0.005756582992034964,
+      "bca_ci_95": {
+        "point_estimate": 0.005695319327060133,
+        "ci_lower": 0.0055874999961815774,
+        "ci_upper": 0.0057516803256779285,
+        "standard_error": 4.394029332433797e-05,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "insufficient_n": true
+    },
+    "mlmc_runtime__n200": {
+      "claim_id": "mlmc_runtime__n200",
+      "description": "GPU-MLMC wall-clock runtime, n=200 nodes",
+      "source": "results/scaling_results.json",
+      "kind": "single_sample",
+      "unit": "seconds",
+      "n": 3,
+      "mean": 0.008560069666903777,
+      "sd": 0.00022051742471067143,
+      "min": 0.008387624999159016,
+      "max": 0.008808541999314912,
+      "bca_ci_95": {
+        "point_estimate": 0.008560069666903777,
+        "ci_lower": 0.008419764000185145,
+        "ci_upper": 0.008808541999314912,
+        "standard_error": 0.00010562217821907815,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "insufficient_n": true
+    },
+    "mlmc_runtime__n500": {
+      "claim_id": "mlmc_runtime__n500",
+      "description": "GPU-MLMC wall-clock runtime, n=500 nodes",
+      "source": "results/scaling_results.json",
+      "kind": "single_sample",
+      "unit": "seconds",
+      "n": 3,
+      "mean": 0.013314138666222183,
+      "sd": 0.00047835600263836537,
+      "min": 0.0130155829974683,
+      "max": 0.013865875007468276,
+      "bca_ci_95": {
+        "point_estimate": 0.013314138666222183,
+        "ci_lower": 0.01303070799622219,
+        "ci_upper": 0.013865875007468276,
+        "standard_error": 0.00021622876581146595,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "insufficient_n": true
+    },
+    "ana_weight_sweep_cost_reduction__balanced_mix": {
+      "claim_id": "ana_weight_sweep_cost_reduction__balanced_mix",
+      "description": "ANA weight config 'balanced_mix' vs baseline_giles: total-cost reduction factor (ratio=baseline_cost/config_cost, seed-paired, n=3)",
+      "source": "results/ana_weight_sweep/weight_sweep.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "baseline_giles_total_cost",
+      "denominator_label": "config_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 77500.0,
+      "mean_denominator": 100950.0,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.7677067855373948,
+        "ci_lower": 0.7650542941757157,
+        "ci_upper": 0.7719123505976095,
+        "standard_error": 0.0018643586463142636,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -23450.0,
+        "sd_diff": 526.7826876426369,
+        "statistic": -77.10312504621257,
+        "pvalue": 0.0001681692066804997,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -44.515510000792204,
+      "insufficient_n": true
+    },
+    "ana_weight_sweep_runtime_speedup__balanced_mix": {
+      "claim_id": "ana_weight_sweep_runtime_speedup__balanced_mix",
+      "description": "ANA weight config 'balanced_mix' vs baseline_giles: runtime speedup (ratio=baseline_runtime/config_runtime, seed-paired, n=3)",
+      "source": "results/ana_weight_sweep/weight_sweep.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "baseline_giles_runtime_s",
+      "denominator_label": "config_runtime_s",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 0.6927761096666671,
+      "mean_denominator": 0.41281686466666656,
+      "ratio_bca_ci_95": {
+        "point_estimate": 1.678168139342022,
+        "ci_lower": 0.6036387222160513,
+        "ci_upper": 3.881963158633338,
+        "standard_error": 0.8269581535831473,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.2799592450000006,
+        "sd_diff": 0.6069811668191336,
+        "statistic": 0.7988775647352405,
+        "pvalue": 0.5081576448982532,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 2.0,
+        "pvalue": 0.75,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": 0.46123217704944375,
+      "insufficient_n": true
+    },
+    "ana_weight_sweep_cost_reduction__centrality_only": {
+      "claim_id": "ana_weight_sweep_cost_reduction__centrality_only",
+      "description": "ANA weight config 'centrality_only' vs baseline_giles: total-cost reduction factor (ratio=baseline_cost/config_cost, seed-paired, n=3)",
+      "source": "results/ana_weight_sweep/weight_sweep.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "baseline_giles_total_cost",
+      "denominator_label": "config_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 77500.0,
+      "mean_denominator": 100533.33333333333,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.7708885941644563,
+        "ci_lower": 0.7688492063492064,
+        "ci_upper": 0.7742257742257742,
+        "standard_error": 0.0014090821604778154,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -23033.333333333332,
+        "sd_diff": 404.14518843273805,
+        "statistic": -98.71428571428571,
+        "pvalue": 0.00010260609025561428,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -56.99271943000448,
+      "insufficient_n": true
+    },
+    "ana_weight_sweep_runtime_speedup__centrality_only": {
+      "claim_id": "ana_weight_sweep_runtime_speedup__centrality_only",
+      "description": "ANA weight config 'centrality_only' vs baseline_giles: runtime speedup (ratio=baseline_runtime/config_runtime, seed-paired, n=3)",
+      "source": "results/ana_weight_sweep/weight_sweep.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "baseline_giles_runtime_s",
+      "denominator_label": "config_runtime_s",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 0.6927761096666671,
+      "mean_denominator": 0.4603265083333336,
+      "ratio_bca_ci_95": {
+        "point_estimate": 1.504966794493206,
+        "ci_lower": 1.1073722936225074,
+        "ci_upper": 1.8529265404379573,
+        "standard_error": 0.22550086634336977,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.23244960133333356,
+        "sd_diff": 0.3151511419842805,
+        "statistic": 1.2775283540890552,
+        "pvalue": 0.32966341431895996,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": 0.7375813391306955,
+      "insufficient_n": true
+    },
+    "ana_weight_sweep_cost_reduction__default_mix": {
+      "claim_id": "ana_weight_sweep_cost_reduction__default_mix",
+      "description": "ANA weight config 'default_mix' vs baseline_giles: total-cost reduction factor (ratio=baseline_cost/config_cost, seed-paired, n=3)",
+      "source": "results/ana_weight_sweep/weight_sweep.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "baseline_giles_total_cost",
+      "denominator_label": "config_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 77500.0,
+      "mean_denominator": 101000.0,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.7673267326732673,
+        "ci_lower": 0.7646768623581648,
+        "ci_upper": 0.7715281234444997,
+        "standard_error": 0.0018312078712259372,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -23500.0,
+        "sd_diff": 526.7826876426369,
+        "statistic": -77.26752403351793,
+        "pvalue": 0.0001674545338740206,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -44.61042580036745,
+      "insufficient_n": true
+    },
+    "ana_weight_sweep_runtime_speedup__default_mix": {
+      "claim_id": "ana_weight_sweep_runtime_speedup__default_mix",
+      "description": "ANA weight config 'default_mix' vs baseline_giles: runtime speedup (ratio=baseline_runtime/config_runtime, seed-paired, n=3)",
+      "source": "results/ana_weight_sweep/weight_sweep.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "baseline_giles_runtime_s",
+      "denominator_label": "config_runtime_s",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 0.6927761096666671,
+      "mean_denominator": 0.3807568326666626,
+      "ratio_bca_ci_95": {
+        "point_estimate": 1.8194712483942868,
+        "ci_lower": 0.9021120135792535,
+        "ci_upper": 3.7762045258792636,
+        "standard_error": 0.7745532739613354,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.31201927700000454,
+        "sd_diff": 0.5592339152211477,
+        "statistic": 0.9663813763712847,
+        "pvalue": 0.43580865572883565,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 2.0,
+        "pvalue": 0.75,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": 0.5579405477878022,
+      "insufficient_n": true
+    },
+    "ana_weight_sweep_cost_reduction__sla_only": {
+      "claim_id": "ana_weight_sweep_cost_reduction__sla_only",
+      "description": "ANA weight config 'sla_only' vs baseline_giles: total-cost reduction factor (ratio=baseline_cost/config_cost, seed-paired, n=3)",
+      "source": "results/ana_weight_sweep/weight_sweep.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "baseline_giles_total_cost",
+      "denominator_label": "config_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 77500.0,
+      "mean_denominator": 100583.33333333333,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.7705053852526926,
+        "ci_lower": 0.7665677546983185,
+        "ci_upper": 0.7746126936531734,
+        "standard_error": 0.0018864829066714852,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -23083.333333333332,
+        "sd_diff": 525.1983752196244,
+        "statistic": -76.1264848252098,
+        "pvalue": 0.0001725107069800635,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -43.95164650629484,
+      "insufficient_n": true
+    },
+    "ana_weight_sweep_runtime_speedup__sla_only": {
+      "claim_id": "ana_weight_sweep_runtime_speedup__sla_only",
+      "description": "ANA weight config 'sla_only' vs baseline_giles: runtime speedup (ratio=baseline_runtime/config_runtime, seed-paired, n=3)",
+      "source": "results/ana_weight_sweep/weight_sweep.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "baseline_giles_runtime_s",
+      "denominator_label": "config_runtime_s",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 0.6927761096666671,
+      "mean_denominator": 0.3989629213333359,
+      "ratio_bca_ci_95": {
+        "point_estimate": 1.7364423424397593,
+        "ci_lower": 0.7206023590157876,
+        "ci_upper": 3.294963846585039,
+        "standard_error": 0.6567283928185015,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.29381318833333125,
+        "sd_diff": 0.5357637591335044,
+        "statistic": 0.9498577711754537,
+        "pvalue": 0.44243862202798523,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 2.0,
+        "pvalue": 0.75,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": 0.5484006398800061,
+      "insufficient_n": true
+    },
+    "ana_weight_sweep_cost_reduction__variance_only": {
+      "claim_id": "ana_weight_sweep_cost_reduction__variance_only",
+      "description": "ANA weight config 'variance_only' vs baseline_giles: total-cost reduction factor (ratio=baseline_cost/config_cost, seed-paired, n=3)",
+      "source": "results/ana_weight_sweep/weight_sweep.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "baseline_giles_total_cost",
+      "denominator_label": "config_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 77500.0,
+      "mean_denominator": 101683.33333333333,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.7621701360432717,
+        "ci_lower": 0.7579462102689487,
+        "ci_upper": 0.7669470559129143,
+        "standard_error": 0.0021437126392783454,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -24183.333333333332,
+        "sd_diff": 602.7713773341708,
+        "statistic": -69.49029699279453,
+        "pvalue": 0.00020702213601830137,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -40.12024167485696,
+      "insufficient_n": true
+    },
+    "ana_weight_sweep_runtime_speedup__variance_only": {
+      "claim_id": "ana_weight_sweep_runtime_speedup__variance_only",
+      "description": "ANA weight config 'variance_only' vs baseline_giles: runtime speedup (ratio=baseline_runtime/config_runtime, seed-paired, n=3)",
+      "source": "results/ana_weight_sweep/weight_sweep.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "baseline_giles_runtime_s",
+      "denominator_label": "config_runtime_s",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 0.6927761096666671,
+      "mean_denominator": 0.3977454783333343,
+      "ratio_bca_ci_95": {
+        "point_estimate": 1.7417573483665845,
+        "ci_lower": 0.658965752613016,
+        "ci_upper": 3.757135121879216,
+        "standard_error": 0.7961084605436411,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.29503063133333285,
+        "sd_diff": 0.5802902492751993,
+        "statistic": 0.8806076681397282,
+        "pvalue": 0.4714157667690425,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 2.0,
+        "pvalue": 0.75,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": 0.5084190742509207,
+      "insufficient_n": true
+    },
+    "per_topology_runtime_speedup__BA": {
+      "claim_id": "per_topology_runtime_speedup__BA",
+      "description": "GPU-MC vs GPU-MLMC runtime speedup, topology=BA, n_nodes=500, eps=0.02 (as reported by source; not recomputed)",
+      "source": "results/per_topology/per_topology_speedup.json",
+      "kind": "aggregate_only",
+      "n": 5,
+      "mean": 0.18635737357077437,
+      "sd": null,
+      "reported_ci": {
+        "half_width_95": 0.13152701430641967
+      },
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "geomean_reported": 0.15505551011365332
+    },
+    "per_topology_work_reduction__BA": {
+      "claim_id": "per_topology_work_reduction__BA",
+      "description": "GPU-MLMC work reduction factor, topology=BA, n_nodes=500, eps=0.02 (as reported by source; not recomputed)",
+      "source": "results/per_topology/per_topology_speedup.json",
+      "kind": "aggregate_only",
+      "n": 5,
+      "mean": 50.79365079365079,
+      "sd": null,
+      "reported_ci": {
+        "half_width_95": 0.0
+      },
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true
+    },
+    "per_topology_runtime_speedup__CAIDA": {
+      "claim_id": "per_topology_runtime_speedup__CAIDA",
+      "description": "GPU-MC vs GPU-MLMC runtime speedup, topology=CAIDA, n_nodes=500, eps=0.02 (as reported by source; not recomputed)",
+      "source": "results/per_topology/per_topology_speedup.json",
+      "kind": "aggregate_only",
+      "n": 5,
+      "mean": 0.10790573782820134,
+      "sd": null,
+      "reported_ci": {
+        "half_width_95": 0.007222583478721036
+      },
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "geomean_reported": 0.10765430916069992
+    },
+    "per_topology_work_reduction__CAIDA": {
+      "claim_id": "per_topology_work_reduction__CAIDA",
+      "description": "GPU-MLMC work reduction factor, topology=CAIDA, n_nodes=500, eps=0.02 (as reported by source; not recomputed)",
+      "source": "results/per_topology/per_topology_speedup.json",
+      "kind": "aggregate_only",
+      "n": 5,
+      "mean": 50.79365079365079,
+      "sd": null,
+      "reported_ci": {
+        "half_width_95": 0.0
+      },
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true
+    },
+    "per_topology_runtime_speedup__ER": {
+      "claim_id": "per_topology_runtime_speedup__ER",
+      "description": "GPU-MC vs GPU-MLMC runtime speedup, topology=ER, n_nodes=500, eps=0.02 (as reported by source; not recomputed)",
+      "source": "results/per_topology/per_topology_speedup.json",
+      "kind": "aggregate_only",
+      "n": 5,
+      "mean": 0.09473015746071799,
+      "sd": null,
+      "reported_ci": {
+        "half_width_95": 0.025177941553774223
+      },
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "geomean_reported": 0.09181384650758834
+    },
+    "per_topology_work_reduction__ER": {
+      "claim_id": "per_topology_work_reduction__ER",
+      "description": "GPU-MLMC work reduction factor, topology=ER, n_nodes=500, eps=0.02 (as reported by source; not recomputed)",
+      "source": "results/per_topology/per_topology_speedup.json",
+      "kind": "aggregate_only",
+      "n": 5,
+      "mean": 50.79365079365079,
+      "sd": null,
+      "reported_ci": {
+        "half_width_95": 0.0
+      },
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true
+    },
+    "halo_sweep_elapsed__K1": {
+      "claim_id": "halo_sweep_elapsed__K1",
+      "description": "Multi-GPU halo-exchange wall-clock, K=1 (halo depth), world_size=4, eps=0.05 (as reported by source; not recomputed)",
+      "source": "results/halo_sweep/halo_k_sweep.json",
+      "kind": "aggregate_only",
+      "n": 5,
+      "mean": 0.09483751259976998,
+      "sd": 0.006257085925474094,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "phases_mean_reported": {
+        "sde_pct": 51.117317030233394,
+        "bookkeeping_pct": 7.169831320991951,
+        "halo_pct": 41.71285164877466,
+        "sync_pct": 0.0
+      },
+      "runtime_reduction_pct_reported": 0.0
+    },
+    "halo_sweep_elapsed__K2": {
+      "claim_id": "halo_sweep_elapsed__K2",
+      "description": "Multi-GPU halo-exchange wall-clock, K=2 (halo depth), world_size=4, eps=0.05 (as reported by source; not recomputed)",
+      "source": "results/halo_sweep/halo_k_sweep.json",
+      "kind": "aggregate_only",
+      "n": 5,
+      "mean": 0.07347169078420848,
+      "sd": 0.003967066470785559,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "phases_mean_reported": {
+        "sde_pct": 68.50607604206229,
+        "bookkeeping_pct": 8.01515023814446,
+        "halo_pct": 23.47877371979325,
+        "sync_pct": 0.0
+      },
+      "runtime_reduction_pct_reported": 22.528871993647503
+    },
+    "halo_sweep_elapsed__K4": {
+      "claim_id": "halo_sweep_elapsed__K4",
+      "description": "Multi-GPU halo-exchange wall-clock, K=4 (halo depth), world_size=4, eps=0.05 (as reported by source; not recomputed)",
+      "source": "results/halo_sweep/halo_k_sweep.json",
+      "kind": "aggregate_only",
+      "n": 5,
+      "mean": 0.05865905859973282,
+      "sd": 0.003705876663266718,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "phases_mean_reported": {
+        "sde_pct": 77.89209037885652,
+        "bookkeeping_pct": 9.285291622424928,
+        "halo_pct": 12.822617998718545,
+        "sync_pct": 0.0
+      },
+      "runtime_reduction_pct_reported": 38.14783096717882
+    },
+    "halo_sweep_elapsed__K8": {
+      "claim_id": "halo_sweep_elapsed__K8",
+      "description": "Multi-GPU halo-exchange wall-clock, K=8 (halo depth), world_size=4, eps=0.05 (as reported by source; not recomputed)",
+      "source": "results/halo_sweep/halo_k_sweep.json",
+      "kind": "aggregate_only",
+      "n": 5,
+      "mean": 0.051510224607773124,
+      "sd": 0.0012523685865408565,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "phases_mean_reported": {
+        "sde_pct": 83.00863205641255,
+        "bookkeeping_pct": 10.006520911317015,
+        "halo_pct": 6.984847032270442,
+        "sync_pct": 0.0
+      },
+      "runtime_reduction_pct_reported": 45.68581229544178
+    },
+    "multi_gpu_weak_scaling_time__ws1_n500": {
+      "claim_id": "multi_gpu_weak_scaling_time__ws1_n500",
+      "description": "Multi-GPU weak scaling wall-clock, world_size=1, n_nodes=500 (local CPU/MPS smoke run, repeats=1)",
+      "source": "results/multi_gpu/scaling_results.json",
+      "kind": "single_sample",
+      "unit": "seconds",
+      "n": 1,
+      "mean": 0.03667104209307581,
+      "sd": 0.0,
+      "min": 0.03667104209307581,
+      "max": 0.03667104209307581,
+      "bca_ci_95": {
+        "point_estimate": 0.03667104209307581,
+        "ci_lower": null,
+        "ci_upper": null,
+        "standard_error": null,
+        "confidence": 0.95,
+        "n": 1,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": "n=1 < 2: cannot compute a bootstrap CI"
+      },
+      "insufficient_n": true
+    },
+    "multi_gpu_weak_scaling_time__ws2_n1000": {
+      "claim_id": "multi_gpu_weak_scaling_time__ws2_n1000",
+      "description": "Multi-GPU weak scaling wall-clock, world_size=2, n_nodes=1000 (local CPU/MPS smoke run, repeats=2)",
+      "source": "results/multi_gpu/scaling_results.json",
+      "kind": "single_sample",
+      "unit": "seconds",
+      "n": 2,
+      "mean": 0.03164760454092175,
+      "sd": 0.0035246028112555184,
+      "min": 0.0291553339920938,
+      "max": 0.034139875089749694,
+      "bca_ci_95": {
+        "point_estimate": 0.03164760454092175,
+        "ci_lower": 0.0291553339920938,
+        "ci_upper": 0.034139875089749694,
+        "standard_error": 0.0017172331997874633,
+        "confidence": 0.95,
+        "n": 2,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "insufficient_n": true
+    },
+    "multi_gpu_weak_scaling_time__ws4_n2000": {
+      "claim_id": "multi_gpu_weak_scaling_time__ws4_n2000",
+      "description": "Multi-GPU weak scaling wall-clock, world_size=4, n_nodes=2000 (local CPU/MPS smoke run, repeats=4)",
+      "source": "results/multi_gpu/scaling_results.json",
+      "kind": "single_sample",
+      "unit": "seconds",
+      "n": 4,
+      "mean": 0.0367815105128102,
+      "sd": 0.0011299127397446113,
+      "min": 0.035675833001732826,
+      "max": 0.03828141710255295,
+      "bca_ci_95": {
+        "point_estimate": 0.0367815105128102,
+        "ci_lower": 0.03607655197265558,
+        "ci_upper": 0.03795072957291268,
+        "standard_error": 0.0004909522889739051,
+        "confidence": 0.95,
+        "n": 4,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "insufficient_n": true
+    },
+    "multi_gpu_strong_scaling_time__ws1_n1000": {
+      "claim_id": "multi_gpu_strong_scaling_time__ws1_n1000",
+      "description": "Multi-GPU strong scaling wall-clock, world_size=1, n_nodes=1000 (local CPU/MPS smoke run, repeats=1)",
+      "source": "results/multi_gpu/scaling_results.json",
+      "kind": "single_sample",
+      "unit": "seconds",
+      "n": 1,
+      "mean": 0.061738874996080995,
+      "sd": 0.0,
+      "min": 0.061738874996080995,
+      "max": 0.061738874996080995,
+      "bca_ci_95": {
+        "point_estimate": 0.061738874996080995,
+        "ci_lower": null,
+        "ci_upper": null,
+        "standard_error": null,
+        "confidence": 0.95,
+        "n": 1,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": "n=1 < 2: cannot compute a bootstrap CI"
+      },
+      "insufficient_n": true
+    },
+    "multi_gpu_strong_scaling_time__ws2_n1000": {
+      "claim_id": "multi_gpu_strong_scaling_time__ws2_n1000",
+      "description": "Multi-GPU strong scaling wall-clock, world_size=2, n_nodes=1000 (local CPU/MPS smoke run, repeats=2)",
+      "source": "results/multi_gpu/scaling_results.json",
+      "kind": "single_sample",
+      "unit": "seconds",
+      "n": 2,
+      "mean": 0.030218708561733365,
+      "sd": 6.110601562346253e-05,
+      "min": 0.030175500083714724,
+      "max": 0.030261917039752007,
+      "bca_ci_95": {
+        "point_estimate": 0.030218708561733365,
+        "ci_lower": 0.030175500083714724,
+        "ci_upper": 0.030261917039752007,
+        "standard_error": 3.052433943657204e-05,
+        "confidence": 0.95,
+        "n": 2,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "insufficient_n": true
+    },
+    "multi_gpu_strong_scaling_time__ws4_n1000": {
+      "claim_id": "multi_gpu_strong_scaling_time__ws4_n1000",
+      "description": "Multi-GPU strong scaling wall-clock, world_size=4, n_nodes=1000 (local CPU/MPS smoke run, repeats=4)",
+      "source": "results/multi_gpu/scaling_results.json",
+      "kind": "single_sample",
+      "unit": "seconds",
+      "n": 4,
+      "mean": 0.014644729264546186,
+      "sd": 0.00024799737262811783,
+      "min": 0.01442054205108434,
+      "max": 0.014954374986700714,
+      "bca_ci_95": {
+        "point_estimate": 0.014644729264546186,
+        "ci_lower": 0.01444539602380246,
+        "ci_upper": 0.014844062505289912,
+        "standard_error": 0.00010601683454620042,
+        "confidence": 0.95,
+        "n": 4,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "insufficient_n": true
+    },
+    "multi_gpu_distributed_strong_scaling_time__ws1": {
+      "claim_id": "multi_gpu_distributed_strong_scaling_time__ws1",
+      "description": "Multi-GPU strong scaling wall-clock, world_size=1, real hardware (4\u00d7 NVIDIA GeForce RTX 3090 (24 GB each), PCIe-connected (no NVLink), CUDA 12.4, PyTorch 2.4.0); n=1, no repeated measurement in source",
+      "source": "results/multi_gpu/distributed_scaling_results.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.062,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true
+    },
+    "multi_gpu_distributed_strong_scaling_time__ws2": {
+      "claim_id": "multi_gpu_distributed_strong_scaling_time__ws2",
+      "description": "Multi-GPU strong scaling wall-clock, world_size=2, real hardware (4\u00d7 NVIDIA GeForce RTX 3090 (24 GB each), PCIe-connected (no NVLink), CUDA 12.4, PyTorch 2.4.0); n=1, no repeated measurement in source",
+      "source": "results/multi_gpu/distributed_scaling_results.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.076,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true
+    },
+    "multi_gpu_distributed_strong_scaling_time__ws4": {
+      "claim_id": "multi_gpu_distributed_strong_scaling_time__ws4",
+      "description": "Multi-GPU strong scaling wall-clock, world_size=4, real hardware (4\u00d7 NVIDIA GeForce RTX 3090 (24 GB each), PCIe-connected (no NVLink), CUDA 12.4, PyTorch 2.4.0); n=1, no repeated measurement in source",
+      "source": "results/multi_gpu/distributed_scaling_results.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.096,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true
+    },
+    "multi_gpu_distributed_weak_scaling_time__ws1": {
+      "claim_id": "multi_gpu_distributed_weak_scaling_time__ws1",
+      "description": "Multi-GPU weak scaling wall-clock, world_size=1, real hardware (4\u00d7 NVIDIA GeForce RTX 3090 (24 GB each), PCIe-connected (no NVLink), CUDA 12.4, PyTorch 2.4.0); n=1, no repeated measurement in source",
+      "source": "results/multi_gpu/distributed_scaling_results.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.075,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true
+    },
+    "multi_gpu_distributed_weak_scaling_time__ws2": {
+      "claim_id": "multi_gpu_distributed_weak_scaling_time__ws2",
+      "description": "Multi-GPU weak scaling wall-clock, world_size=2, real hardware (4\u00d7 NVIDIA GeForce RTX 3090 (24 GB each), PCIe-connected (no NVLink), CUDA 12.4, PyTorch 2.4.0); n=1, no repeated measurement in source",
+      "source": "results/multi_gpu/distributed_scaling_results.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.076,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true
+    },
+    "multi_gpu_distributed_weak_scaling_time__ws4": {
+      "claim_id": "multi_gpu_distributed_weak_scaling_time__ws4",
+      "description": "Multi-GPU weak scaling wall-clock, world_size=4, real hardware (4\u00d7 NVIDIA GeForce RTX 3090 (24 GB each), PCIe-connected (no NVLink), CUDA 12.4, PyTorch 2.4.0); n=1, no repeated measurement in source",
+      "source": "results/multi_gpu/distributed_scaling_results.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.175,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true
+    },
+    "multi_gpu_memory_measured_vs_model__n500_G1": {
+      "claim_id": "multi_gpu_memory_measured_vs_model__n500_G1",
+      "description": "Multi-GPU peak memory, n=500 nodes, G=1 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": "results/multi_gpu/memory_scaling.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.018,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "unit": "MB",
+      "analytical_model_mb": 1.907,
+      "measured_over_model_ratio": 0.009438909281594125,
+      "partitioner": "trivial",
+      "halo_pct": 0.0
+    },
+    "multi_gpu_memory_measured_vs_model__n500_G2": {
+      "claim_id": "multi_gpu_memory_measured_vs_model__n500_G2",
+      "description": "Multi-GPU peak memory, n=500 nodes, G=2 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": "results/multi_gpu/memory_scaling.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.07,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "unit": "MB",
+      "analytical_model_mb": 0.954,
+      "measured_over_model_ratio": 0.07337526205450735,
+      "partitioner": "degree-weighted-striped",
+      "halo_pct": 49.9
+    },
+    "multi_gpu_memory_measured_vs_model__n500_G4": {
+      "claim_id": "multi_gpu_memory_measured_vs_model__n500_G4",
+      "description": "Multi-GPU peak memory, n=500 nodes, G=4 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": "results/multi_gpu/memory_scaling.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.05,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "unit": "MB",
+      "analytical_model_mb": 0.477,
+      "measured_over_model_ratio": 0.10482180293501049,
+      "partitioner": "degree-weighted-striped",
+      "halo_pct": 75.56
+    },
+    "multi_gpu_memory_measured_vs_model__n1000_G1": {
+      "claim_id": "multi_gpu_memory_measured_vs_model__n1000_G1",
+      "description": "Multi-GPU peak memory, n=1000 nodes, G=1 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": "results/multi_gpu/memory_scaling.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.045,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "unit": "MB",
+      "analytical_model_mb": 7.629,
+      "measured_over_model_ratio": 0.005898545025560362,
+      "partitioner": "trivial",
+      "halo_pct": 0.0
+    },
+    "multi_gpu_memory_measured_vs_model__n1000_G2": {
+      "claim_id": "multi_gpu_memory_measured_vs_model__n1000_G2",
+      "description": "Multi-GPU peak memory, n=1000 nodes, G=2 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": "results/multi_gpu/memory_scaling.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.072,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "unit": "MB",
+      "analytical_model_mb": 3.815,
+      "measured_over_model_ratio": 0.018872870249017036,
+      "partitioner": "degree-weighted-striped",
+      "halo_pct": 50.4
+    },
+    "multi_gpu_memory_measured_vs_model__n1000_G4": {
+      "claim_id": "multi_gpu_memory_measured_vs_model__n1000_G4",
+      "description": "Multi-GPU peak memory, n=1000 nodes, G=4 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": "results/multi_gpu/memory_scaling.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.112,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "unit": "MB",
+      "analytical_model_mb": 1.907,
+      "measured_over_model_ratio": 0.05873099108547457,
+      "partitioner": "degree-weighted-striped",
+      "halo_pct": 74.8
+    },
+    "multi_gpu_memory_measured_vs_model__n2000_G1": {
+      "claim_id": "multi_gpu_memory_measured_vs_model__n2000_G1",
+      "description": "Multi-GPU peak memory, n=2000 nodes, G=1 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": "results/multi_gpu/memory_scaling.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.098,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "unit": "MB",
+      "analytical_model_mb": 30.518,
+      "measured_over_model_ratio": 0.0032112196081001375,
+      "partitioner": "trivial",
+      "halo_pct": 0.0
+    },
+    "multi_gpu_memory_measured_vs_model__n2000_G2": {
+      "claim_id": "multi_gpu_memory_measured_vs_model__n2000_G2",
+      "description": "Multi-GPU peak memory, n=2000 nodes, G=2 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": "results/multi_gpu/memory_scaling.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.204,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "unit": "MB",
+      "analytical_model_mb": 15.259,
+      "measured_over_model_ratio": 0.01336915918474343,
+      "partitioner": "degree-weighted-striped",
+      "halo_pct": 50.22
+    },
+    "multi_gpu_memory_measured_vs_model__n2000_G4": {
+      "claim_id": "multi_gpu_memory_measured_vs_model__n2000_G4",
+      "description": "Multi-GPU peak memory, n=2000 nodes, G=4 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": "results/multi_gpu/memory_scaling.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.24,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "unit": "MB",
+      "analytical_model_mb": 7.629,
+      "measured_over_model_ratio": 0.031458906802988594,
+      "partitioner": "degree-weighted-striped",
+      "halo_pct": 75.75
+    },
+    "multi_gpu_memory_measured_vs_model__n5000_G1": {
+      "claim_id": "multi_gpu_memory_measured_vs_model__n5000_G1",
+      "description": "Multi-GPU peak memory, n=5000 nodes, G=1 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": "results/multi_gpu/memory_scaling.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.259,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "unit": "MB",
+      "analytical_model_mb": 190.735,
+      "measured_over_model_ratio": 0.0013579049466537342,
+      "partitioner": "trivial",
+      "halo_pct": 0.0
+    },
+    "multi_gpu_memory_measured_vs_model__n5000_G2": {
+      "claim_id": "multi_gpu_memory_measured_vs_model__n5000_G2",
+      "description": "Multi-GPU peak memory, n=5000 nodes, G=2 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": "results/multi_gpu/memory_scaling.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.716,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "unit": "MB",
+      "analytical_model_mb": 95.367,
+      "measured_over_model_ratio": 0.007507838141076053,
+      "partitioner": "degree-weighted-striped",
+      "halo_pct": 49.51
+    },
+    "multi_gpu_memory_measured_vs_model__n5000_G4": {
+      "claim_id": "multi_gpu_memory_measured_vs_model__n5000_G4",
+      "description": "Multi-GPU peak memory, n=5000 nodes, G=4 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": "results/multi_gpu/memory_scaling.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.615,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "unit": "MB",
+      "analytical_model_mb": 47.684,
+      "measured_over_model_ratio": 0.012897407935575875,
+      "partitioner": "degree-weighted-striped",
+      "halo_pct": 74.27
+    },
+    "multi_gpu_memory_measured_vs_model__n10000_G1": {
+      "claim_id": "multi_gpu_memory_measured_vs_model__n10000_G1",
+      "description": "Multi-GPU peak memory, n=10000 nodes, G=1 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": "results/multi_gpu/memory_scaling.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 0.529,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "unit": "MB",
+      "analytical_model_mb": 762.939,
+      "measured_over_model_ratio": 0.0006933712918070777,
+      "partitioner": "trivial",
+      "halo_pct": 0.0
+    },
+    "multi_gpu_memory_measured_vs_model__n10000_G2": {
+      "claim_id": "multi_gpu_memory_measured_vs_model__n10000_G2",
+      "description": "Multi-GPU peak memory, n=10000 nodes, G=2 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": "results/multi_gpu/memory_scaling.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 1.595,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "unit": "MB",
+      "analytical_model_mb": 381.47,
+      "measured_over_model_ratio": 0.004181193802920282,
+      "partitioner": "degree-weighted-striped",
+      "halo_pct": 49.74
+    },
+    "multi_gpu_memory_measured_vs_model__n10000_G4": {
+      "claim_id": "multi_gpu_memory_measured_vs_model__n10000_G4",
+      "description": "Multi-GPU peak memory, n=10000 nodes, G=4 ranks: MEASURED vs the paper's analytical model n*(n/G)*4 bytes/rank (adjacency tensor only); single measurement, n=1",
+      "source": "results/multi_gpu/memory_scaling.json",
+      "kind": "aggregate_only",
+      "n": 1,
+      "mean": 1.254,
+      "sd": null,
+      "reported_ci": null,
+      "note": "source file provides only pre-aggregated summary statistics; no raw per-seed array is retained, so a BCa bootstrap CI cannot be (re)computed here -- this is exactly the class of claim that needs a raw-data re-run",
+      "insufficient_n": true,
+      "unit": "MB",
+      "analytical_model_mb": 190.735,
+      "measured_over_model_ratio": 0.006574566807350512,
+      "partitioner": "degree-weighted-striped",
+      "halo_pct": 74.41
+    },
+    "adaptive_stepping_cost_reduction__bimodal_load__adaptive_embedded_rtol0.0001": {
+      "claim_id": "adaptive_stepping_cost_reduction__bimodal_load__adaptive_embedded_rtol0.0001",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=bimodal_load, uniform vs adaptive_embedded_rtol0.0001, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.0001_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_embedded_rtol0.0001_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 110.0,
+      "mean_denominator": 214.0,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.514018691588785,
+        "ci_lower": 0.514018691588785,
+        "ci_upper": 0.514018691588785,
+        "standard_error": 2.222669831529484e-16,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "percentile (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": "BCa warnings: invalid value encountered in scalar divide; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; BCa produced a non-finite CI (degenerate statistic, e.g. zero variance); BCa was degenerate for this sample; used percentile bootstrap instead",
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -104.0,
+        "sd_diff": 0.0,
+        "statistic": null,
+        "pvalue": 0.0,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": null,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__bimodal_load__adaptive_embedded_rtol0.001": {
+      "claim_id": "adaptive_stepping_cost_reduction__bimodal_load__adaptive_embedded_rtol0.001",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=bimodal_load, uniform vs adaptive_embedded_rtol0.001, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.001_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_embedded_rtol0.001_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 110.0,
+      "mean_denominator": 213.97261555989584,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.5140844762408789,
+        "ci_lower": 0.5140796860024646,
+        "ci_upper": 0.5140870180362894,
+        "standard_error": 1.8678463249914085e-06,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -103.97261555989583,
+        "sd_diff": 0.0017363760004355364,
+        "statistic": -103713.62694508271,
+        "pvalue": 9.296690130546023e-11,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -59879.090435375925,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__bimodal_load__adaptive_embedded_rtol0.01": {
+      "claim_id": "adaptive_stepping_cost_reduction__bimodal_load__adaptive_embedded_rtol0.01",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=bimodal_load, uniform vs adaptive_embedded_rtol0.01, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.01_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_embedded_rtol0.01_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 110.0,
+      "mean_denominator": 135.0595703125,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.8144554269311141,
+        "ci_lower": 0.8141743239458253,
+        "ci_upper": 0.8145962966869058,
+        "standard_error": 0.00010926963840755421,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -25.0595703125,
+        "sd_diff": 0.040383693314250776,
+        "statistic": -1074.8013724088462,
+        "pvalue": 8.656513515998643e-07,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -620.5368616856266,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__bimodal_load__adaptive_embedded_rtol1e-05": {
+      "claim_id": "adaptive_stepping_cost_reduction__bimodal_load__adaptive_embedded_rtol1e-05",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=bimodal_load, uniform vs adaptive_embedded_rtol1e-05, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol1e-05_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_embedded_rtol1e-05_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 110.0,
+      "mean_denominator": 214.0,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.514018691588785,
+        "ci_lower": 0.514018691588785,
+        "ci_upper": 0.514018691588785,
+        "standard_error": 2.222669831529484e-16,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "percentile (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": "BCa warnings: invalid value encountered in scalar divide; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; BCa produced a non-finite CI (degenerate statistic, e.g. zero variance); BCa was degenerate for this sample; used percentile bootstrap instead",
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -104.0,
+        "sd_diff": 0.0,
+        "statistic": null,
+        "pvalue": 0.0,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": null,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__bimodal_load__adaptive_halfstep_rtol1e-03": {
+      "claim_id": "adaptive_stepping_cost_reduction__bimodal_load__adaptive_halfstep_rtol1e-03",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=bimodal_load, uniform vs adaptive_halfstep_rtol1e-03, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_halfstep_rtol1e-03_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_halfstep_rtol1e-03_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 110.0,
+      "mean_denominator": 174.02823893229166,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.6320813258519336,
+        "ci_lower": 0.6320619660892358,
+        "ci_upper": 0.6321116240439796,
+        "standard_error": 1.3041089872926991e-05,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -64.02823893229167,
+        "sd_diff": 0.008018015742313684,
+        "statistic": -13831.372563243107,
+        "pvalue": 5.2272038527860716e-09,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -7985.546672650413,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_embedded_rtol0.0001": {
+      "claim_id": "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_embedded_rtol0.0001",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=heterogeneous_rho, uniform vs adaptive_embedded_rtol0.0001, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.0001_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_embedded_rtol0.0001_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 40.0,
+      "mean_denominator": 77.0,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.5194805194805194,
+        "ci_lower": 0.5194805194805194,
+        "ci_upper": 0.5194805194805194,
+        "standard_error": 1.111334915764742e-16,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "percentile (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": "BCa warnings: invalid value encountered in scalar divide; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; BCa produced a non-finite CI (degenerate statistic, e.g. zero variance); BCa was degenerate for this sample; used percentile bootstrap instead",
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -37.0,
+        "sd_diff": 0.0,
+        "statistic": null,
+        "pvalue": 0.0,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": null,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_embedded_rtol0.001": {
+      "claim_id": "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_embedded_rtol0.001",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=heterogeneous_rho, uniform vs adaptive_embedded_rtol0.001, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.001_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_embedded_rtol0.001_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 40.0,
+      "mean_denominator": 77.0,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.5194805194805194,
+        "ci_lower": 0.5194805194805194,
+        "ci_upper": 0.5194805194805194,
+        "standard_error": 1.111334915764742e-16,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "percentile (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": "BCa warnings: invalid value encountered in scalar divide; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; BCa produced a non-finite CI (degenerate statistic, e.g. zero variance); BCa was degenerate for this sample; used percentile bootstrap instead",
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -37.0,
+        "sd_diff": 0.0,
+        "statistic": null,
+        "pvalue": 0.0,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": null,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_embedded_rtol0.01": {
+      "claim_id": "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_embedded_rtol0.01",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=heterogeneous_rho, uniform vs adaptive_embedded_rtol0.01, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.01_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_embedded_rtol0.01_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 40.0,
+      "mean_denominator": 40.093017578125,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.9976799556694942,
+        "ci_lower": 0.99759794683821,
+        "ci_upper": 0.9977265345891523,
+        "standard_error": 3.6217842995067695e-05,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -0.093017578125,
+        "sd_diff": 0.002932229528677811,
+        "statistic": -54.944938564258635,
+        "pvalue": 0.0003310769127303302,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -31.722475070682176,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_embedded_rtol1e-05": {
+      "claim_id": "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_embedded_rtol1e-05",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=heterogeneous_rho, uniform vs adaptive_embedded_rtol1e-05, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol1e-05_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_embedded_rtol1e-05_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 40.0,
+      "mean_denominator": 77.0,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.5194805194805194,
+        "ci_lower": 0.5194805194805194,
+        "ci_upper": 0.5194805194805194,
+        "standard_error": 1.111334915764742e-16,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "percentile (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": "BCa warnings: invalid value encountered in scalar divide; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; BCa produced a non-finite CI (degenerate statistic, e.g. zero variance); BCa was degenerate for this sample; used percentile bootstrap instead",
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -37.0,
+        "sd_diff": 0.0,
+        "statistic": null,
+        "pvalue": 0.0,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": null,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_halfstep_rtol1e-03": {
+      "claim_id": "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_halfstep_rtol1e-03",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=heterogeneous_rho, uniform vs adaptive_halfstep_rtol1e-03, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_halfstep_rtol1e-03_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_halfstep_rtol1e-03_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 40.0,
+      "mean_denominator": 58.3585205078125,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.6854183356935029,
+        "ci_lower": 0.6853323238513134,
+        "ci_upper": 0.6855760801568322,
+        "standard_error": 6.007820859199413e-05,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -18.3585205078125,
+        "sd_diff": 0.011772034620352728,
+        "statistic": -2701.1380187712757,
+        "pvalue": 1.3705862145072707e-07,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -1559.5027622559285,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_embedded_rtol0.0001": {
+      "claim_id": "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_embedded_rtol0.0001",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=homogeneous_chain, uniform vs adaptive_embedded_rtol0.0001, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.0001_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_embedded_rtol0.0001_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 40.0,
+      "mean_denominator": 77.0,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.5194805194805194,
+        "ci_lower": 0.5194805194805194,
+        "ci_upper": 0.5194805194805194,
+        "standard_error": 1.111334915764742e-16,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "percentile (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": "BCa warnings: invalid value encountered in scalar divide; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; BCa produced a non-finite CI (degenerate statistic, e.g. zero variance); BCa was degenerate for this sample; used percentile bootstrap instead",
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -37.0,
+        "sd_diff": 0.0,
+        "statistic": null,
+        "pvalue": 0.0,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": null,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_embedded_rtol0.001": {
+      "claim_id": "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_embedded_rtol0.001",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=homogeneous_chain, uniform vs adaptive_embedded_rtol0.001, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.001_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_embedded_rtol0.001_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 40.0,
+      "mean_denominator": 68.23893229166667,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.5861756427992176,
+        "ci_lower": 0.5861026001506038,
+        "ci_upper": 0.5862126953118012,
+        "standard_error": 3.158332850005235e-05,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -28.238932291666668,
+        "sd_diff": 0.007365133657941093,
+        "statistic": -6640.920280914105,
+        "pvalue": 2.2674799285254374e-08,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -3834.137111852604,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_embedded_rtol0.01": {
+      "claim_id": "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_embedded_rtol0.01",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=homogeneous_chain, uniform vs adaptive_embedded_rtol0.01, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.01_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_embedded_rtol0.01_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 40.0,
+      "mean_denominator": 40.0,
+      "ratio_bca_ci_95": {
+        "point_estimate": 1.0,
+        "ci_lower": 1.0,
+        "ci_upper": 1.0,
+        "standard_error": 0.0,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "percentile (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": "BCa warnings: invalid value encountered in scalar divide; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; BCa produced a non-finite CI (degenerate statistic, e.g. zero variance); BCa was degenerate for this sample; used percentile bootstrap instead",
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.0,
+        "sd_diff": 0.0,
+        "statistic": null,
+        "pvalue": null,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 1.0,
+        "insufficient_n": true,
+        "note": "invalid value encountered in scalar divide"
+      },
+      "cohens_d_paired_raw_values": 0.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_embedded_rtol1e-05": {
+      "claim_id": "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_embedded_rtol1e-05",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=homogeneous_chain, uniform vs adaptive_embedded_rtol1e-05, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol1e-05_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_embedded_rtol1e-05_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 40.0,
+      "mean_denominator": 77.0,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.5194805194805194,
+        "ci_lower": 0.5194805194805194,
+        "ci_upper": 0.5194805194805194,
+        "standard_error": 1.111334915764742e-16,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "percentile (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": "BCa warnings: invalid value encountered in scalar divide; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; BCa produced a non-finite CI (degenerate statistic, e.g. zero variance); BCa was degenerate for this sample; used percentile bootstrap instead",
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -37.0,
+        "sd_diff": 0.0,
+        "statistic": null,
+        "pvalue": 0.0,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": null,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_halfstep_rtol1e-03": {
+      "claim_id": "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_halfstep_rtol1e-03",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=homogeneous_chain, uniform vs adaptive_halfstep_rtol1e-03, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_halfstep_rtol1e-03_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_halfstep_rtol1e-03_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 40.0,
+      "mean_denominator": 52.7637939453125,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.7580955994456796,
+        "ci_lower": 0.7578489683111757,
+        "ci_upper": 0.7585694410041415,
+        "standard_error": 0.00019405956512375444,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -12.7637939453125,
+        "sd_diff": 0.028618655172083864,
+        "statistic": -772.4870186138626,
+        "pvalue": 1.6757781688299791e-06,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -445.995588142205,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__reflection_active__adaptive_embedded_rtol0.0001": {
+      "claim_id": "adaptive_stepping_cost_reduction__reflection_active__adaptive_embedded_rtol0.0001",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=reflection_active, uniform vs adaptive_embedded_rtol0.0001, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.0001_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_embedded_rtol0.0001_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 230.0,
+      "mean_denominator": 452.0,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.5088495575221239,
+        "ci_lower": 0.5088495575221239,
+        "ci_upper": 0.5088495575221239,
+        "standard_error": 2.222669831529484e-16,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "percentile (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": "BCa warnings: invalid value encountered in scalar divide; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; BCa produced a non-finite CI (degenerate statistic, e.g. zero variance); BCa was degenerate for this sample; used percentile bootstrap instead",
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -222.0,
+        "sd_diff": 0.0,
+        "statistic": null,
+        "pvalue": 0.0,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": null,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__reflection_active__adaptive_embedded_rtol0.001": {
+      "claim_id": "adaptive_stepping_cost_reduction__reflection_active__adaptive_embedded_rtol0.001",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=reflection_active, uniform vs adaptive_embedded_rtol0.001, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.001_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_embedded_rtol0.001_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 230.0,
+      "mean_denominator": 375.3763020833333,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.6127184873512344,
+        "ci_lower": 0.6126803660421803,
+        "ci_upper": 0.6127388782215517,
+        "standard_error": 1.5911445058342218e-05,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -145.37630208333334,
+        "sd_diff": 0.020373799676779773,
+        "statistic": -12358.968156135974,
+        "pvalue": 6.546897917614974e-09,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -7135.4535918511165,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__reflection_active__adaptive_embedded_rtol0.01": {
+      "claim_id": "adaptive_stepping_cost_reduction__reflection_active__adaptive_embedded_rtol0.01",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=reflection_active, uniform vs adaptive_embedded_rtol0.01, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol0.01_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_embedded_rtol0.01_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 230.0,
+      "mean_denominator": 256.7879231770833,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.8956807514712827,
+        "ci_lower": 0.8956678362283987,
+        "ci_upper": 0.8956925316329931,
+        "standard_error": 5.9482280076630774e-06,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -26.787923177083332,
+        "sd_diff": 0.003551246178980894,
+        "statistic": -13065.28515161265,
+        "pvalue": 5.858173241768423e-09,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -7543.245899322784,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__reflection_active__adaptive_embedded_rtol1e-05": {
+      "claim_id": "adaptive_stepping_cost_reduction__reflection_active__adaptive_embedded_rtol1e-05",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=reflection_active, uniform vs adaptive_embedded_rtol1e-05, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_embedded_rtol1e-05_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_embedded_rtol1e-05_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 230.0,
+      "mean_denominator": 452.0,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.5088495575221239,
+        "ci_lower": 0.5088495575221239,
+        "ci_upper": 0.5088495575221239,
+        "standard_error": 2.222669831529484e-16,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "percentile (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": "BCa warnings: invalid value encountered in scalar divide; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; BCa produced a non-finite CI (degenerate statistic, e.g. zero variance); BCa was degenerate for this sample; used percentile bootstrap instead",
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -222.0,
+        "sd_diff": 0.0,
+        "statistic": null,
+        "pvalue": 0.0,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": null,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_cost_reduction__reflection_active__adaptive_halfstep_rtol1e-03": {
+      "claim_id": "adaptive_stepping_cost_reduction__reflection_active__adaptive_halfstep_rtol1e-03",
+      "description": "MLMC total cost to reach MSE<=eps^2 (Giles allocation), regime=reflection_active, uniform vs adaptive_halfstep_rtol1e-03, at the tightest epsilon=0.05 attainable by both on every shared seed (ratio=uniform_cost/adaptive_halfstep_rtol1e-03_cost, seed-paired, n=3); S1b.5 evidence file",
+      "source": "results/adaptive_stepping_full/mlmc_cost_to_epsilon.csv",
+      "kind": "paired_ratio",
+      "numerator_label": "uniform_total_cost",
+      "denominator_label": "adaptive_halfstep_rtol1e-03_total_cost",
+      "higher_is_better": true,
+      "n": 3,
+      "mean_numerator": 230.0,
+      "mean_denominator": 294.9757486979167,
+      "ratio_bca_ci_95": {
+        "point_estimate": 0.779725116438443,
+        "ci_lower": 0.7796716636176259,
+        "ci_upper": 0.77981655173213,
+        "standard_error": 3.7438923051163576e-05,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa (paired ratio-of-means)",
+        "insufficient_n": true,
+        "note": null,
+        "paired": true
+      },
+      "paired_ttest_raw_values": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -64.97574869791667,
+        "sd_diff": 0.031215728404793266,
+        "statistic": -3605.2754094098905,
+        "pvalue": 7.693484039217157e-08,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_raw_values": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired_raw_values": -2081.5067281255388,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_embedded_rtol0.0001": {
+      "claim_id": "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_embedded_rtol0.0001",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=bimodal_load, adaptive-minus-uniform (adaptive_embedded_rtol0.0001 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_embedded_rtol0.0001_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.9701307769653823,
+      "mean_b": 0.9688008999680755,
+      "mean_diff_a_minus_b": 0.0013298769973068003,
+      "diff_bca_ci_95": {
+        "point_estimate": 0.0013298769973068003,
+        "ci_lower": 0.0012344447254829527,
+        "ci_upper": 0.0013833505232613286,
+        "standard_error": 3.9950068149385334e-05,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.0013298769973068003,
+        "sd_diff": 8.443232047041988e-05,
+        "statistic": 27.281194148388927,
+        "pvalue": 0.001340908179582232,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": 15.750804785386789,
+      "rank_biserial_r": 1.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_embedded_rtol0.001": {
+      "claim_id": "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_embedded_rtol0.001",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=bimodal_load, adaptive-minus-uniform (adaptive_embedded_rtol0.001 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_embedded_rtol0.001_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.9702333384346842,
+      "mean_b": 0.9688008999680755,
+      "mean_diff_a_minus_b": 0.0014324384666088246,
+      "diff_bca_ci_95": {
+        "point_estimate": 0.0014324384666088246,
+        "ci_lower": 0.0012784770673712753,
+        "ci_upper": 0.0015194073871740061,
+        "standard_error": 6.35806672736696e-05,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.0014324384666088246,
+        "sd_diff": 0.0001366600357107235,
+        "statistic": 18.15495064068576,
+        "pvalue": 0.0030202221094408773,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": 10.481765639524294,
+      "rank_biserial_r": 1.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_embedded_rtol0.01": {
+      "claim_id": "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_embedded_rtol0.01",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=bimodal_load, adaptive-minus-uniform (adaptive_embedded_rtol0.01 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_embedded_rtol0.01_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.9707066516720998,
+      "mean_b": 0.9688008999680755,
+      "mean_diff_a_minus_b": 0.0019057517040243683,
+      "diff_bca_ci_95": {
+        "point_estimate": 0.0019057517040243683,
+        "ci_lower": 0.0013614190175519718,
+        "ci_upper": 0.00295702108547935,
+        "standard_error": 0.0004085017746165299,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.0019057517040243683,
+        "sd_diff": 0.0009121524103418481,
+        "statistic": 3.618757940621026,
+        "pvalue": 0.06859816043177215,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": 2.089290871149645,
+      "rank_biserial_r": 1.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_embedded_rtol1e-05": {
+      "claim_id": "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_embedded_rtol1e-05",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=bimodal_load, adaptive-minus-uniform (adaptive_embedded_rtol1e-05 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_embedded_rtol1e-05_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.970047895712116,
+      "mean_b": 0.9688008999680755,
+      "mean_diff_a_minus_b": 0.0012469957440405244,
+      "diff_bca_ci_95": {
+        "point_estimate": 0.0012469957440405244,
+        "ci_lower": 0.001133943531613335,
+        "ci_upper": 0.0013173072574989748,
+        "standard_error": 4.9624790974162115e-05,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.0012469957440405244,
+        "sd_diff": 0.00010628235567191043,
+        "statistic": 20.321905473828114,
+        "pvalue": 0.002412666082773294,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": 11.732857595760791,
+      "rank_biserial_r": 1.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_halfstep_rtol1e-03": {
+      "claim_id": "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_halfstep_rtol1e-03",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=bimodal_load, adaptive-minus-uniform (adaptive_halfstep_rtol1e-03 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_halfstep_rtol1e-03_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.9698618230230119,
+      "mean_b": 0.9688008999680755,
+      "mean_diff_a_minus_b": 0.0010609230549364728,
+      "diff_bca_ci_95": {
+        "point_estimate": 0.0010609230549364728,
+        "ci_lower": 0.0007879438171377595,
+        "ci_upper": 0.0012001458424523899,
+        "standard_error": 0.00011089273140937802,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.0010609230549364728,
+        "sd_diff": 0.00023654910715970533,
+        "statistic": 7.7682501368754995,
+        "pvalue": 0.016170335819863175,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": 4.4850013076574164,
+      "rank_biserial_r": 1.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_embedded_rtol0.0001": {
+      "claim_id": "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_embedded_rtol0.0001",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=heterogeneous_rho, adaptive-minus-uniform (adaptive_embedded_rtol0.0001 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_embedded_rtol0.0001_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.9732937792215227,
+      "mean_b": 0.971753682147453,
+      "mean_diff_a_minus_b": 0.0015400970740696573,
+      "diff_bca_ci_95": {
+        "point_estimate": 0.0015400970740696573,
+        "ci_lower": 0.0012223740629627722,
+        "ci_upper": 0.0021108130204935405,
+        "standard_error": 0.000232651185866147,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.0015400970740696573,
+        "sd_diff": 0.0005037012802528416,
+        "statistic": 5.295849912348453,
+        "pvalue": 0.033855364188501186,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": 3.0575603724822358,
+      "rank_biserial_r": 1.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_embedded_rtol0.001": {
+      "claim_id": "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_embedded_rtol0.001",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=heterogeneous_rho, adaptive-minus-uniform (adaptive_embedded_rtol0.001 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_embedded_rtol0.001_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.9731432809583591,
+      "mean_b": 0.971753682147453,
+      "mean_diff_a_minus_b": 0.0013895988109060564,
+      "diff_bca_ci_95": {
+        "point_estimate": 0.0013895988109060564,
+        "ci_lower": 0.0010061722572690668,
+        "ci_upper": 0.0020050196550860377,
+        "standard_error": 0.00028355013998908357,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.0013895988109060564,
+        "sd_diff": 0.0005793561122283795,
+        "statistic": 4.15436325228207,
+        "pvalue": 0.05334746921347295,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": 2.3985227420165423,
+      "rank_biserial_r": 1.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_embedded_rtol0.01": {
+      "claim_id": "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_embedded_rtol0.01",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=heterogeneous_rho, adaptive-minus-uniform (adaptive_embedded_rtol0.01 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_embedded_rtol0.01_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.9717928501948815,
+      "mean_b": 0.971753682147453,
+      "mean_diff_a_minus_b": 3.916804742853941e-05,
+      "diff_bca_ci_95": {
+        "point_estimate": 3.916804742853941e-05,
+        "ci_lower": -3.753992321620103e-05,
+        "ci_upper": 0.00013596141260829864,
+        "standard_error": 4.136545022008723e-05,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 3.916804742853941e-05,
+        "sd_diff": 8.847737387853448e-05,
+        "statistic": 0.7667615482420722,
+        "pvalue": 0.5233664293857934,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 2.0,
+        "pvalue": 0.75,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": 0.4426899862818146,
+      "rank_biserial_r": 0.3333333333333333,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_embedded_rtol1e-05": {
+      "claim_id": "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_embedded_rtol1e-05",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=heterogeneous_rho, adaptive-minus-uniform (adaptive_embedded_rtol1e-05 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_embedded_rtol1e-05_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.9731412501316218,
+      "mean_b": 0.971753682147453,
+      "mean_diff_a_minus_b": 0.001387567984168873,
+      "diff_bca_ci_95": {
+        "point_estimate": 0.001387567984168873,
+        "ci_lower": 0.0010512847120059214,
+        "ci_upper": 0.0019634434289557134,
+        "standard_error": 0.00023042165333256754,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.001387567984168873,
+        "sd_diff": 0.000519384275439674,
+        "statistic": 4.627283422282894,
+        "pvalue": 0.04366699445995834,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": 2.6715633294717214,
+      "rank_biserial_r": 1.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_halfstep_rtol1e-03": {
+      "claim_id": "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_halfstep_rtol1e-03",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=heterogeneous_rho, adaptive-minus-uniform (adaptive_halfstep_rtol1e-03 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_halfstep_rtol1e-03_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.9724927959732242,
+      "mean_b": 0.971753682147453,
+      "mean_diff_a_minus_b": 0.0007391138257713351,
+      "diff_bca_ci_95": {
+        "point_estimate": 0.0007391138257713351,
+        "ci_lower": 0.00048580394088915124,
+        "ci_upper": 0.0010731966401744675,
+        "standard_error": 0.00014452210001856234,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.0007391138257713351,
+        "sd_diff": 0.0003019118172595594,
+        "statistic": 4.24025369537611,
+        "pvalue": 0.05137011727416354,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": 2.4481116124577027,
+      "rank_biserial_r": 1.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_embedded_rtol0.0001": {
+      "claim_id": "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_embedded_rtol0.0001",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=homogeneous_chain, adaptive-minus-uniform (adaptive_embedded_rtol0.0001 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_embedded_rtol0.0001_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.7875940640640741,
+      "mean_b": 0.7907874423783268,
+      "mean_diff_a_minus_b": -0.003193378314252704,
+      "diff_bca_ci_95": {
+        "point_estimate": -0.003193378314252704,
+        "ci_lower": -0.003209804945445982,
+        "ci_upper": -0.003161605244485166,
+        "standard_error": 1.2623415550179371e-05,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -0.003193378314252704,
+        "sd_diff": 2.7563949427676865e-05,
+        "statistic": -200.66404136268602,
+        "pvalue": 2.483388768373584e-05,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": -115.85343829742497,
+      "rank_biserial_r": -1.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_embedded_rtol0.001": {
+      "claim_id": "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_embedded_rtol0.001",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=homogeneous_chain, adaptive-minus-uniform (adaptive_embedded_rtol0.001 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_embedded_rtol0.001_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.7918906714049326,
+      "mean_b": 0.7907874423783268,
+      "mean_diff_a_minus_b": 0.0011032290266058675,
+      "diff_bca_ci_95": {
+        "point_estimate": 0.0011032290266058675,
+        "ci_lower": 0.0007467075126009748,
+        "ci_upper": 0.001317618001798193,
+        "standard_error": 0.00014542414235211247,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.0011032290266058675,
+        "sd_diff": 0.00032722763606919783,
+        "statistic": 5.839509001807041,
+        "pvalue": 0.028095616145720422,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": 3.3714420941285383,
+      "rank_biserial_r": 1.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_embedded_rtol0.01": {
+      "claim_id": "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_embedded_rtol0.01",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=homogeneous_chain, adaptive-minus-uniform (adaptive_embedded_rtol0.01 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_embedded_rtol0.01_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.7907874423783268,
+      "mean_b": 0.7907874423783268,
+      "mean_diff_a_minus_b": 0.0,
+      "diff_bca_ci_95": {
+        "point_estimate": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "standard_error": 0.0,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "percentile",
+        "insufficient_n": true,
+        "note": "BCa warnings: invalid value encountered in scalar divide; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; The BCa confidence interval cannot be calculated. This problem is known to occur when the distribution is degenerate or the statistic is np.min.; BCa produced a non-finite CI (degenerate statistic, e.g. zero variance); BCa was degenerate for this sample; used percentile bootstrap instead"
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.0,
+        "sd_diff": 0.0,
+        "statistic": null,
+        "pvalue": null,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 1.0,
+        "insufficient_n": true,
+        "note": "invalid value encountered in scalar divide"
+      },
+      "cohens_d_paired": 0.0,
+      "rank_biserial_r": null,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_embedded_rtol1e-05": {
+      "claim_id": "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_embedded_rtol1e-05",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=homogeneous_chain, adaptive-minus-uniform (adaptive_embedded_rtol1e-05 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_embedded_rtol1e-05_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.7877087288262518,
+      "mean_b": 0.7907874423783268,
+      "mean_diff_a_minus_b": -0.0030787135520748596,
+      "diff_bca_ci_95": {
+        "point_estimate": -0.0030787135520748596,
+        "ci_lower": -0.00310211836228765,
+        "ci_upper": -0.003031917153873187,
+        "standard_error": 1.934180107798083e-05,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -0.0030787135520748596,
+        "sd_diff": 4.052687450135194e-05,
+        "statistic": -131.57906598414394,
+        "pvalue": 5.7754892034573354e-05,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": -75.96720916566504,
+      "rank_biserial_r": -1.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_halfstep_rtol1e-03": {
+      "claim_id": "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_halfstep_rtol1e-03",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=homogeneous_chain, adaptive-minus-uniform (adaptive_halfstep_rtol1e-03 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_halfstep_rtol1e-03_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.8587364373204945,
+      "mean_b": 0.7907874423783268,
+      "mean_diff_a_minus_b": 0.06794899494216788,
+      "diff_bca_ci_95": {
+        "point_estimate": 0.06794899494216788,
+        "ci_lower": 0.06652989557398703,
+        "ci_upper": 0.06917685721294342,
+        "standard_error": 0.0006505116973471932,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.06794899494216788,
+        "sd_diff": 0.0013338029090141782,
+        "statistic": 88.23725811938861,
+        "pvalue": 0.0001284139871621727,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": 50.94380472778351,
+      "rank_biserial_r": 1.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__reflection_active__adaptive_embedded_rtol0.0001": {
+      "claim_id": "adaptive_stepping_beta_var_shift__reflection_active__adaptive_embedded_rtol0.0001",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=reflection_active, adaptive-minus-uniform (adaptive_embedded_rtol0.0001 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_embedded_rtol0.0001_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.9771733482322725,
+      "mean_b": 0.9755421048714418,
+      "mean_diff_a_minus_b": 0.0016312433608307215,
+      "diff_bca_ci_95": {
+        "point_estimate": 0.0016312433608307215,
+        "ci_lower": 0.0012869680452932686,
+        "ci_upper": 0.0018321343587837842,
+        "standard_error": 0.00014139874551522344,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.0016312433608307215,
+        "sd_diff": 0.0003103786571465813,
+        "statistic": 9.103062711988867,
+        "pvalue": 0.011853570050146625,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": 5.255655707216817,
+      "rank_biserial_r": 1.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__reflection_active__adaptive_embedded_rtol0.001": {
+      "claim_id": "adaptive_stepping_beta_var_shift__reflection_active__adaptive_embedded_rtol0.001",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=reflection_active, adaptive-minus-uniform (adaptive_embedded_rtol0.001 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_embedded_rtol0.001_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.9773092316064237,
+      "mean_b": 0.9755421048714418,
+      "mean_diff_a_minus_b": 0.0017671267349818425,
+      "diff_bca_ci_95": {
+        "point_estimate": 0.0017671267349818425,
+        "ci_lower": 0.0013544108638535723,
+        "ci_upper": 0.002038450583892404,
+        "standard_error": 0.00017148349971327076,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.0017671267349818425,
+        "sd_diff": 0.0003632786294400078,
+        "statistic": 8.425360151572885,
+        "pvalue": 0.013796296453210368,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": 4.864383951530151,
+      "rank_biserial_r": 1.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__reflection_active__adaptive_embedded_rtol0.01": {
+      "claim_id": "adaptive_stepping_beta_var_shift__reflection_active__adaptive_embedded_rtol0.01",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=reflection_active, adaptive-minus-uniform (adaptive_embedded_rtol0.01 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_embedded_rtol0.01_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.9752677668711179,
+      "mean_b": 0.9755421048714418,
+      "mean_diff_a_minus_b": -0.00027433800032383715,
+      "diff_bca_ci_95": {
+        "point_estimate": -0.00027433800032383715,
+        "ci_lower": -0.0006978185221547806,
+        "ci_upper": 0.00011638377405642775,
+        "standard_error": 0.00020472149867806056,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": -0.00027433800032383715,
+        "sd_diff": 0.00040808846643810464,
+        "statistic": -1.164373399608936,
+        "pvalue": 0.3643815740522316,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 1.0,
+        "pvalue": 0.5,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": -0.6722512957014588,
+      "rank_biserial_r": -0.6666666666666666,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__reflection_active__adaptive_embedded_rtol1e-05": {
+      "claim_id": "adaptive_stepping_beta_var_shift__reflection_active__adaptive_embedded_rtol1e-05",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=reflection_active, adaptive-minus-uniform (adaptive_embedded_rtol1e-05 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_embedded_rtol1e-05_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.9771159517041079,
+      "mean_b": 0.9755421048714418,
+      "mean_diff_a_minus_b": 0.0015738468326661852,
+      "diff_bca_ci_95": {
+        "point_estimate": 0.0015738468326661852,
+        "ci_lower": 0.0012006803249396958,
+        "ci_upper": 0.0017775209801781748,
+        "standard_error": 0.00015767855549211977,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.0015738468326661852,
+        "sd_diff": 0.0003272137217141152,
+        "statistic": 8.330893531081381,
+        "pvalue": 0.014104325426868241,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": 4.8098436227599475,
+      "rank_biserial_r": 1.0,
+      "insufficient_n": true
+    },
+    "adaptive_stepping_beta_var_shift__reflection_active__adaptive_halfstep_rtol1e-03": {
+      "claim_id": "adaptive_stepping_beta_var_shift__reflection_active__adaptive_halfstep_rtol1e-03",
+      "description": "MLMC level-difference-variance decay exponent beta_var (Giles 2008 convention), regime=reflection_active, adaptive-minus-uniform (adaptive_halfstep_rtol1e-03 minus uniform, seed-paired, n=3); if this CI excludes 0 it contradicts the S1b.5 'beta_var unchanged' finding, if it includes 0 it confirms it with a real interval instead of an eyeballed delta",
+      "source": "results/adaptive_stepping_full/mlmc_exponents.csv",
+      "kind": "paired_difference",
+      "unit": "",
+      "label_a": "adaptive_halfstep_rtol1e-03_beta_var",
+      "label_b": "uniform_beta_var",
+      "n": 3,
+      "mean_a": 0.9768111862777374,
+      "mean_b": 0.9755421048714418,
+      "mean_diff_a_minus_b": 0.001269081406295632,
+      "diff_bca_ci_95": {
+        "point_estimate": 0.001269081406295632,
+        "ci_lower": 0.0007581978015330781,
+        "ci_upper": 0.001527270582517078,
+        "standard_error": 0.00021183987049623314,
+        "confidence": 0.95,
+        "n": 3,
+        "n_resamples": 500,
+        "method": "BCa",
+        "insufficient_n": true,
+        "note": null
+      },
+      "paired_ttest": {
+        "n": 3,
+        "df": 2,
+        "mean_diff": 0.001269081406295632,
+        "sd_diff": 0.0004425149441301896,
+        "statistic": 4.96732032172523,
+        "pvalue": 0.03821968122002535,
+        "insufficient_n": true,
+        "note": null
+      },
+      "wilcoxon_signed_rank": {
+        "n": 3,
+        "statistic": 0.0,
+        "pvalue": 0.25,
+        "insufficient_n": true,
+        "note": null
+      },
+      "cohens_d_paired": 2.86788372489916,
+      "rank_biserial_r": 1.0,
+      "insufficient_n": true
+    },
+    "paper_headline_work_reduction_geomean_57x": {
+      "claim_id": "paper_headline_work_reduction_geomean_57x",
+      "description": "Table 'work_units' + Sec. Empirical Validation (2): computational work reduction GPU-MC -> GPU-MLMC, geometric mean ~57x (range 28-120x across 6 A100 configurations: ER/CAIDA n=500 at eps in {0.05, 0.02, 0.01}); text separately claims 'rising above 250x at the tightest target when the single-level baseline is capped at 5e5 paths'.",
+      "kind": "known_gap",
+      "source": [
+        "paper/ieee_access/main.tex"
+      ],
+      "reported_value": {
+        "geomean": "~57x",
+        "range": "28-120x",
+        "capped_baseline_claim": ">250x at tightest target, single-level baseline capped at 5e5 paths",
+        "table_cost_ratios": {
+          "ER eps=0.05": "31.10x",
+          "ER eps=0.02": "77.69x",
+          "ER eps=0.01 (dagger, MC capped at 1e6 samples)": ">=64.33x",
+          "CAIDA eps=0.05": "27.68x",
+          "CAIDA eps=0.02": "120.35x",
+          "CAIDA eps=0.01 (dagger, MC capped at 1e6 samples)": ">=64.33x"
+        }
+      },
+      "n": 1,
+      "gap_reason": "Each of the 6 (topology, epsilon) cells is a SINGLE run -- no results/ file (checked: exhaustive scan of this repo's results/ tree) contains repeated-seed work counts W_MC or W_MLMC for these specific cells, so there is nothing to bootstrap a CI from. Separately and more importantly (flagged by a parallel workstream): the MC baseline's path budget N_MC appears to be a FIXED/CAPPED count (a 1e6-sample cap is hit and explicitly flagged at eps=0.01; a 5e5-path cap is invoked for the >250x figure) rather than a budget chosen to match GPU-MLMC's achieved CI half-width. A work-reduction ratio computed against an over- or under-provisioned fixed MC budget is not the same claim as an accuracy-matched comparison, and can move substantially once the comparison is redone honestly.",
+      "required_action": "On the A100: for each of the 6 cells, run >=10 seeds of BOTH GPU-MC and GPU-MLMC; size the MC baseline's N_MC per seed so its achieved CI half-width matches GPU-MLMC's (not a fixed/capped count); write the resulting per-seed (W_MC, W_MLMC) pairs to a results/ file; route them through Harness.add_paired_ratio here (ratio = W_MC/W_MLMC, BCa-bootstrapped across seeds, not a naive division of separately-bootstrapped means). Only then does the headline number get a CI at all.",
+      "insufficient_n": true
+    },
+    "paper_gpu_mc_vs_mlmc_speedup_tab_gpu_gpu_a100": {
+      "claim_id": "paper_gpu_mc_vs_mlmc_speedup_tab_gpu_gpu_a100",
+      "description": "Table 'gpu_gpu_a100': GPU-MC vs GPU-MLMC wall-clock speedup, same 6 (topology, epsilon) cells as the work-reduction table; text reports geometric mean ~3.0x runtime speedup where both methods meet the CI target (eps>=0.02).",
+      "kind": "known_gap",
+      "source": [
+        "paper/ieee_access/main.tex"
+      ],
+      "reported_value": {
+        "speedups": {
+          "ER eps=0.05": "0.49x",
+          "ER eps=0.02": "2.41x",
+          "ER eps=0.01 (dagger)": ">=1.75x",
+          "CAIDA eps=0.05": "0.59x",
+          "CAIDA eps=0.02": "3.79x",
+          "CAIDA eps=0.01 (dagger)": ">=1.73x"
+        },
+        "geomean_where_both_meet_ci_target": "~3.0x"
+      },
+      "n": 1,
+      "gap_reason": "The table's own footnote states: 'GPU-MLMC vs. GPU-MC speedup is from a single controlled run; per-seed replication data in results/significance/significance_tests.json.' This harness extracted that exact file (see extract_ana_mlmc / the legacy cross-check above): it contains only the ANA-vs-Giles-baseline runtime test and MLMC-only scaling runtimes -- ZERO per-seed GPU-MC-vs-GPU-MLMC data for these 6 cells. The footnote's citation does not point to data that exists in this repository.",
+      "required_action": "Either (a) produce the per-seed replication file the footnote already claims to exist (>=10 seeds per cell, both methods, at ER/CAIDA n=500 x eps in {0.05, 0.02, 0.01}) and route it through Harness.add_paired_ratio, or (b) correct the footnote to state accurately that these are single-run values.",
+      "insufficient_n": true
+    }
+  },
+  "skipped_sources": [],
+  "legacy_cross_check": {
+    "source": "results/significance/significance_tests.json",
+    "checked": true,
+    "legacy_mean_speedup": 1.018,
+    "new_ratio_of_means_point_estimate": 1.0463689256544113,
+    "relative_difference": 0.027867314002368655,
+    "matches_within_1pct": false,
+    "note": "legacy used a naive mean-of-per-pair-ratios; new pipeline uses a ratio-of-means, so a small difference is EXPECTED and is not a bug -- see docstring of ratio_ci_bootstrap in src/utils/stats.py"
+  },
+  "summary": {
+    "n_claims": 98,
+    "n_claims_by_kind": {
+      "paired_ratio": 35,
+      "single_sample": 10,
+      "aggregate_only": 31,
+      "paired_difference": 20,
+      "known_gap": 2
+    },
+    "n_insufficient_n": 97,
+    "insufficient_n_claim_ids": [
+      "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_embedded_rtol0.0001",
+      "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_embedded_rtol0.001",
+      "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_embedded_rtol0.01",
+      "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_embedded_rtol1e-05",
+      "adaptive_stepping_beta_var_shift__bimodal_load__adaptive_halfstep_rtol1e-03",
+      "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_embedded_rtol0.0001",
+      "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_embedded_rtol0.001",
+      "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_embedded_rtol0.01",
+      "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_embedded_rtol1e-05",
+      "adaptive_stepping_beta_var_shift__heterogeneous_rho__adaptive_halfstep_rtol1e-03",
+      "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_embedded_rtol0.0001",
+      "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_embedded_rtol0.001",
+      "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_embedded_rtol0.01",
+      "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_embedded_rtol1e-05",
+      "adaptive_stepping_beta_var_shift__homogeneous_chain__adaptive_halfstep_rtol1e-03",
+      "adaptive_stepping_beta_var_shift__reflection_active__adaptive_embedded_rtol0.0001",
+      "adaptive_stepping_beta_var_shift__reflection_active__adaptive_embedded_rtol0.001",
+      "adaptive_stepping_beta_var_shift__reflection_active__adaptive_embedded_rtol0.01",
+      "adaptive_stepping_beta_var_shift__reflection_active__adaptive_embedded_rtol1e-05",
+      "adaptive_stepping_beta_var_shift__reflection_active__adaptive_halfstep_rtol1e-03",
+      "adaptive_stepping_cost_reduction__bimodal_load__adaptive_embedded_rtol0.0001",
+      "adaptive_stepping_cost_reduction__bimodal_load__adaptive_embedded_rtol0.001",
+      "adaptive_stepping_cost_reduction__bimodal_load__adaptive_embedded_rtol0.01",
+      "adaptive_stepping_cost_reduction__bimodal_load__adaptive_embedded_rtol1e-05",
+      "adaptive_stepping_cost_reduction__bimodal_load__adaptive_halfstep_rtol1e-03",
+      "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_embedded_rtol0.0001",
+      "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_embedded_rtol0.001",
+      "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_embedded_rtol0.01",
+      "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_embedded_rtol1e-05",
+      "adaptive_stepping_cost_reduction__heterogeneous_rho__adaptive_halfstep_rtol1e-03",
+      "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_embedded_rtol0.0001",
+      "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_embedded_rtol0.001",
+      "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_embedded_rtol0.01",
+      "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_embedded_rtol1e-05",
+      "adaptive_stepping_cost_reduction__homogeneous_chain__adaptive_halfstep_rtol1e-03",
+      "adaptive_stepping_cost_reduction__reflection_active__adaptive_embedded_rtol0.0001",
+      "adaptive_stepping_cost_reduction__reflection_active__adaptive_embedded_rtol0.001",
+      "adaptive_stepping_cost_reduction__reflection_active__adaptive_embedded_rtol0.01",
+      "adaptive_stepping_cost_reduction__reflection_active__adaptive_embedded_rtol1e-05",
+      "adaptive_stepping_cost_reduction__reflection_active__adaptive_halfstep_rtol1e-03",
+      "ana_vs_baseline_speedup__ba_n500_eps0.005",
+      "ana_vs_baseline_speedup__ba_n500_eps0.01",
+      "ana_vs_baseline_speedup__ba_n500_eps0.02",
+      "ana_vs_baseline_speedup__ba_n500_eps0.05",
+      "ana_weight_sweep_cost_reduction__balanced_mix",
+      "ana_weight_sweep_cost_reduction__centrality_only",
+      "ana_weight_sweep_cost_reduction__default_mix",
+      "ana_weight_sweep_cost_reduction__sla_only",
+      "ana_weight_sweep_cost_reduction__variance_only",
+      "ana_weight_sweep_runtime_speedup__balanced_mix",
+      "ana_weight_sweep_runtime_speedup__centrality_only",
+      "ana_weight_sweep_runtime_speedup__default_mix",
+      "ana_weight_sweep_runtime_speedup__sla_only",
+      "ana_weight_sweep_runtime_speedup__variance_only",
+      "halo_sweep_elapsed__K1",
+      "halo_sweep_elapsed__K2",
+      "halo_sweep_elapsed__K4",
+      "halo_sweep_elapsed__K8",
+      "mlmc_runtime__n100",
+      "mlmc_runtime__n200",
+      "mlmc_runtime__n50",
+      "mlmc_runtime__n500",
+      "multi_gpu_distributed_strong_scaling_time__ws1",
+      "multi_gpu_distributed_strong_scaling_time__ws2",
+      "multi_gpu_distributed_strong_scaling_time__ws4",
+      "multi_gpu_distributed_weak_scaling_time__ws1",
+      "multi_gpu_distributed_weak_scaling_time__ws2",
+      "multi_gpu_distributed_weak_scaling_time__ws4",
+      "multi_gpu_memory_measured_vs_model__n10000_G1",
+      "multi_gpu_memory_measured_vs_model__n10000_G2",
+      "multi_gpu_memory_measured_vs_model__n10000_G4",
+      "multi_gpu_memory_measured_vs_model__n1000_G1",
+      "multi_gpu_memory_measured_vs_model__n1000_G2",
+      "multi_gpu_memory_measured_vs_model__n1000_G4",
+      "multi_gpu_memory_measured_vs_model__n2000_G1",
+      "multi_gpu_memory_measured_vs_model__n2000_G2",
+      "multi_gpu_memory_measured_vs_model__n2000_G4",
+      "multi_gpu_memory_measured_vs_model__n5000_G1",
+      "multi_gpu_memory_measured_vs_model__n5000_G2",
+      "multi_gpu_memory_measured_vs_model__n5000_G4",
+      "multi_gpu_memory_measured_vs_model__n500_G1",
+      "multi_gpu_memory_measured_vs_model__n500_G2",
+      "multi_gpu_memory_measured_vs_model__n500_G4",
+      "multi_gpu_strong_scaling_time__ws1_n1000",
+      "multi_gpu_strong_scaling_time__ws2_n1000",
+      "multi_gpu_strong_scaling_time__ws4_n1000",
+      "multi_gpu_weak_scaling_time__ws1_n500",
+      "multi_gpu_weak_scaling_time__ws2_n1000",
+      "multi_gpu_weak_scaling_time__ws4_n2000",
+      "paper_gpu_mc_vs_mlmc_speedup_tab_gpu_gpu_a100",
+      "paper_headline_work_reduction_geomean_57x",
+      "per_topology_runtime_speedup__BA",
+      "per_topology_runtime_speedup__CAIDA",
+      "per_topology_runtime_speedup__ER",
+      "per_topology_work_reduction__BA",
+      "per_topology_work_reduction__CAIDA",
+      "per_topology_work_reduction__ER"
+    ],
+    "min_n_threshold": 10
+  }
+}

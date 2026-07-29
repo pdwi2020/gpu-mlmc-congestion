@@ -56,6 +56,13 @@ def bench_rank(adj, world_size, rank, epsilon, L_max, N_pilot, seed):
     t0 = time.perf_counter()
     result = sim.mlmc_estimate_multigpu(epsilon=epsilon, L_max=L_max, N_pilot=N_pilot)
     elapsed = time.perf_counter() - t0
+    del sim
+    try:
+        import torch
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    except ImportError:
+        pass
     return elapsed, result
 
 
@@ -118,14 +125,14 @@ def strong_scaling(n, world_sizes, epsilon, L_max, N_pilot, seed):
 
 def main():
     parser = argparse.ArgumentParser(description="MultiGPUMLMC scaling benchmark")
-    parser.add_argument("--base-n", type=int, default=100,
-                        help="Base number of nodes for weak scaling")
-    parser.add_argument("--strong-n", type=int, default=200,
+    parser.add_argument("--base-n", type=int, default=1250,
+                        help="Base number of nodes for weak scaling (×world_size gives 1250/2500/5000)")
+    parser.add_argument("--strong-n", type=int, default=5000,
                         help="Fixed node count for strong scaling")
     parser.add_argument("--world-sizes", type=int, nargs="+", default=[1, 2, 4])
-    parser.add_argument("--epsilon", type=float, default=0.1)
-    parser.add_argument("--L-max", type=int, default=3)
-    parser.add_argument("--N-pilot", type=int, default=50)
+    parser.add_argument("--epsilon", type=float, default=0.05)
+    parser.add_argument("--L-max", type=int, default=4)
+    parser.add_argument("--N-pilot", type=int, default=200)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--out-dir", default="results/multi_gpu")
     parser.add_argument("--distributed", action="store_true",
@@ -133,24 +140,23 @@ def main():
     args = parser.parse_args()
 
     if args.distributed:
+        import torch
         import torch.distributed as dist
+        # torchrun sets LOCAL_RANK; each process sees exactly one GPU remapped to cuda:0
+        local_rank = int(os.environ.get("LOCAL_RANK", 0))
+        torch.cuda.set_device(local_rank)
         dist.init_process_group("nccl")
         rank = dist.get_rank()
         world_size = dist.get_world_size()
-        print(f"Distributed mode: rank {rank}/{world_size}")
-        # In distributed mode, each rank runs independently and all_reduce gathers
+        print(f"Distributed mode: rank {rank}/{world_size} local_rank={local_rank}", flush=True)
         adj = erdos_renyi_adj(args.strong_n, seed=args.seed)
         t0 = time.perf_counter()
         sim = MultiGPUMLMC(adj, world_size=world_size, rank=rank, seed=args.seed)
         result = sim.mlmc_estimate_multigpu(args.epsilon, args.L_max, args.N_pilot)
         elapsed = time.perf_counter() - t0
-        # Gather timing across all ranks
-        import torch
-        t_tensor = torch.tensor([elapsed])
-        dist.all_reduce(t_tensor, op=dist.ReduceOp.MAX)
-        if rank == 0:
-            print(f"Max time across {world_size} GPUs: {t_tensor.item():.3f}s")
-            print(f"Estimate: {result['estimate']:.4f}")
+        # Synchronize then print per-rank timing (avoids all_reduce device type issues)
+        dist.barrier()
+        print(f"[rank {rank}] time={elapsed:.3f}s  estimate={result['estimate']:.4f}", flush=True)
         dist.destroy_process_group()
         return
 

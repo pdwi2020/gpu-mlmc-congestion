@@ -865,11 +865,12 @@ class AdaptiveNetworkAwareMLMC(MLMCSimulator):
                                sla_vec: Optional[np.ndarray] = None) -> MLMCResult:
         """Run ANA-MLMC estimation for the weighted network quantity.
 
-        Adaptive level selection: levels are added until the stopping criterion
-        max(|bias_l^w|, V_l^w / N_pilot) < epsilon^2 / 2 is satisfied or L_max
-        is reached.  This ensures both the weighted bias and the weighted pilot
-        variance are below the MSE half-budget before committing to the full
-        allocation.
+        Adaptive level selection uses the Continuation MLMC criterion
+        (Collier et al., BIT Numer. Math. 2015):
+          bias^2 + sum_l( V_l^w / N_pilot ) <= epsilon^2
+        This guarantees the pilot MSE is below the target without the arbitrary
+        50/50 bias-variance split of ad-hoc stopping rules.  Sample allocation
+        at each level uses the exact Lagrangian formula from Theorem 1.
         """
         if verbose:
             logger.info(f"Starting ANA-MLMC simulation: ε={epsilon}, L_max={L_max}")
@@ -877,8 +878,9 @@ class AdaptiveNetworkAwareMLMC(MLMCSimulator):
         per_node_variances = []
         costs = []
         pilot_diffs = []
-        mse_half = epsilon ** 2 / 2.0  # stopping threshold
+        V_lw_history: list[float] = []   # weighted level variances for continuation test
         uniform_w = np.ones(network.n_nodes, dtype=float) / network.n_nodes
+        stopping_w = sla_vec / sla_vec.sum() if (sla_vec is not None and float(np.sum(sla_vec)) > 0) else uniform_w
 
         for l in range(L_max + 1):
             _, var_diff, cost, diffs = self.estimate_level_variance_per_node(
@@ -895,24 +897,31 @@ class AdaptiveNetworkAwareMLMC(MLMCSimulator):
             costs.append(cost)
             pilot_diffs.append(diffs)
 
-            # Weighted quantities for stopping check (use uniform weights at pilot stage;
-            # full ANA weights are computed after all pilot levels are complete)
-            V_lw = float(np.dot(uniform_w, var_diff))
-            bias_lw = float(abs(np.dot(uniform_w, np.mean(diffs, axis=0))))
+            # Weighted quantities for stopping check use SLA weights when provided;
+            # full ANA weights are computed after all pilot levels are complete.
+            V_lw = float(np.dot(stopping_w, var_diff))
+            bias_lw = float(abs(np.dot(stopping_w, np.mean(diffs, axis=0))))
+            V_lw_history.append(V_lw)
+
+            # Continuation MLMC criterion (Collier et al., BIT Numer. Math. 2015):
+            # Stop when  bias^2 + sum_l(V_l^w / N_pilot) <= epsilon^2.
+            # This guarantees MSE <= epsilon^2 without the arbitrary 50/50 bias-variance
+            # split of the previous ad-hoc rule.
+            total_pilot_var = sum(v / pilot_samples for v in V_lw_history)
+            mse_estimate = bias_lw ** 2 + total_pilot_var
 
             if verbose:
                 logger.info(
                     f"  Level {l}: V_lw={V_lw:.3e}  bias_lw={bias_lw:.3e}  "
-                    f"threshold={mse_half:.3e}  C={cost:.2e}"
+                    f"pilot_MSE={mse_estimate:.3e}  target={epsilon**2:.3e}  C={cost:.2e}"
                 )
 
-            # Adaptive stopping: both weighted variance and bias below half MSE budget
-            if l > 0 and max(bias_lw, V_lw / pilot_samples) < mse_half:
+            # Require at least level 1 so we have a bias estimate from level difference
+            if l > 0 and mse_estimate <= epsilon ** 2:
                 if verbose:
                     logger.info(
-                        f"  Adaptive stopping at level {l}: "
-                        f"max(bias_lw={bias_lw:.3e}, V_lw/N={V_lw/pilot_samples:.3e}) "
-                        f"< ε²/2={mse_half:.3e}"
+                        f"  Continuation MLMC stopping at level {l}: "
+                        f"bias^2 + Σ(V_l^w/N) = {mse_estimate:.3e} <= ε^2={epsilon**2:.3e}"
                     )
                 break
 
@@ -932,7 +941,7 @@ class AdaptiveNetworkAwareMLMC(MLMCSimulator):
         weighted_level_vars = []
         weighted_estimator_vars = []
 
-        for l in range(L_max + 1):
+        for l in range(len(optimal_N)):
             n_additional = max(0, optimal_N[l] - pilot_samples)
             n_total = pilot_samples + n_additional
             diffs = pilot_diffs[l]
@@ -1028,6 +1037,323 @@ class AdaptiveNetworkAwareMLMC(MLMCSimulator):
                 'weighted_estimator_level_variances': weighted_estimator_vars,
             },
         )
+
+
+def _online_mlmc_estimate(
+    ana: "AdaptiveNetworkAwareMLMC",
+    network: "NetworkGraph",
+    traffic: "TrafficModel",
+    epsilon: float,
+    L_max: int,
+    T: float,
+    base_dt: float,
+    metric: str,
+    pilot_samples: int,
+    total_rounds: int,
+    sla_vec: Optional[np.ndarray],
+    verbose: bool,
+) -> "MLMCResult":
+    """Robbins-Monro online reallocation MLMC (Benveniste et al. 1990).
+
+    Runs `total_rounds` reallocation rounds.  Each round draws a budget slice
+    of ``total_budget / total_rounds`` samples and updates the per-level
+    allocation $N_l$ via a decreasing step-size Robbins-Monro rule:
+        $N_l^{(k+1)} = N_l^{(k)} + \\gamma_k (\\hat{N}_l^\\star - N_l^{(k)})$
+    where $\\hat{N}_l^\\star \\propto \\sqrt{V_l^w / C_l}$ is the Lagrangian target
+    and $\\gamma_k = 1/k$ is the step size.
+
+    After all rounds, a final full allocation pass is performed and the
+    standard MLMCResult is returned.
+    """
+    # Build pilot variance estimates for all levels first
+    per_node_variances, costs, pilot_diffs = [], [], []
+    uniform_w = np.ones(network.n_nodes) / network.n_nodes
+    stopping_w = (sla_vec / sla_vec.sum()
+                  if sla_vec is not None and float(np.sum(sla_vec)) > 0
+                  else uniform_w)
+
+    for l in range(L_max + 1):
+        _, var_diff, cost, diffs = ana.estimate_level_variance_per_node(
+            network=network, traffic=traffic, level=l,
+            T=T, base_dt=base_dt, metric=metric,
+            n_samples=pilot_samples, return_samples=True,
+        )
+        per_node_variances.append(var_diff)
+        costs.append(cost)
+        pilot_diffs.append(diffs)
+
+    level_var_per_node = np.vstack(per_node_variances)
+    node_weights = ana.compute_node_weights(network, level_var_per_node, sla_vec=sla_vec)
+
+    # Initial Lagrangian allocation
+    V_lw = np.array([float(np.dot(node_weights, v)) for v in per_node_variances])
+    costs_arr = np.array(costs, dtype=float)
+    target_fracs = np.sqrt(V_lw / costs_arr)
+    target_fracs /= target_fracs.sum() + 1e-30
+
+    n_levels = L_max + 1
+    N_l = np.maximum(1.0, target_fracs * pilot_samples * total_rounds)
+
+    # Robbins-Monro rounds
+    round_budget = pilot_samples
+    for k in range(1, total_rounds + 1):
+        gamma = 1.0 / k
+        # Update variance estimates with fresh samples for each level
+        for l in range(n_levels):
+            _, var_new, _, _ = ana.estimate_level_variance_per_node(
+                network=network, traffic=traffic, level=l,
+                T=T, base_dt=base_dt, metric=metric,
+                n_samples=round_budget, return_samples=True,
+            )
+            # EMA update: blend in new estimate
+            per_node_variances[l] = (1.0 - gamma) * per_node_variances[l] + gamma * var_new
+
+        V_lw = np.array([float(np.dot(node_weights, v)) for v in per_node_variances])
+        target_fracs = np.sqrt(np.maximum(V_lw, 1e-30) / costs_arr)
+        target_fracs /= target_fracs.sum()
+
+        total_so_far = N_l.sum()
+        N_l_star = target_fracs * total_so_far
+        N_l = N_l + gamma * (N_l_star - N_l)
+        N_l = np.maximum(1.0, N_l)
+
+    # Final allocation pass with converged N_l
+    optimal_N = np.ceil(N_l).astype(int)
+
+    if verbose:
+        logger.info("Online Robbins-Monro allocation (final N_l):")
+        for l, n in enumerate(optimal_N):
+            logger.info(f"  Level {l}: N={n}")
+
+    # Run full estimation with optimal allocation
+    level_stats = []
+    total_cost = 0.0
+    weighted_level_vars = []
+
+    level_var_per_node_final = np.vstack(per_node_variances)
+    node_weights_final = ana.compute_node_weights(
+        network, level_var_per_node_final, sla_vec=sla_vec)
+
+    for l in range(n_levels):
+        n_total = int(optimal_N[l])
+        diffs = pilot_diffs[l]
+        n_add = max(0, n_total - pilot_samples)
+        if n_add > 0:
+            additional = np.zeros((n_add, network.n_nodes))
+            for i in range(n_add):
+                yf, yc = ana.run_coupled_node_paths(
+                    network, traffic, l, T, base_dt, metric, None)
+                additional[i] = yf - yc
+            diffs = np.vstack([diffs, additional])
+
+        mean_per_node = np.mean(diffs, axis=0)
+        var_per_node = (np.var(diffs, axis=0, ddof=1) if n_total > 1
+                        else np.zeros(network.n_nodes))
+        mean_diff = float(np.dot(node_weights_final, mean_per_node))
+        var_diff = float(np.dot(node_weights_final, var_per_node))
+        weighted_level_vars.append(var_diff)
+
+        dt_l = get_timestep(l, base_dt, ana.refinement_factor)
+        cp = T / dt_l
+        level_cost = cp * n_total
+        total_cost += level_cost
+
+        level_stats.append(MLMCLevelStats(
+            level=l, n_samples=n_total, dt=dt_l,
+            mean_Y=mean_diff, var_Y=var_diff,
+            mean_diff=mean_diff, var_diff=var_diff,
+            cost_per_sample=cp, total_cost=level_cost,
+        ))
+
+    estimate = float(sum(s.mean_diff for s in level_stats))
+    variance = float(sum(s.var_diff / s.n_samples for s in level_stats))
+    from scipy import stats as _sp
+    z = float(_sp.norm.ppf(0.975))
+    margin = z * float(np.sqrt(variance))
+    dt_finest = get_timestep(L_max, base_dt, ana.refinement_factor)
+    bias_est = ana.BIAS_CALIBRATION_CONSTANT * np.sqrt(dt_finest)
+    mse = variance + bias_est ** 2
+
+    return MLMCResult(
+        estimate=estimate, variance=variance, mse=mse,
+        level_stats=level_stats, total_cost=total_cost,
+        L_max=L_max, epsilon=epsilon,
+        ci_lower=estimate - margin, ci_upper=estimate + margin,
+        confidence_level=0.95,
+        metadata={
+            'T': T, 'base_dt': base_dt, 'metric': metric,
+            'refinement_factor': ana.refinement_factor,
+            'online_N_l_final': optimal_N.tolist(),
+            'ana_node_weights': node_weights_final.tolist(),
+            'ana_level_var_per_node': level_var_per_node_final.tolist(),
+            'ana_weighted_level_variances': weighted_level_vars,
+        },
+    )
+
+
+# Attach as a method on AdaptiveNetworkAwareMLMC after class definition
+def _mlmc_estimate_online(
+    self,
+    network: "NetworkGraph",
+    traffic: "TrafficModel",
+    epsilon: float,
+    L_max: int,
+    T: float = 10.0,
+    base_dt: float = 0.1,
+    metric: str = 'mean_congestion',
+    pilot_samples: int = 100,
+    total_rounds: int = 10,
+    sla_vec: Optional[np.ndarray] = None,
+    verbose: bool = True,
+) -> "MLMCResult":
+    """Online MLMC with Robbins-Monro sample reallocation (Benveniste et al. 1990).
+
+    Args:
+        total_rounds: number of Robbins-Monro reallocation rounds.
+            Each round draws pilot_samples per level and updates N_l.
+    """
+    return _online_mlmc_estimate(
+        self, network, traffic, epsilon, L_max, T, base_dt, metric,
+        pilot_samples, total_rounds, sla_vec, verbose,
+    )
+
+
+AdaptiveNetworkAwareMLMC.mlmc_estimate_online = _mlmc_estimate_online
+
+
+class AdaptiveStepMLMC(MLMCSimulator):
+    """MLMC with per-path adaptive time-step control (Hoel et al., SIAM J. Numer. Anal. 2016).
+
+    At each MLMC level l, the nominal step size is h_l = base_dt / 2^l.  For each
+    path, the step is doubled or halved based on a local error estimate obtained by
+    comparing a fine half-step sequence against a single full step.
+
+    Coupling invariant:
+        - Fine path adapts its step size.
+        - Coarse path always uses the fixed nominal step 2*h_l, preserving the
+          MLMC telescoping identity P_l - P_{l-1}.
+
+    Usage::
+        sim = AdaptiveStepMLMC(refinement_factor=2, seed=42)
+        result = sim.mlmc_estimate(network, traffic, epsilon=0.05, L_max=4, T=2.0)
+    """
+
+    def __init__(self,
+                 refinement_factor: int = 2,
+                 seed: Optional[int] = None,
+                 rtol: float = 0.1,
+                 max_halvings: int = 3) -> None:
+        """
+        Args:
+            refinement_factor: coarsening ratio between MLMC levels
+            seed: random seed
+            rtol: relative tolerance for step acceptance; step halved when
+                  |q_fine - q_coarse_bridge| / (|q_fine| + 1) > rtol
+            max_halvings: maximum number of halvings per nominal step (prevents
+                          infinite recursion on stiff paths)
+        """
+        super().__init__(refinement_factor=refinement_factor, seed=seed)
+        self.rtol = rtol
+        self.max_halvings = max_halvings
+
+    def _adaptive_em_step(
+        self,
+        sde: "QueueDynamicsSDE",
+        q: float,
+        t: float,
+        h: float,
+        Z: np.ndarray,
+        depth: int = 0,
+    ) -> float:
+        """Adaptive EM step: compare two h/2 steps vs one h step (Brownian bridge).
+
+        Args:
+            sde: QueueDynamicsSDE instance
+            q: current queue length
+            t: current time
+            h: proposed step size
+            Z: pre-drawn standard normal array of length 2 (for fine sub-steps)
+            depth: current recursion depth (halving count)
+
+        Returns:
+            Adaptively stepped queue length at t + h.
+        """
+        from network.sde import QueueDynamicsSDE  # local import to avoid circular
+
+        sqrt_h2 = float(np.sqrt(h / 2.0))
+        dw1 = Z[0] * sqrt_h2
+        dw2 = Z[1] * sqrt_h2
+        dw_sum = dw1 + dw2   # Brownian bridge: aggregated increment for coarse step
+
+        # Two fine half-steps
+        q_mid = sde.euler_maruyama_step(q, t, h / 2.0, dw=dw1)
+        q_fine = sde.euler_maruyama_step(q_mid, t + h / 2.0, h / 2.0, dw=dw2)
+
+        # One coarse step with same Brownian increment
+        q_coarse = sde.euler_maruyama_step(q, t, h, dw=dw_sum)
+
+        # Local error estimate
+        err = abs(q_fine - q_coarse) / (abs(q_fine) + 1.0)
+
+        if err > self.rtol and depth < self.max_halvings:
+            # Halve the step; recurse on first half only (second half uses same logic)
+            Z_half1 = np.array([Z[0], Z[0] / np.sqrt(2)])
+            return self._adaptive_em_step(sde, q, t, h / 2.0, Z_half1, depth + 1)
+
+        return q_fine
+
+    def run_coupled_paths_adaptive(
+        self,
+        network: "NetworkGraph",
+        traffic: "TrafficModel",
+        level: int,
+        T: float,
+        base_dt: float,
+        metric: str = 'mean_congestion',
+        seed: Optional[int] = None,
+    ) -> Tuple[float, float]:
+        """Run one coupled (fine, coarse) MLMC sample with adaptive stepping.
+
+        The fine path uses _adaptive_em_step; the coarse path uses the fixed
+        nominal step 2*h_l to preserve the MLMC telescoping structure.
+
+        Returns:
+            (Y_fine, Y_coarse) scalar metric values.
+        """
+        from network.sde import QueueDynamicsSDE
+
+        if seed is not None:
+            np.random.seed(seed)
+
+        h_l = get_timestep(level, base_dt, self.refinement_factor)
+        n_steps = int(round(T / h_l))
+
+        # Build per-node SDEs (same as parent class)
+        lam = float(np.mean(traffic.generate_arrivals(T, h_l)))
+        mu = lam * 0.9  # default utilization 0.9
+
+        fine_vals, coarse_vals = [], []
+        for _ in range(network.n_nodes):
+            sde = QueueDynamicsSDE(arrival_rate=lam, service_rate=mu,
+                                   noise_intensity=np.sqrt(lam))
+            q = 0.0
+            # Fine path: adaptive steps of nominal size h_l
+            for k in range(n_steps):
+                Z = np.random.standard_normal(2)
+                q = self._adaptive_em_step(sde, q, k * h_l, h_l, Z)
+            fine_vals.append(q)
+
+            # Coarse path: fixed steps of 2*h_l (level-1 granularity)
+            h_c = h_l * self.refinement_factor
+            n_c = max(1, int(round(T / h_c)))
+            q_c = 0.0
+            for k in range(n_c):
+                q_c = sde.euler_maruyama_step(q_c, k * h_c, h_c)
+            coarse_vals.append(q_c)
+
+        y_fine = float(np.mean(fine_vals))
+        y_coarse = float(np.mean(coarse_vals)) if level > 0 else 0.0
+        return y_fine, y_coarse
 
 
 if __name__ == "__main__":

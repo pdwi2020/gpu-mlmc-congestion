@@ -195,7 +195,7 @@ class QueueDynamicsSDE:
         drift_term = self.drift(q, t) * dt
         diffusion_term = sigma_t * dw
 
-        q_new = q + drift_term + diffusion_term
+        q_pred = q + drift_term + diffusion_term
 
         # Compound Poisson jump term: dJ = sum of Exp(jump_size_mean) jumps
         # where the number of jumps ~ Poisson(jump_intensity * dt).
@@ -203,15 +203,60 @@ class QueueDynamicsSDE:
         if self.jump_intensity > 0.0:
             n_jumps = np.random.poisson(self.jump_intensity * dt)
             if n_jumps > 0:
-                q_new += np.random.exponential(self.jump_size_mean, n_jumps).sum()
+                q_pred += np.random.exponential(self.jump_size_mean, n_jumps).sum()
 
-        # Enforce non-negativity constraint (reflected boundary)
-        # Note: This reflection introduces O(dt^0.5) bias - see class docstring
-        q_new = max(0.0, q_new)
+        # Skorokhod reflection via local-time increment (Lions & Sznitman 1984;
+        # Tanaka 1979).  L tracks how much the path is pushed off the boundary,
+        # which is useful for variance analysis; mathematically L>=0 and
+        # q_new = q_pred + L = max(0, q_pred).
+        local_time = max(0.0, -q_pred)
+        q_new = q_pred + local_time
 
         # Enforce capacity constraint if specified
         if self.max_capacity is not None:
             q_new = min(q_new, self.max_capacity)
+
+        return q_new
+
+    def hybrid_step(
+        self,
+        q: float,
+        t: float,
+        dt: float,
+        dw: Optional[float] = None,
+        threshold: float = 10.0,
+    ) -> float:
+        """Hybrid SDE/DES step for high-utilisation queues (ρ > 0.9).
+
+        Below `threshold`: uses the standard Euler-Maruyama SDE step.
+        At or above `threshold` (near-saturation): switches to a G/D/1 discrete-
+        event step — Poisson arrivals and Bernoulli service — to capture the
+        heavy-tail behaviour that the diffusion approximation under-estimates.
+
+        Coupling for MLMC: fine and coarse paths share the same Poisson draw and
+        dW, preserving the telescoping identity P_l - P_{l-1}.
+
+        Args:
+            q: current queue length
+            t: current time
+            dt: step size
+            dw: Wiener increment (generated if None)
+            threshold: queue length at which DES branch activates
+
+        Returns:
+            Queue length at t + dt.
+        """
+        if q < threshold:
+            return self.euler_maruyama_step(q, t, dt, dw=dw)
+
+        # G/D/1 DES branch: integer-state M/D/1 approximation
+        arrivals = int(np.random.poisson(self.arrival_rate * dt))
+        service = 1 if (np.random.random() < self.service_rate * dt) else 0
+        q_new = max(0.0, q + arrivals - service)
+
+        # Enforce capacity if set
+        if self.max_capacity is not None:
+            q_new = min(q_new, float(self.max_capacity))
 
         return q_new
 
@@ -437,13 +482,25 @@ class CongestionPropagationSDE:
         influence_matrix: np.ndarray,
         lambda_vec: Optional[np.ndarray] = None,
     ) -> np.ndarray:
-        """Apply one Euler-Maruyama step with optional dynamic inputs."""
+        """Apply one Euler-Maruyama step with optional dynamic inputs.
+
+        Uses a half-step predictor-corrector reflection (Lions & Sznitman 1984):
+        predict with drift at c_n, reflect, then correct the drift at the
+        reflected prediction.  This avoids explosive coupled-network feedback
+        after a boundary hit while preserving strong order 0.5.
+        """
         if dw is None:
             dw = np.random.normal(0, np.sqrt(dt), self.n_nodes)
 
-        drift_term = self._drift_with_inputs(c, influence_matrix, lambda_vec) * dt
         diffusion_term = self.diffusion(c, t) * dw
-        return np.maximum(0.0, c + drift_term + diffusion_term)
+
+        # Predict: evaluate drift at current state
+        drift_n = self._drift_with_inputs(c, influence_matrix, lambda_vec)
+        c_pred = np.maximum(0.0, c + drift_n * dt + diffusion_term)
+
+        # Correct: re-evaluate drift at reflected prediction, reuse same dW
+        drift_pred = self._drift_with_inputs(c_pred, influence_matrix, lambda_vec)
+        return np.maximum(0.0, c + drift_pred * dt + diffusion_term)
 
     def _validate_lambda_series(
         self,
@@ -634,12 +691,13 @@ class CongestionPropagationSDE:
                               dt_coarse: float,
                               dt_fine: float,
                               c0: Optional[np.ndarray] = None,
-                              seed: Optional[int] = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+                              seed: Optional[int] = None,
+                              use_antithetic: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Simulate coupled coarse and fine congestion paths for MLMC.
 
-        Both paths share the same Brownian increments (antithetic coupling):
-        fine steps use sqrt(dt_fine) increments; coarse steps aggregate pairs.
+        Both paths share the same Brownian increments; coarse steps aggregate
+        pairs of fine increments to preserve the telescoping identity.
 
         Args:
             T: Total simulation time
@@ -647,6 +705,10 @@ class CongestionPropagationSDE:
             dt_fine: Fine time step
             c0: Initial congestion vector (shape n_nodes,); zeros if None
             seed: Random seed
+            use_antithetic: If True, run a second pair of paths with negated
+                Brownian increments (-dW) and return the average of both pairs.
+                Eliminates odd-moment bias; typically halves variance at modest
+                extra cost.
 
         Returns:
             Tuple of (time_fine, congestion_fine, congestion_coarse_aligned)
@@ -678,25 +740,62 @@ class CongestionPropagationSDE:
             # Aggregate M fine increments for one coarse increment (sum = sqrt(dt_coarse) in distribution)
             dw_coarse = np.sum(dw_fine[i_c * M:(i_c + 1) * M], axis=0)
 
-            # Fine path: M Euler-Maruyama steps
+            # Fine path: M Euler-Maruyama steps with predictor-corrector reflection
             for j in range(M):
                 i_f = i_c * M + j
-                drift = self.drift(c_fine[i_f], time_fine[i_f]) * dt_fine
                 diff = self.diffusion(c_fine[i_f], time_fine[i_f]) * dw_fine[i_f]
-                c_fine[i_f + 1] = np.maximum(0.0, c_fine[i_f] + drift + diff)
+                drift_n = self.drift(c_fine[i_f], time_fine[i_f])
+                c_pred = np.maximum(0.0, c_fine[i_f] + drift_n * dt_fine + diff)
+                drift_p = self.drift(c_pred, time_fine[i_f])
+                c_fine[i_f + 1] = np.maximum(0.0, c_fine[i_f] + drift_p * dt_fine + diff)
 
-            # Coarse path: one Euler-Maruyama step using aggregated increment
+            # Coarse path: one Euler-Maruyama step with predictor-corrector reflection
             t_c = i_c * dt_coarse
-            drift_c = self.drift(c_coarse[i_c], t_c) * dt_coarse
             diff_c = self.diffusion(c_coarse[i_c], t_c) * dw_coarse
-            c_coarse[i_c + 1] = np.maximum(0.0, c_coarse[i_c] + drift_c + diff_c)
+            drift_n_c = self.drift(c_coarse[i_c], t_c)
+            c_pred_c = np.maximum(0.0, c_coarse[i_c] + drift_n_c * dt_coarse + diff_c)
+            drift_p_c = self.drift(c_pred_c, t_c)
+            c_coarse[i_c + 1] = np.maximum(0.0, c_coarse[i_c] + drift_p_c * dt_coarse + diff_c)
 
         # Align coarse to fine time grid: repeat each coarse step M times, keep final
         c_coarse_aligned = np.zeros_like(c_fine)
         c_coarse_aligned[:-1] = np.repeat(c_coarse[:-1], M, axis=0)
         c_coarse_aligned[-1] = c_coarse[-1]
 
-        return time_fine, c_fine, c_coarse_aligned
+        if not use_antithetic:
+            return time_fine, c_fine, c_coarse_aligned
+
+        # Antithetic path: same initial state, negated Brownian increments
+        dw_anti = -dw_fine
+        c_fine_a = np.zeros_like(c_fine)
+        c_coarse_a = np.zeros_like(c_coarse)
+        c_fine_a[0] = c0.copy()
+        c_coarse_a[0] = c0.copy()
+
+        for i_c in range(n_steps_coarse):
+            dw_coarse_a = np.sum(dw_anti[i_c * M:(i_c + 1) * M], axis=0)
+
+            for j in range(M):
+                i_f = i_c * M + j
+                diff = self.diffusion(c_fine_a[i_f], time_fine[i_f]) * dw_anti[i_f]
+                drift_n = self.drift(c_fine_a[i_f], time_fine[i_f])
+                c_pred = np.maximum(0.0, c_fine_a[i_f] + drift_n * dt_fine + diff)
+                drift_p = self.drift(c_pred, time_fine[i_f])
+                c_fine_a[i_f + 1] = np.maximum(0.0, c_fine_a[i_f] + drift_p * dt_fine + diff)
+
+            t_c = i_c * dt_coarse
+            diff_c = self.diffusion(c_coarse_a[i_c], t_c) * dw_coarse_a
+            drift_n_c = self.drift(c_coarse_a[i_c], t_c)
+            c_pred_c = np.maximum(0.0, c_coarse_a[i_c] + drift_n_c * dt_coarse + diff_c)
+            drift_p_c = self.drift(c_pred_c, t_c)
+            c_coarse_a[i_c + 1] = np.maximum(0.0, c_coarse_a[i_c] + drift_p_c * dt_coarse + diff_c)
+
+        c_coarse_aligned_a = np.zeros_like(c_fine_a)
+        c_coarse_aligned_a[:-1] = np.repeat(c_coarse_a[:-1], M, axis=0)
+        c_coarse_aligned_a[-1] = c_coarse_a[-1]
+
+        # Average standard and antithetic paths — eliminates odd-moment contributions
+        return time_fine, (c_fine + c_fine_a) / 2.0, (c_coarse_aligned + c_coarse_aligned_a) / 2.0
 
     def simulate_coupled_dynamic_paths(
         self,

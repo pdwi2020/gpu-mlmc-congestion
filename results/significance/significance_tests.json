@@ -1,0 +1,56 @@
+{
+  "ana_vs_baseline_runtime": {
+    "n_pairs": 20,
+    "t_statistic": 0.5469,
+    "p_value": 0.590796,
+    "significant_p05": false,
+    "mean_speedup": 1.018,
+    "interpretation": "ANA-MLMC is NOT significantly faster than baseline (p=0.5908, n=20)"
+  },
+  "mlmc_scaling_runtimes": {
+    "50": {
+      "mlmc_runtimes": [
+        0.005641708994517103,
+        0.005397209009970538,
+        0.005368500002077781
+      ],
+      "n_runs": 3,
+      "mean_runtime": 0.005469139335521807,
+      "std_runtime": 0.00015013749427728257,
+      "median_cost": 310.0
+    },
+    "100": {
+      "mlmc_runtimes": [
+        0.0055874999961815774,
+        0.005756582992034964,
+        0.005741874992963858
+      ],
+      "n_runs": 3,
+      "mean_runtime": 0.005695319327060133,
+      "std_runtime": 9.366342611976958e-05,
+      "median_cost": 310.0
+    },
+    "200": {
+      "mlmc_runtimes": [
+        0.008808541999314912,
+        0.008484042002237402,
+        0.008387624999159016
+      ],
+      "n_runs": 3,
+      "mean_runtime": 0.008560069666903777,
+      "std_runtime": 0.00022051742471067143,
+      "median_cost": 310.0
+    },
+    "500": {
+      "mlmc_runtimes": [
+        0.013865875007468276,
+        0.0130155829974683,
+        0.013060957993729971
+      ],
+      "n_runs": 3,
+      "mean_runtime": 0.013314138666222183,
+      "std_runtime": 0.00047835600263836537,
+      "median_cost": 310.0
+    }
+  }
+}
