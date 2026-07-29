@@ -128,3 +128,12 @@ datasets/mawi/raw/
 datasets/mawi/processed/
 datasets/kaggle/raw/
 datasets/kaggle/processed/
+
+*.aux
+*.log
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.out
+*.synctex.gz
