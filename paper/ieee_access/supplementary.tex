@@ -91,10 +91,10 @@ measures nothing communicable and is not part of the single-GPU cost. The trend 
 launch/dispatch dominates at small graph size and the drift matrix multiply overtakes it as the
 kernels grow, while the Skorokhod reflection and the multilevel bookkeeping remain negligible
 throughout---so the reflected-boundary treatment and the telescoping sum, the two
-problem-specific additions, cost almost nothing. The two dominant kernels at $n{=}5{,}000$ are
-\texttt{aten::mm} and the underlying \texttt{sgemm} (the drift matmul), each $\approx$19\,ms per
-loop; every elementwise kernel (reflection clamp, noise scaling, level differencing) is under
-0.25\,ms combined.
+problem-specific additions, cost almost nothing. The dominant device kernel at $n{=}5{,}000$ is
+the drift matmul (\texttt{aten::mm} dispatching to \texttt{volta\_sgemm}), at $\approx$19\,ms per
+loop; every individual elementwise kernel---the reflection \texttt{clamp\_min}, noise scaling,
+and level differencing---is under $0.25$\,ms.
 
 A measured peak-memory pass in the same run shows the manuscript's adjacency-only memory model
 ($n^2$ bytes at single precision) is accurate only once the adjacency dominates: at $n{=}500$ the
@@ -115,7 +115,7 @@ percentage of traced device-side kernel time). All values MEASURED. Raw per-seed
 Phase & $n{=}500$ (\%) & $n{=}5{,}000$ (\%) \\
 \midrule
 Kernel launch / dispatch     & 65.3 & 50.5 \\
-Drift matrix multiply        & 27.6 & 48.9 \\
+Drift matrix multiply        & 27.6 & 48.8 \\
 Random-number generation     & 5.0  & 0.4  \\
 Skorokhod reflection         & 1.4  & 0.2  \\
 MLMC level bookkeeping       & 0.7  & 0.1  \\
