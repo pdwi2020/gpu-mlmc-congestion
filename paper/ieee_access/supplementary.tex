@@ -135,9 +135,10 @@ statements are collected here.
 
 \begin{table}[!t]
 \caption{4-GPU weak-scaling at large $n$ on 4$\times$RTX\,3090 PCIe ($\varepsilon{=}0.05$).
-Single-GPU reference from A100 80\,GB PCIe (Table~\ref{tab:large_scale}); efficiency is a
-conservative bound due to device-generation difference. Efficiency recovers monotonically
-with $n$, confirming PCIe all-reduce amortisation at large workloads.}
+The single-GPU reference is the A100 80\,GB PCIe large-scale run reported in the main
+manuscript; efficiency is a conservative bound due to the device-generation difference.
+Efficiency recovers monotonically with $n$, confirming PCIe all-reduce amortisation at large
+workloads.}
 \label{tab:multigpu_4gpu}
 \centering\small
 \resizebox{\columnwidth}{!}{%
