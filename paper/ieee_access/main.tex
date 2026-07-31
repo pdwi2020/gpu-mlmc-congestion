@@ -947,6 +947,7 @@ three seeds). Both methods are floor-limited at loose targets because the estima
 deterministic; MLMC overtakes single-level MC only below $\varepsilon\approx7\times10^{-4}$ once $\sigma$ is calibrated to the exact discrete-event variance.}
 \label{tab:crossover}
 \centering\small
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}l r r l r r l@{}}
 \toprule
 & \multicolumn{3}{c}{Default $\sigma{=}0.1$} & \multicolumn{3}{c}{Calibrated $\sigma{=}0.433$} \\
@@ -959,7 +960,7 @@ $5\times10^{-4}$ & $13{,}440$  & $25{,}433$  & $0.53$ $[0.46,0.65]$ & $62{,}613$
 $2\times10^{-4}$ & $83{,}467$  & $46{,}530$  & $\mathbf{1.79}$ $[1.50,2.35]$ & $390{,}773$ & $179{,}373$ & $\mathbf{2.18}$ \\
 $1\times10^{-4}$ & $333{,}547$ & $153{,}113$ & $\mathbf{2.18}$ $[1.63,3.03]$ & --- & --- & --- \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \vspace{2pt}
 \footnotesize A ratio $>1$ means MLMC is cheaper. Intervals are BCa bootstrap confidence
 intervals on the \emph{ratio} across paired seeds; where the interval excludes~1 the crossover is
@@ -1069,7 +1070,7 @@ practitioner estimating a mean should reach for antithetic sampling first. The m
 splitting machinery earns its place on the high-variance tail estimands of
 \S\ref{subsec:rare_event}, where antithetic cancellation does not apply.
 
-\begin{table}[!t]
+\begin{table}[tb]
 \caption{Classical variance reduction on the coupled congestion SDE (Erd\H{o}s--R\'enyi
 $n{=}200$, $T{=}20$, shared time grid, CPU). Work is accuracy-matched under
 $\mathrm{Var}(N)=cN^{r}$; $r{=}-1$ exactly for the i.i.d.\ arms, whose per-sample variance is
@@ -1077,6 +1078,7 @@ measured directly from a $20{,}000$-sample batch, and fitted only for QMC, where
 quantity in question.}
 \label{tab:varred}
 \centering\small
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}l r r r r@{}}
 \toprule
 Method & rate $r$ & rel.\ RMSE (1 unit) & $\varepsilon{=}5\times10^{-3}$ & $\varepsilon{=}5\times10^{-4}$ \\
@@ -1093,7 +1095,7 @@ Antithetic        & $-1$ (exact) & $5.04\times10^{-3}$ & $\mathbf{30.3\times}$ &
 Control variates  & $-1$ (exact) & $6.86\times10^{-3}$ & $16.4\times$ & $16.4\times$ \\
 Randomised QMC    & $-1.17$ $[-1.36,-0.98]$ & --- & floor & $\mathbf{35.8\times}$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \vspace{2pt}
 \footnotesize ``Floor'' means the smallest purchasable sample unit already overshoots that
 target, so no ratio is meaningful---one antithetic pair, or one $N{=}128$ Sobol point set. The
@@ -1149,13 +1151,14 @@ Lemma~\ref{lem:lipschitz_allocation} and hence Theorem~\ref{thm:complexity} rest
 threatened by heterogeneous or near-saturated load, which was the specific failure mode raised in
 review. Data in \texttt{results/topology\_matrix\_stress/}.
 
-\begin{table}[!t]
+\begin{table}[tb]
 \caption{Topology $\times$ traffic matrix ($n{=}200$, calibrated $\sigma{=}0.433$, three seeds
 per cell, 48 cells). Ratios $>1$ favour the named method. MLMC is reported at
 $\varepsilon{=}10^{-3}$, below the measured crossover; at looser targets both arms sit on the
 pilot floor and the ratio measures only the ratio of pilot costs.}
 \label{tab:topology_matrix}
 \centering\small
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}l r r r r r@{}}
 \toprule
 Traffic & Antithetic & CV & MLMC & $\beta_{\mathrm{var}}$ & crossover $\varepsilon$ \\
@@ -1165,7 +1168,7 @@ Degree hot-spot   & $31.4\times$ & $16.1\times$ & $4.25\times$ & $+1.29$ & $4.2\
 Bursty (MMPP-2)   & $16.3\times$ & $8.0\times$  & $3.87\times$ & $+1.19$ & $4.0\times10^{-3}$ \\
 Heavy-tailed      & $17.5\times$ & $8.5\times$  & $3.90\times$ & $+1.20$ & $4.0\times10^{-3}$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \vspace{2pt}
 \footnotesize Values are means over the four topologies and three seeds; the four graph families
 agree to within a few percent within each row, which is why topology is not broken out
@@ -1175,7 +1178,7 @@ separately. Full per-cell data, including per-level $V_\ell$ and $C_\ell$, in
 
 Tail-delay quantification accuracy is shown in Fig.~\ref{fig:tail_delay}.
 
-\begin{figure}[!t]
+\begin{figure}[tb]
 \centering
 \includegraphics[width=0.95\columnwidth]{tail_delay_validation_a100.png}
 \caption{Tail-delay validation on a synthetic Erd\H{o}s--Renyi network ($n=500$,
