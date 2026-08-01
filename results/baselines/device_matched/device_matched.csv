@@ -1,8 +1,10 @@
-# git_sha=128b356ad9791b78b95b510e05dee6872b62a951-dirty
-# timestamp_utc=2026-07-24T09:02:14.969356+00:00
+# git_sha=fc8a47655f9690e8dde8a40421487b7d2587e1bb
+# timestamp_utc=2026-08-01T06:15:08.113570+00:00
 # device=cpu
-# cpu_model=Apple M2  os_cpu_count=8  requested_threads=8
+# cpu_model=Apple M2  os_cpu_count=8  requested_threads=6
 # torch=2.10.0 numpy=2.3.4 scipy=1.16.3 python=3.14.3
-# config={"L_max": 4, "T": 1.0, "agreement_rtol": 0.05, "alpha": 0.1, "base_dt": 0.1, "beta": 0.5, "devices": ["cpu"], "epsilons": [0.02], "metric": "mean_congestion", "n_nodes": [100], "out": "/Users/paritoshdwivedi/projects/GPU-Acc-Net-Prop-Congestion-Multi-Monte-Carlo/results/baselines/device_matched", "pilot_samples": 50, "quick": true, "seeds": [0], "sigma": 0.433, "threads": null, "topology": "ba"}
+# config={"L_max": 4, "T": 1.0, "agreement_rtol": 0.05, "alpha": 0.1, "base_dt": 0.1, "beta": 0.5, "devices": ["cpu"], "epsilons": [0.02], "metric": "mean_congestion", "n_nodes": [500], "out": "/Users/paritoshdwivedi/projects/GPU-Acc-Net-Prop-Congestion-Multi-Monte-Carlo/results/baselines/device_matched", "pilot_samples": 50, "quick": false, "seeds": [0, 1, 2], "sigma": 0.433, "threads": 6, "topology": "ba"}
 cpu_estimate,cpu_throughput_work_per_s,cpu_wall_s,cpu_work_units,epsilon,n_nodes,seed,topology
-0.2698929035104811,40134.14301343499,0.3862048329974641,15500.0,0.02,100,0,ba
+0.2686858121305704,12452.55185056393,1.2447247910313308,15500.0,0.02,500,0,ba
+0.2657093610614538,105586.07129820743,0.14679966599214822,15500.0,0.02,500,1,ba
+0.2661130535416305,105499.59163593788,0.14691999997012317,15500.0,0.02,500,2,ba

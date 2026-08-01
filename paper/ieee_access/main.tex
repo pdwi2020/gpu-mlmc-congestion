@@ -63,8 +63,9 @@ competitive at practical accuracy targets; multilevel Monte Carlo (MLMC) reduces
 tight tolerances (measured crossover near $\varepsilon\approx7\times10^{-4}$ at $n{=}500$ under a variance-calibrated noise level), where
 it additionally remains GPU-memory-feasible as single-level MC does not. Benchmarked against
 classical variance reduction on the same estimand and grid, antithetic sampling reduces
-accuracy-matched work by $30\times$---an order of magnitude beyond the multilevel estimator's
-peak $2.2\times$---so for mean-type functionals the simpler technique should be preferred; at
+accuracy-matched work \emph{for mean-type functionals} by $30\times$---an order of magnitude
+beyond the multilevel estimator's peak $2.2\times$---so for such functionals the simpler
+technique should be preferred; at
 the model's uncalibrated noise level the mean is in fact deterministic to six significant
 figures, which is why fixed-budget comparisons of it have been so badly inflated. For rare-event overflow
 probabilities we benchmark exponential-twisting importance sampling, adaptive multilevel
@@ -439,6 +440,19 @@ $j$ on node $i$ (derived from the adjacency matrix $A$), and $\beta_i$ is a per-
 decay rate. Each Euler--Maruyama step evaluates the full $n \times n$ matrix-vector product
 $A\mathbf{C}$ in a single PyTorch \texttt{torch.mv} call on the GPU, making the coupled model as
 amenable to GPU parallelism as the per-node model.
+
+The constant $\sigma_i$ in Eq.~\eqref{eq:coupled_sde} is a \emph{nominal} noise level; matching
+the second-order statistics of the exact discrete-event process it approximates requires a
+utilisation-dependent calibration
+\begin{equation}
+\sigma(\rho)=\sigma_0\sqrt{\mathrm{Var}_{\mathrm{DES}}/\mathrm{Var}_{\mathrm{SDE}}},
+\label{eq:sigma_calib}
+\end{equation}
+where $\mathrm{Var}_{\mathrm{DES}}$ and $\mathrm{Var}_{\mathrm{SDE}}$ are the per-node steady-state
+variances of the exact jump process and of the SDE at the nominal $\sigma_0$, and $\rho$ is the
+per-node utilisation. The mean is accurate at any $\sigma$, so this calibration matters only for
+variance, tail and rare-event estimands; the measured $\sigma(\rho)$ curve and its validity
+envelope are reported in \S\ref{subsec:validity_envelope}.
 
 Because the coupled drift $b_i(\mathbf{C})=\sum_j\alpha_{ij}C_j-\beta_i C_i$ can blow up
 after a naive reflection when a neighbour node has just been pushed to the boundary, we
@@ -921,8 +935,16 @@ We quantify computational work as the total number of \emph{timestep-path evalua
 $W=\sum_{\ell=0}^{L} N_\ell M_\ell$, where $N_\ell$ is the number of paths simulated at level
 $\ell$ and $M_\ell\propto h_\ell^{-1}$ is the Euler--Maruyama step count per path. This
 hardware-independent proxy counts the dominant per-step coupled-SDE update uniformly across
-levels. The decisive comparison is \emph{accuracy-matched}: how much work does each method need
-to reach $\mathrm{MSE}\leq\varepsilon^2$ for the same estimand? Table~\ref{tab:crossover} reports
+levels. We report work rather than wall-clock for the accuracy-matched comparison deliberately:
+work measures algorithmic effort independent of the device, its clock, and its BLAS tuning, so
+it compares single-level MC against MLMC on equal footing across architectures, whereas
+wall-clock conflates the algorithm with the hardware it happens to run on. For practical
+context, a CPU-MLMC estimate of the mean at $n{=}500$, $\varepsilon{=}0.02$ completes in
+${\approx}0.15$\,s per estimate on a commodity 8-core CPU (post-warmup; the same code path timed
+on CPU and GPU, \texttt{results/baselines/device\_matched/}), confirming that at this size the
+mean estimand is inexpensive on either device---the GPU advantage is a large-$n$ and tight-$\varepsilon$
+phenomenon, not an $n{=}500$ one. The decisive comparison is therefore \emph{accuracy-matched}:
+how much work does each method need to reach $\mathrm{MSE}\leq\varepsilon^2$ for the same estimand? Table~\ref{tab:crossover} reports
 this for single-level GPU-MC and GPU-MLMC across accuracy targets at $n{=}500$ (A100, three
 seeds). The mean queue occupancy is a low-variance, near-deterministic functional in stable
 networks ($\mathrm{Var}\,{\sim}\,10^{-7}$), so at practical targets a few thousand single-level
@@ -939,6 +961,23 @@ finding is that single-level GPU-MC is the method of choice at operational toler
 value here is confined to very tight tolerances and memory feasibility. The high-variance
 estimands---tail quantiles and rare-event probabilities---tell a different and more favourable
 story for variance reduction (\S\ref{subsec:rare_event}).
+
+\textit{Variance-calibration procedure.}
+The two blocks of Table~\ref{tab:crossover} report the crossover at the model's nominal
+$\sigma_0{=}0.1$ and at the variance-calibrated $\sigma{=}0.433$; we obtain the latter by the
+following procedure, applying Eq.~\eqref{eq:sigma_calib} at the operating point. (i) We simulate
+the exact discrete-event (CTMC) reference---the continuous-time Markov jump process whose
+diffusion limit is the coupled SDE---at the $n{=}500$ operating point and measure its per-node
+steady-state variance $\mathrm{Var}_{\mathrm{DES}}$.
+(ii) We measure the SDE's per-node variance $\mathrm{Var}_{\mathrm{SDE}}$ at the nominal
+$\sigma_0{=}0.1$ under the identical grid and horizon. (iii) The SDE understates the exact
+variance by ${\approx}19\times$ here, so we rescale
+$\sigma\!\leftarrow\!\sigma_0\sqrt{\mathrm{Var}_{\mathrm{DES}}/\mathrm{Var}_{\mathrm{SDE}}}$,
+which yields $\sigma{=}0.433$. This single calibrated value is used throughout the
+variance-, tail- and rare-event results (Tables~\ref{tab:crossover}, \ref{tab:varred}
+and~\ref{tab:topology_matrix}); its utilisation dependence $\sigma(\rho)$ is characterised over
+the full load range in \S\ref{subsec:validity_envelope}. The mean estimand is unaffected by the
+calibration, so the left block of Table~\ref{tab:crossover} remains valid at $\sigma_0$.
 
 \begin{table}[!t]
 \caption{Accuracy-matched work to reach $\mathrm{MSE}\leq\varepsilon^2$ for the mean queue
@@ -1056,7 +1095,12 @@ better convergence rate, simply because one cannot buy a fraction of a point set
 appears only under tight targets, reaching $35.8\times$ at $\varepsilon{=}5\times10^{-4}$, where
 it overtakes antithetic sampling. The fitted rate is $-1.17$ with a bootstrap $95\%$ interval
 $[-1.36,-0.98]$ that \emph{includes} $-1$, so this extrapolation is indicative rather than
-established; at $\sigma{=}0.1$ the fitted rate $-1.26$ $[-1.46,-1.05]$ does exclude $-1$. The
+established; at $\sigma{=}0.1$ the fitted rate $-1.26$ $[-1.46,-1.05]$ does exclude $-1$. We
+stress that this rate is an \emph{empirical} least-squares slope of $\log\mathrm{Var}$ against
+$\log N$ over the measured budgets, not a theoretical convergence law: randomised QMC points are
+not independent, so its variance does not obey $\mathrm{Var}\propto N^{-1}$ by construction, and
+its fitted rate is therefore not directly comparable to the exact $-1$ of the i.i.d.\ arms
+(which holds by the definition of a sample mean, not by fit). The
 nominal path dimension is $80{,}000$, well above the $21{,}201$-dimensional limit of the Sobol
 construction used, so the leading bridge levels are quasi-random and the remainder
 pseudo-random; the realised quasi-random fraction is recorded with the data.
@@ -1372,13 +1416,12 @@ $Q_i(t) \geq \theta_{\mathrm{sat}}$ (default $\theta_{\mathrm{sat}}=10$), the EM
 replaced by a G/D/1 DES update (Poisson arrivals, Bernoulli service) that correctly handles
 the discrete-state near-saturation regime.  For $Q_i < \theta_{\mathrm{sat}}$, the standard
 TV-$\sigma$ EM step is used.  Coupling is preserved by sharing the Poisson draw between fine
-and coarse paths. An earlier version of this paragraph predicted that the hybrid scheme would
-reduce the $\rho{=}0.9$ P99 error from $29.1\%$ toward the discrete-event estimator floor. We
-have withdrawn that prediction: it was never measured, and the validity-envelope experiment
-(\S\ref{subsec:validity_envelope}) identifies the underlying defect as a systematic variance
-deficit that is corrected by calibrating $\sigma$ to the operating utilisation, which does not
-require switching integrators at all. The hybrid path remains implemented and available, but we
-make no accuracy claim for it.
+and coarse paths. We do not make an accuracy claim for the hybrid scheme: the validity-envelope
+experiment (\S\ref{subsec:validity_envelope}) identifies the underlying defect as a systematic
+variance deficit that is corrected by calibrating $\sigma$ to the operating utilisation
+(Eq.~\eqref{eq:sigma_calib}), which does not require switching integrators. The hybrid path
+remains implemented and available for settings where a discrete-state treatment near saturation
+is preferred on modelling grounds.
 
 \begin{table}[!t]
 \caption{TV-$\sigma$ SDE vs.\ ns-3 M/D/1 Bottleneck Simulator.}
@@ -1466,8 +1509,10 @@ A 5,000-node distributed run on the same 4$\times$RTX\,3090 pod (1,250 nodes/GPU
 in 3.82\,s post-warmup without out-of-memory errors, confirming the memory-capacity benefit
 at production-scale graph sizes. We previously projected a maximum supportable graph size per
 GPU count from an analytical memory model; that table has been removed, since it was a
-modelled rather than measured quantity. The measured memory ceiling is the one we report:
-$n{=}50{,}000$ at 30.9\,GB peak on a single 80\,GB A100 (Table~\ref{tab:large_scale}).
+modelled rather than measured quantity. \textbf{The headline memory result is measured, not
+modelled: the largest single-GPU configuration we ran is $n{=}50{,}000$ at 30.9\,GB peak on a
+single 80\,GB A100} (Table~\ref{tab:large_scale})---this is the memory ceiling we report, and we
+quote no projected figure beyond it.
 
 \textit{Single-GPU kernel bottleneck.}
 A \texttt{torch.profiler} breakdown of one fine-level path loop (Tesla T4, three seeds,
