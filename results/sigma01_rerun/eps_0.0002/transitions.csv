@@ -1,0 +1,7 @@
+# git_sha=unknown
+# timestamp_utc=2026-08-15T14:48:06.786456+00:00
+# device=cuda (NVIDIA A100-PCIE-40GB)
+# torch=2.2.1 numpy=1.26.3 python=3.10.13
+# config={"L_max": 4, "T": 1.0, "adaptive_rtol": 0.001, "base_dt": 0.1, "decay_rate": 0.5, "epsilon": 0.0002, "influence_strength": 0.1, "is_n_paths": 5000, "is_strength": 1.0, "is_target_node": null, "is_threshold_k": 4.0, "multi_gpu_world_size": 2, "n_nodes": 500, "noise_intensity": 0.1, "pilot_samples": 50, "quick": false, "reference_L_max_bonus": 1, "reference_epsilon_factor": 5.0, "reference_pilot_samples": 200, "rungs": ["R0", "R1"], "seeds": [0, 1, 2], "topologies": ["ba"]}
+topology,from_rung,to_rung,status,n_paired_seeds,same_estimand_family,work_mean_prev,work_mean_cur,work_ratio_cur_over_prev,wall_mean_prev,wall_mean_cur,wall_ratio_cur_over_prev,t_work,p_work,effect_size_work,t_wall,p_wall,effect_size_wall,ci_half_width_mean_prev,ci_half_width_mean_cur,t_ci,p_ci,effect_size_ci,achieved_mse_mean_prev,achieved_mse_mean_cur,t_mse,p_mse,effect_size_mse
+ba,R0,R1,ok,3,True,20906.666666666668,27073.333333333332,1.2949617346938773,0.05599735180536906,0.05600957510372003,1.000218283507289,2.4084050498854452,0.13767559387319797,1.390493303869016,0.014896327906829085,0.989467289809735,0.008600398926944705,0.0003999589499909839,0.00023746908784681386,-6.327266035194713,0.02408002150776409,-3.6530487486540437,1.2552227375209014e-06,8.93365355076675e-07,-1.3537878854947591,0.3084941619519612,-0.7816098001160535

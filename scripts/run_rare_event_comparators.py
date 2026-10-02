@@ -84,6 +84,11 @@ def relative_rmse(estimates, ref):
     return rmse / ref, len(est)
 
 
+# Whether the IS estimator self-normalises; set from --self-normalised in main().
+# Default False = standard unbiased (1/N) sum(w_i I_i) estimator.
+SELF_NORMALISED = False
+
+
 # each competitor tuned at least as carefully as the incumbent (documented)
 def run_method(name, cfg, B, seed, budget):
     rng = np.random.default_rng(seed)
@@ -95,7 +100,7 @@ def run_method(name, cfg, B, seed, budget):
         # delta=0.03 is far too weak at large B; fw_optimal_delta fixes that)
         delta = fw_optimal_delta(cfg, B)
         r = gpu_mlmc_is(cfg, B, n_paths=budget, delta=delta, device="cpu",
-                        self_normalised=True, seed=seed)
+                        self_normalised=SELF_NORMALISED, seed=seed)
     elif name == "ams":
         r = adaptive_multilevel_splitting(cfg, B, rng,
                                           n_particles=max(200, budget // 20),
@@ -129,8 +134,15 @@ def main():
                     help="nominal path budget per method per rep")
     ap.add_argument("--out", type=str, default=str(REPO / "results" / "rare_event_comparators"))
     ap.add_argument("--device", type=str, default="cpu")
+    ap.add_argument("--self-normalised", dest="self_normalised", action="store_true",
+                    help="use the self-normalised IS estimator sum(w_i I_i)/sum(w_i); default is "
+                         "the standard unbiased estimator (1/N) sum(w_i I_i), which has explicit "
+                         "Girsanov weights and far lower bias in the deep tail")
     ap.add_argument("--quick", action="store_true")
     args = ap.parse_args()
+
+    global SELF_NORMALISED
+    SELF_NORMALISED = args.self_normalised
 
     if args.quick:
         args.seeds = [0, 1, 2]

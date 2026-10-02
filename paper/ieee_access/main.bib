@@ -60,15 +60,15 @@
 % Original References
 % ============================================
 
-@article{chen2022neural,
-  title   = {Neural network-assisted Monte Carlo for network traffic prediction and queueing analysis},
-  author  = {Chen, Wei and Zhang, Yue and Liu, Hao and Wang, Jian},
-  journal = {IEEE Transactions on Network and Service Management},
-  volume  = {19},
-  number  = {3},
-  pages   = {2581--2594},
-  year    = {2022},
-  publisher = {IEEE}
+@article{rusek2020routenet,
+  title={{RouteNet}: Leveraging graph neural networks for network modeling and optimization in {SDN}},
+  author={Rusek, Krzysztof and Su{\'a}rez-Varela, Jos{\'e} and Almasan, Paul and Barlet-Ros, Pere and Cabellos-Aparicio, Albert},
+  journal={IEEE Journal on Selected Areas in Communications},
+  volume={38},
+  number={10},
+  pages={2260--2270},
+  year={2020},
+  doi={10.1109/JSAC.2020.3000405}
 }
 
 @article{giles2008multilevel,
@@ -139,13 +139,13 @@
   publisher={Elsevier}
 }
 
-@article{bergmann2017gpu,
-  title={{GPU}-accelerated {M}onte {C}arlo simulation of particle transport},
-  author={Bergmann, Ryan M and Vujic, Jasmina L},
-  journal={Parallel Computing},
-  volume={63},
-  pages={17--35},
-  year={2017},
+@article{bergmann2015warp,
+  title={Algorithmic choices in {WARP}: A framework for continuous energy {M}onte {C}arlo neutron transport in general {3D} geometries on {GPUs}},
+  author={Bergmann, Ryan M and Vuji{\'c}, Jasmina L},
+  journal={Annals of Nuclear Energy},
+  volume={77},
+  pages={176--193},
+  year={2015},
   publisher={Elsevier}
 }
 
@@ -160,15 +160,15 @@
   publisher={ACM}
 }
 
-@article{mandelbaum2014stochastic,
-  title={Stochastic-process limits for networks of many-server queues},
-  author={Mandelbaum, Avishai and Momcilovic, Petar},
-  journal={Stochastic Systems},
-  volume={4},
-  number={1},
-  pages={95--166},
-  year={2014},
-  publisher={INFORMS}
+@article{reiman1984open,
+  title={Open queueing networks in heavy traffic},
+  author={Reiman, Martin I.},
+  journal={Mathematics of Operations Research},
+  volume={9},
+  number={3},
+  pages={441--458},
+  year={1984},
+  doi={10.1287/moor.9.3.441}
 }
 
 @book{glasserman2003monte,
@@ -271,12 +271,12 @@
 
 
 @article{kang2007,
-  title={Diffusion Approximations for a Processor Sharing Queue in Heavy Traffic},
+  title={An invariance principle for semimartingale reflecting {B}rownian motions in domains with piecewise smooth boundaries},
   author={Kang, Weining and Williams, Ruth J},
   journal={Annals of Applied Probability},
   volume={17},
   number={2},
-  pages={555--606},
+  pages={741--779},
   year={2007},
   publisher={Institute of Mathematical Statistics}
 }
@@ -327,15 +327,15 @@
 % Adaptive MLMC stepping reference
 % ============================================
 
-@article{hoel2016multilevel,
-  author  = {Hoel, H{\aa}kon and Law, Kody J.~H. and Tempone, Ra{\'u}l},
-  title   = {Multilevel ensemble {K}alman filtering},
-  journal = {SIAM Journal on Numerical Analysis},
-  volume  = {54},
-  number  = {3},
-  pages   = {1675--1694},
-  year    = {2016},
-  publisher = {SIAM}
+@article{hoel2014adaptive,
+  title={Implementation and analysis of an adaptive multilevel {M}onte {C}arlo algorithm},
+  author={Hoel, H{\aa}kon and von Schwerin, Erik and Szepessy, Anders and Tempone, Ra{\'u}l},
+  journal={Monte Carlo Methods and Applications},
+  volume={20},
+  number={1},
+  pages={1--41},
+  year={2014},
+  doi={10.1515/mcma-2013-0014}
 }
 
 % ============================================
@@ -402,31 +402,31 @@
 % NEW 2022-2025: Recent GPU/MLMC/SDE References
 % ============================================
 
-@article{giles2024review,
-  title={Multilevel {M}onte {C}arlo methods for applications in finance},
-  author={Giles, Michael B and Sheridan-Methven, Oliver},
-  journal={SIAM Review},
-  volume={66},
-  number={2},
-  pages={391--441},
-  year={2024},
-  publisher={SIAM}
+@article{jasra2020advanced,
+  title={Advanced multilevel {M}onte {C}arlo methods},
+  author={Jasra, Ajay and Law, Kody and Suciu, Carina},
+  journal={International Statistical Review},
+  volume={88},
+  number={3},
+  pages={548--579},
+  year={2020},
+  doi={10.1111/insr.12365}
 }
 
-@article{sha2023gpu,
-  title={{GPU}-accelerated {M}onte {C}arlo simulation for stochastic network models},
-  author={Sha, Di and Rotter, Stefan and Bhatt, Dhaval L},
-  journal={IEEE Transactions on Parallel and Distributed Systems},
-  volume={34},
-  number={5},
-  pages={1432--1445},
-  year={2023},
-  publisher={IEEE}
+@article{park2010gpu,
+  title={A {GPU}-based application framework supporting fast discrete-event simulation},
+  author={Park, Hyungwook and Fishwick, Paul A.},
+  journal={Simulation},
+  volume={86},
+  number={10},
+  pages={613--628},
+  year={2010},
+  doi={10.1177/0037549709340781}
 }
 
 
 @article{cisco2023annual,
-  title={{Cisco Annual Internet Report (2018–2023) White Paper}},
+  title={{Cisco Annual Internet Report (2018--2023) White Paper}},
   author={{Cisco Systems}},
   journal={Cisco Public},
   year={2022},
@@ -443,14 +443,15 @@
   address={New York, NY}
 }
 
-@article{spiliopoulos2022multilevel,
+@article{anderson2016small,
   title={Multilevel {M}onte {C}arlo for stochastic differential equations with small noise},
-  author={Spiliopoulos, Konstantinos and Szepessy, Anders},
-  journal={Stochastic Processes and their Applications},
-  volume={147},
-  pages={203--234},
-  year={2022},
-  publisher={Elsevier}
+  author={Anderson, David F. and Higham, Desmond J. and Sun, Yu},
+  journal={SIAM Journal on Numerical Analysis},
+  volume={54},
+  number={1},
+  pages={505--529},
+  year={2016},
+  publisher={SIAM}
 }
 
 
@@ -475,15 +476,14 @@
 }
 
 
-@article{xu2009large,
-  title={Large deviations for stochastic differential equations with reflecting boundary conditions},
-  author={Xu, Wei},
-  journal={Statistics \& Probability Letters},
-  volume={79},
-  number={14},
-  pages={1603--1608},
-  year={2009},
-  publisher={Elsevier}
+@article{anderson1976small,
+  title={Small random perturbation of dynamical systems with reflecting boundary},
+  author={Anderson, Robert F. and Orey, Steven},
+  journal={Nagoya Mathematical Journal},
+  volume={60},
+  pages={189--216},
+  year={1976},
+  doi={10.1017/S0027763000017232}
 }
 
 
@@ -501,13 +501,13 @@
 
 
 @article{kabanov1978,
-  title={On the representability of stochastic integrals with respect to martingales and random measures},
+  title={On the representation of integral-valued random measures and local martingales by means of random measures with deterministic compensators},
   author={Kabanov, Yuri M and Liptser, Robert S and Shiryaev, Albert N},
-  journal={Siberian Mathematical Journal},
-  volume={20},
-  number={4},
-  pages={539--554},
-  year={1979},
+  journal={Mathematics of the USSR-Sbornik},
+  volume={39},
+  number={2},
+  pages={267--280},
+  year={1981},
   publisher={Springer}
 }
 
@@ -651,6 +651,31 @@
 @article{martinek2025inexact,
   title={Exploiting inexact computations in multilevel {M}onte {C}arlo and other sampling methods},
   author={Mart{\'\i}nek, Josef and Carson, Erin and Scheichl, Robert},
-  journal={arXiv preprint arXiv:2503.05533},
-  year={2025}
+  journal={SIAM Journal on Scientific Computing},
+  volume={48},
+  number={2},
+  pages={B141--B164},
+  year={2026}
+}
+
+@article{benrached2026ensemble,
+  title={Importance sampling for rare event tracking within the ensemble {K}alman filtering framework},
+  author={Ben Rached, Nadhir and von Schwerin, Erik and Shaimerdenova, Gaukhar and Tempone, Ra{\'u}l},
+  journal={Statistics and Computing},
+  volume={36},
+  pages={2},
+  year={2026},
+  publisher={Springer},
+  doi={10.1007/s11222-025-10736-1}
+}
+
+@article{benrached2025multilevel,
+  title={Multilevel importance sampling for rare events associated with the {McKean}--{Vlasov} equation},
+  author={Ben Rached, Nadhir and Haji-Ali, Abdul-Lateef and Subbiah Pillai, Shyam Mohan and Tempone, Ra{\'u}l},
+  journal={Statistics and Computing},
+  volume={35},
+  pages={1},
+  year={2025},
+  publisher={Springer},
+  doi={10.1007/s11222-024-10508-3}
 }

@@ -1,0 +1,320 @@
+{
+  "provenance": {
+    "git_sha": "unknown",
+    "timestamp_utc": "2026-08-05T13:46:05.831477+00:00",
+    "device": "cuda",
+    "device_name": "NVIDIA H100 NVL",
+    "torch_version": "2.4.0",
+    "numpy_version": "1.26.4",
+    "python_version": "3.11.9",
+    "platform": "Linux-6.8.0-90-generic-x86_64-with-glibc2.35",
+    "config": {
+      "epsilon": 0.0002,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "topologies": [
+        "ba"
+      ],
+      "n_nodes": 500,
+      "T": 1.0,
+      "base_dt": 0.1,
+      "L_max": 4,
+      "pilot_samples": 50,
+      "adaptive_rtol": 0.001,
+      "reference_epsilon_factor": 5.0,
+      "reference_pilot_samples": 200,
+      "reference_L_max_bonus": 1,
+      "rungs": [
+        "R0",
+        "R1"
+      ],
+      "multi_gpu_world_size": 2,
+      "is_threshold_k": 4.0,
+      "is_n_paths": 5000,
+      "is_strength": 1.0,
+      "is_target_node": null,
+      "influence_strength": 0.1,
+      "decay_rate": 0.5,
+      "noise_intensity": 0.433,
+      "quick": false
+    }
+  },
+  "rung_labels": {
+    "R0": "single-level GPU MC baseline",
+    "R1": "+ MLMC, uniform Giles allocation",
+    "R2": "+ predictor-corrector reflection",
+    "R3": "+ SIMT-adaptive time stepping",
+    "R4": "+ ANA network-aware weighted allocation",
+    "R5": "+ importance sampling (rare-event target)",
+    "R6": "+ multi-GPU G=2"
+  },
+  "rung_family": {
+    "R0": "uniform_mean",
+    "R1": "uniform_mean",
+    "R2": "uniform_mean",
+    "R3": "uniform_mean",
+    "R4": "ana_weighted",
+    "R5": "rare_event",
+    "R6": "multi_gpu_local"
+  },
+  "rows": [
+    {
+      "rung": "R0",
+      "rung_label": "single-level GPU MC baseline",
+      "estimand_family": "uniform_mean",
+      "topology_requested": "ba",
+      "topology_used": "ba",
+      "topology_note": null,
+      "seed": 0,
+      "n_nodes": 500,
+      "components_active": {
+        "single_level": true,
+        "mlmc": false,
+        "predictor_corrector_reflection": false,
+        "adaptive_stepping": false,
+        "ana_weighted_allocation": false,
+        "importance_sampling": false,
+        "multi_gpu": false
+      },
+      "comparable": true,
+      "comparable_note": null,
+      "reference": 0.27180670108646154,
+      "achieved_mse": 1.8621049751561293e-05,
+      "wall_s": 0.17419878765940666,
+      "status": "ok",
+      "estimate": 0.26749148964881897,
+      "variance": 3.180445725975649e-08,
+      "ci_half_width": 0.00034953613958771255,
+      "work_units": 469760.0,
+      "samples_per_level": [
+        2936
+      ],
+      "note": "wall-clock includes incidental coarse-path compute; W is fine-only"
+    },
+    {
+      "rung": "R0",
+      "rung_label": "single-level GPU MC baseline",
+      "estimand_family": "uniform_mean",
+      "topology_requested": "ba",
+      "topology_used": "ba",
+      "topology_note": null,
+      "seed": 1,
+      "n_nodes": 500,
+      "components_active": {
+        "single_level": true,
+        "mlmc": false,
+        "predictor_corrector_reflection": false,
+        "adaptive_stepping": false,
+        "ana_weighted_allocation": false,
+        "importance_sampling": false,
+        "multi_gpu": false
+      },
+      "comparable": true,
+      "comparable_note": null,
+      "reference": 0.271783706266433,
+      "achieved_mse": 1.9054732725437085e-05,
+      "wall_s": 0.14841627702116966,
+      "status": "ok",
+      "estimate": 0.2674185335636139,
+      "variance": 4.412480799474136e-08,
+      "ci_half_width": 0.0004117081889917103,
+      "work_units": 334080.0,
+      "samples_per_level": [
+        2088
+      ],
+      "note": "wall-clock includes incidental coarse-path compute; W is fine-only"
+    },
+    {
+      "rung": "R0",
+      "rung_label": "single-level GPU MC baseline",
+      "estimand_family": "uniform_mean",
+      "topology_requested": "ba",
+      "topology_used": "ba",
+      "topology_note": null,
+      "seed": 2,
+      "n_nodes": 500,
+      "components_active": {
+        "single_level": true,
+        "mlmc": false,
+        "predictor_corrector_reflection": false,
+        "adaptive_stepping": false,
+        "ana_weighted_allocation": false,
+        "importance_sampling": false,
+        "multi_gpu": false
+      },
+      "comparable": true,
+      "comparable_note": null,
+      "reference": 0.2717859009280801,
+      "achieved_mse": 1.602022505778431e-05,
+      "wall_s": 0.16764975525438786,
+      "status": "ok",
+      "estimate": 0.26778337359428406,
+      "variance": 3.988922917261021e-08,
+      "ci_half_width": 0.0003914496535390125,
+      "work_units": 368480.0,
+      "samples_per_level": [
+        2303
+      ],
+      "note": "wall-clock includes incidental coarse-path compute; W is fine-only"
+    },
+    {
+      "rung": "R1",
+      "rung_label": "+ MLMC, uniform Giles allocation",
+      "estimand_family": "uniform_mean",
+      "topology_requested": "ba",
+      "topology_used": "ba",
+      "topology_note": null,
+      "seed": 0,
+      "n_nodes": 500,
+      "components_active": {
+        "single_level": false,
+        "mlmc": true,
+        "predictor_corrector_reflection": false,
+        "adaptive_stepping": false,
+        "ana_weighted_allocation": false,
+        "importance_sampling": false,
+        "multi_gpu": false
+      },
+      "comparable": true,
+      "comparable_note": null,
+      "reference": 0.27180670108646154,
+      "achieved_mse": 2.0029962424111293e-05,
+      "wall_s": 0.20778522081673145,
+      "status": "ok",
+      "estimate": 0.26733121648430824,
+      "variance": 2.3021272492092167e-08,
+      "ci_half_width": 0.0002973806824229686,
+      "work_units": 155000.0,
+      "samples_per_level": [
+        7238,
+        614,
+        412,
+        175,
+        77
+      ]
+    },
+    {
+      "rung": "R1",
+      "rung_label": "+ MLMC, uniform Giles allocation",
+      "estimand_family": "uniform_mean",
+      "topology_requested": "ba",
+      "topology_used": "ba",
+      "topology_note": null,
+      "seed": 1,
+      "n_nodes": 500,
+      "components_active": {
+        "single_level": false,
+        "mlmc": true,
+        "predictor_corrector_reflection": false,
+        "adaptive_stepping": false,
+        "ana_weighted_allocation": false,
+        "importance_sampling": false,
+        "multi_gpu": false
+      },
+      "comparable": true,
+      "comparable_note": null,
+      "reference": 0.271783706266433,
+      "achieved_mse": 1.7150353997996562e-05,
+      "wall_s": 0.21284647099673748,
+      "status": "ok",
+      "estimate": 0.2676424076780677,
+      "variance": 1.7591871392476377e-08,
+      "ci_half_width": 0.00025995855349102295,
+      "work_units": 204450.0,
+      "samples_per_level": [
+        9855,
+        834,
+        494,
+        197,
+        115
+      ]
+    },
+    {
+      "rung": "R1",
+      "rung_label": "+ MLMC, uniform Giles allocation",
+      "estimand_family": "uniform_mean",
+      "topology_requested": "ba",
+      "topology_used": "ba",
+      "topology_note": null,
+      "seed": 2,
+      "n_nodes": 500,
+      "components_active": {
+        "single_level": false,
+        "mlmc": true,
+        "predictor_corrector_reflection": false,
+        "adaptive_stepping": false,
+        "ana_weighted_allocation": false,
+        "importance_sampling": false,
+        "multi_gpu": false
+      },
+      "comparable": true,
+      "comparable_note": null,
+      "reference": 0.2717859009280801,
+      "achieved_mse": 1.7043588545110656e-05,
+      "wall_s": 0.21171045303344727,
+      "status": "ok",
+      "estimate": 0.2676575127989054,
+      "variance": 1.9479519583463652e-08,
+      "ci_half_width": 0.00027355031041250967,
+      "work_units": 178670.0,
+      "samples_per_level": [
+        8621,
+        734,
+        398,
+        186,
+        101
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "topology": "ba",
+      "from_rung": "R0",
+      "to_rung": "R1",
+      "status": "ok",
+      "n_paired_seeds": 3,
+      "work_mean_prev": 390773.3333333333,
+      "work_mean_cur": 179373.33333333334,
+      "work_ratio_cur_over_prev": 0.4590214275965607,
+      "wall_mean_prev": 0.16342160664498806,
+      "wall_mean_cur": 0.21078071494897208,
+      "wall_ratio_cur_over_prev": 1.2897971037995328,
+      "ttest_work": {
+        "t": -3.877349170644711,
+        "p": 0.060539176289492236,
+        "effect_size": -2.238588587413896,
+        "n": 3,
+        "note": null
+      },
+      "ttest_wall": {
+        "t": 5.230002072495857,
+        "p": 0.03466913330492052,
+        "effect_size": 3.0195431044177834,
+        "n": 3,
+        "note": null
+      },
+      "same_estimand_family": true,
+      "ci_half_width_mean_prev": 0.0003842313273728118,
+      "ci_half_width_mean_cur": 0.00027696318210883373,
+      "ttest_ci_half_width": {
+        "t": -3.6688387047056645,
+        "p": 0.0669206613622231,
+        "effect_size": -2.1182050137751336,
+        "n": 3,
+        "note": null
+      },
+      "achieved_mse_mean_prev": 1.7898669178260896e-05,
+      "achieved_mse_mean_cur": 1.807463498907284e-05,
+      "ttest_achieved_mse": {
+        "t": 0.16820969665517915,
+        "p": 0.881890312373457,
+        "effect_size": 0.09711591364417298,
+        "n": 3,
+        "note": null
+      }
+    }
+  ]
+}
