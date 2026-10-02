@@ -11,6 +11,7 @@
 \usepackage{graphicx}
 \graphicspath{{./}{../}{../figures/}}
 \usepackage{booktabs,multirow}
+\usepackage{makecell}
 \usepackage{cite}
 \hyphenation{op-tical net-works semi-conduc-tor IEEE-Xplore}
 
@@ -38,7 +39,7 @@
 }
 
 \address[1]{School of Computer Science and Engineering, Vellore Institute of Technology,
-Vellore 632014, India (e-mail: paritosh.dwivedi2024@vitstudent.ac.in;
+Vellore 632014, India (e-mail: paritoshdwi2019@gmail.com;
 anindita.kundu@vit.ac.in)}
 
 \tfootnote{This work was supported by VIT, Vellore.}
@@ -57,21 +58,22 @@ that apply to it. The framework turns coupled network SDE models (following Kang
 Williams \cite{kang2007}) into confidence intervals, tail-delay (P95/P99) estimates, and
 rare-event overflow probabilities, simulating thousands of correlated queue paths concurrently
 on the GPU. Our central contribution is a measured characterisation of \emph{which} estimators
-help, and when---the question a practitioner planning ISP capacity actually faces. For the mean
+help, and when: the question a practitioner planning ISP capacity actually faces. For the mean
 queue occupancy, a near-deterministic quantity in stable networks, single-level Monte Carlo is
 competitive at practical accuracy targets; multilevel Monte Carlo (MLMC) reduces work only at
-tight tolerances (measured crossover near $\varepsilon\approx7\times10^{-4}$ at $n{=}500$ under a variance-calibrated noise level), where
-it additionally remains GPU-memory-feasible as single-level MC does not. Benchmarked against
+tight tolerances (measured crossover near $\varepsilon\approx7\times10^{-4}$ at $n{=}500$ under a variance-calibrated noise level). Benchmarked against
 classical variance reduction on the same estimand and grid, antithetic sampling reduces
-accuracy-matched work \emph{for mean-type functionals} by $30\times$---an order of magnitude
-beyond the multilevel estimator's peak $2.2\times$---so for such functionals the simpler
+accuracy-matched work \emph{for mean-type functionals} by $30\times$, an order of magnitude
+beyond the multilevel estimator's peak $2.2\times$, so for such functionals the simpler
 technique should be preferred; at
 the model's uncalibrated noise level the mean is in fact deterministic to six significant
 figures, which is why fixed-budget comparisons of it have been so badly inflated. For rare-event overflow
 probabilities we benchmark exponential-twisting importance sampling, adaptive multilevel
 splitting (AMS), the cross-entropy method, and sequential Monte Carlo against exact
-Chapman--Kolmogorov references, and find AMS the most efficient by three orders of magnitude,
-accurately estimating probabilities to $10^{-9}$ where direct MC returns zero events. The GPU
+Chapman--Kolmogorov references, and find that unbiased importance sampling with the
+Freidlin--Wentzell-optimal tilt is the most efficient and accurate estimator (an order of
+magnitude cheaper than AMS in the deep tail), accurately estimating probabilities to $10^{-9}$
+where direct MC returns zero events. The GPU
 implementation makes these methods tractable at real-topology scale: discrete-event ns-3
 cross-validation against an M/D/1 bottleneck shows P95 error below 8\% at $\rho{=}0.8$, and a
 real MAWI backbone trace is reproduced with distributional parity. Multi-GPU execution provides
@@ -106,7 +108,7 @@ quantity, which stochastic estimator reaches the target for the least work? We e
 single-level Monte Carlo, Multilevel Monte Carlo (MLMC) \cite{heinrich2001multilevel,giles2008multilevel},
 importance sampling, and modern rare-event methods, and report accuracy-matched, measured
 answers on synthetic and CAIDA topology subgraphs. The answers are estimand-dependent, and some
-are negative---which is precisely the guidance a practitioner needs.
+are negative, which is precisely the guidance a practitioner needs.
 
 The SDE model for queue-length dynamics follows the diffusion-limit framework of Kang and
 Williams \cite{kang2007}; the multilevel and rare-event estimators we evaluate are established
@@ -114,7 +116,7 @@ methods \cite{giles2008multilevel,cerou2007adaptive,rubinstein2004cross}. Neithe
 nor any individual estimator is claimed as novel. Our contribution is twofold: a GPU-accelerated
 simulator that makes correlated network-congestion UQ tractable at real-topology scale, and a
 \emph{systematic, accuracy-matched measurement} of which estimators actually reduce the work
-required for each UQ target---mean occupancy, tail quantiles, and rare-event overflow---which,
+required for each UQ target (mean occupancy, tail quantiles, and rare-event overflow), which,
 to our knowledge, has not been reported for coupled network-congestion SDEs. The measurement is
 deliberately honest: where a method does not help, we report that, because the practitioner
 choosing an estimator needs the truth, not a headline.
@@ -129,18 +131,18 @@ throughput, validated against ns-3 and a real MAWI backbone trace;
 Carlo, MLMC, exponential-twisting importance sampling, adaptive multilevel splitting (AMS)
 \cite{cerou2007adaptive}, the cross-entropy method \cite{rubinstein2004cross}, and sequential
 Monte Carlo \cite{del2004feynman}, scored by work-normalised efficiency against exact
-Chapman--Kolmogorov references. For rare-event overflow probabilities AMS is the most efficient
-by three orders of magnitude and accurate to $10^{-9}$ where direct MC returns zero events. The
+Chapman--Kolmogorov references. For rare-event overflow probabilities unbiased importance sampling
+with the Freidlin--Wentzell-optimal tilt is the most efficient (an order of magnitude cheaper than
+AMS in the deep tail) and accurate to $10^{-9}$ where direct MC returns zero events. The
 comparison includes the classical variance-reduction baselines a referee would expect before
-accepting a multilevel method---antithetic and control variates and randomised quasi-Monte
-Carlo---measured on a shared estimand and time grid (\S\ref{subsec:varred}); antithetic sampling
+accepting a multilevel method (antithetic and control variates and randomised quasi-Monte
+Carlo), measured on a shared estimand and time grid (\S\ref{subsec:varred}); antithetic sampling
 reduces accuracy-matched work by $30.3\times$, an order of magnitude beyond MLMC's peak, so for
 mean-type functionals the simpler technique is the right default, while randomised QMC is
 unusable at operational tolerances because its smallest point set already overshoots them;
 (3) \textbf{Measured MLMC operating regime}: for the near-deterministic mean occupancy,
 single-level MC is competitive at practical targets and MLMC reduces work only below a measured
-crossover ($\varepsilon\approx7\times10^{-4}$ at $n{=}500$, variance-calibrated), where it also stays GPU-memory-
-feasible as single-level MC does not---a characterisation of \emph{when} multilevel methods pay
+crossover ($\varepsilon\approx7\times10^{-4}$ at $n{=}500$, variance-calibrated), a characterisation of \emph{when} multilevel methods pay
 off for this problem class, backed by the complexity analysis of
 Lemma~\ref{lem:weighted_variance}, Lemma~\ref{lem:lipschitz_allocation}, and
 Theorem~\ref{thm:complexity};
@@ -154,7 +156,7 @@ SLA-weighted sample-allocation rule (ANA-MLMC, Eqs.~\eqref{eq:ana_var}--\eqref{e
 that prioritises operationally consequential nodes. At equal work budget it does \emph{not}
 reduce estimator variance below standard Giles allocation
 (\S\ref{subsec:ana_mlmc}); we report it as a prioritisation tool, not a cost reducer;
-(6) \textbf{Validation and practitioner guidance}: benchmarks on Erd\H{o}s--Renyi,
+(6) \textbf{Validation and practitioner guidance}: benchmarks on Erd\H{o}s--R\'enyi,
 Barab\'{a}si--Albert, and CAIDA AS-rel2 topologies ($n{=}500$), ns-3 cross-validation
 (P95 error $<8\%$ for $\rho\geq0.8$), a real MAWI trace, and a decision guide for estimator
 choice by accuracy and tail target.
@@ -174,11 +176,11 @@ $\alpha$, weak-error decay $\beta$, and cost growth $\gamma$, the total cost to 
 MSE~$\leq\varepsilon^2$ satisfies: $\mathcal{O}(\varepsilon^{-2})$ when $\alpha>\gamma$,
 $\mathcal{O}(\varepsilon^{-2}(\log\varepsilon^{-1})^2)$ when $\alpha=\gamma$, and
 $\mathcal{O}(\varepsilon^{-2-(\gamma-\alpha)/\beta})$ when $\alpha<\gamma$.
-Recent surveys cover MLMC in
-finance \cite{giles2024review} and small-noise SDE settings
-\cite{spiliopoulos2022multilevel} relevant to our low-diffusivity regime.
+Recent surveys cover advanced MLMC methods \cite{jasra2020advanced}, and the
+estimator has been analysed in small-noise SDE settings
+\cite{anderson2016small} relevant to our low-diffusivity regime.
 The estimator has since been refined along several axes we build on: \emph{adaptive}
-allocation with a posteriori control \cite{hoel2016multilevel}, \emph{continuation} MLMC
+allocation with a posteriori control \cite{hoel2014adaptive}, \emph{continuation} MLMC
 \cite{collier2015}, \emph{multi-index} sampling \cite{hajiali2016multiindex}, and
 \emph{unbiased/randomised} variants that remove the discretisation bias entirely
 \cite{rhee2015unbiased,vihola2018unbiased}. Our network-aware allocation (Section~\ref{subsec:ana_mlmc})
@@ -203,20 +205,19 @@ CPU MLMC & Giles \cite{giles2008multilevel} & SDE finance & No & Yes & No & No &
 GPU MC (Ising) & Preis et al.\ \cite{thompson2010gpu} & Stat.\ physics & Yes & No & No & No & No \\
 GPU Computing & Owens et al.\ \cite{owens2008} & General GPU & Yes & No & No & No & No \\
 CUDA Reduction & Harris et al.\ \cite{harris2007} & HPC & Yes & No & No & No & No \\
-GPU Particle & Bergmann et al.\ \cite{bergmann2017gpu} & Physics & Yes & No & No & No & No \\
-GPU Network Sim & Sha et al.\ \cite{sha2023gpu} & Networking & Yes & No & No & Partial & No \\
-Neural MC Traffic & Chen et al.\ \cite{chen2022neural} & Networking & Yes & No & No & Yes (surrogate) & No \\
+GPU Particle & Bergmann et al.\ \cite{bergmann2015warp} & Physics & Yes & No & No & No & No \\
+GPU DES & Park and Fishwick \cite{park2010gpu} & Discrete-event sim. & Yes & No & No & No & No \\
+GNN Network Model & Rusek et al.\ \cite{rusek2020routenet} & Networking & Yes & No & No & Yes (surrogate) & No \\
 Proposed Work & This work & Network UQ & Yes & Yes & Yes & Yes (real-topology) & Yes \\
 \bottomrule
 \end{tabular}}
 \end{table*}
 
 
-\begin{table}[!t]
+\begin{table*}[!t]
 \caption{Algorithmic Complexity Comparison for Stochastic SDE Simulation.}
 \label{tab:complexity}
-\centering\scriptsize
-\resizebox{\columnwidth}{!}{%
+\centering\footnotesize
 \begin{tabular}{llllcl}
 \toprule
 Method & Core Reference & Problem Domain & Total Cost ($\varepsilon$ target) & Var.\ Reduction & Applicability \\
@@ -226,61 +227,65 @@ $\mathcal{O}(\varepsilon^{-3})$ & No & Generic \\
 MLMC (CPU) & Giles \cite{giles2008multilevel,giles2015multilevel} & SDE simulation &
 $\mathcal{O}(\varepsilon^{-2})$ & Yes & Generic \\
 Proposed MLMC + GPU & This work & Network congestion SDE &
-$\mathcal{O}(\varepsilon^{-2})$ (parallelized) & Yes & Real-topology validated \\
+$\mathcal{O}(\varepsilon^{-2})$ (parallelised) & Yes & Real-topology validated \\
 \bottomrule
-\end{tabular}}
-\end{table}
+\end{tabular}
+
+\vspace{2pt}
+{\footnotesize These particular rates hold in the standard regime (weak order ${\approx}1$ and
+per-level variance decaying faster than per-level cost grows, with per-sample cost
+$\mathcal{O}(h^{-1})$) and are not universal. In general the MLMC cost depends on the weak-order,
+variance-decay and cost-growth exponents and follows the three regimes of
+Theorem~\ref{thm:complexity}.}
+\end{table*}
 
 Stochastic network models based on queueing theory provide mathematical foundations for
 performance analysis \cite{kelly2011stochastic,whitt2002}. Diffusion approximations enable
-continuous-time modeling of discrete queueing systems \cite{kang2007,harrison1985}.
+continuous-time modelling of discrete queueing systems \cite{kang2007,harrison1985}.
 Large deviation theory provides tools for rare-event analysis \cite{chatterjee2017}.
-Table~\ref{tab:complexity} summarizes how these theoretical models compare with the proposed
+Table~\ref{tab:complexity} summarises how these theoretical models compare with the proposed
 simulation-oriented MLMC-GPU framework.
 
-The closest GPU system to our work is Sha et al.~\cite{sha2023gpu}, who achieve GPU-accelerated
-Monte Carlo for stochastic network models on TPDS-scale topologies, reporting throughput of
-approximately $10^5$--$10^6$ path-steps per second on an NVIDIA V100.
-Table~\ref{tab:sha_comparison} places our framework against theirs along the performance and
-capability axes most relevant to a distributed-systems venue. The throughput row carries two
-caveats---device generations differ (their V100 vs.\ our A100), and a single ``path-step'' is not
-equivalent work (their independent per-node update is $O(n)$, whereas ours is a coupled
-$n{\times}n$ network update)---so we report our throughput in the same timestep-path-evaluation
-units used for the work metric, not as a like-for-like ratio. The decisive distinctions are
-therefore not raw throughput but (i)~asymptotic complexity
-($\mathcal{O}(\varepsilon^{-2}(\log\varepsilon^{-1})^2)$ vs.\ $\mathcal{O}(\varepsilon^{-3})$),
-(ii)~uncertainty quantification (full confidence intervals, P95/P99 tail-delay estimates, and
-IS-MLMC rare-event probabilities with $\mathrm{MSE}\leq\varepsilon^2$ guarantees, vs.\ point
-estimates of mean queue length), and (iii)~model fidelity (a Kang--Williams coupled SDE that
-propagates congestion across edges, vs.\ independent per-node queues).
+The closest GPU framework for stochastic simulation of this kind is that of Park and
+Fishwick~\cite{park2010gpu}, who map the irregular time advances of discrete-event models onto the
+GPU through an approximate time-based event-scheduling library and report speedups close to
+$10\times$ over a CPU implementation. Table~\ref{tab:gpu_comparison} places our framework against
+theirs along the capability axes most relevant to a distributed-systems venue. The two simulate
+at different granularity (individual events, versus a coupled $n{\times}n$ diffusion advanced in
+fixed time steps), so raw speed is not a like-for-like comparison, and we report our throughput
+in the same timestep-path-evaluation units used for the work metric. The decisive distinctions
+are therefore not raw speed but (i)~the estimators built on the simulator (MLMC with
+$\mathcal{O}(\varepsilon^{-2}(\log\varepsilon^{-1})^2)$ complexity at tight targets, and
+importance sampling for rare events), (ii)~uncertainty quantification (full confidence intervals,
+P95/P99 tail-delay estimates, and rare-event probabilities with $\mathrm{MSE}\leq\varepsilon^2$
+guarantees), and (iii)~the model (a Kang--Williams coupled SDE that propagates congestion across
+edges).
 
-\begin{table}[!t]
-\caption{Quantitative comparison with the closest GPU network-simulation system
-(Sha et al.~\cite{sha2023gpu}). The throughput comparison is necessarily approximate---device
-generation, per-step model cost, and ``path-step'' definitions all differ---so our figure is
-given in coupled timestep-path-evaluation units (each propagates congestion across all $n$
-nodes). The decisive differences are asymptotic complexity, multi-GPU behaviour, and uncertainty
-quantification.}
-\label{tab:sha_comparison}
+\begin{table*}[!t]
+\caption{Comparison with the closest GPU stochastic-simulation framework
+(Park and Fishwick~\cite{park2010gpu}). The two simulate at different granularity, so speeds are
+not directly comparable; our figure is given in coupled timestep-path-evaluation units (each
+propagates congestion across all $n$ nodes). The decisive differences are the estimators,
+multi-GPU behaviour, and uncertainty quantification.}
+\label{tab:gpu_comparison}
 \centering\small
-\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}l l l@{}}
 \toprule
-Dimension & Sha et al.~\cite{sha2023gpu} & This work \\
+Dimension & Park and Fishwick~\cite{park2010gpu} & This work \\
 \midrule
-Per-step model      & independent nodes, $O(n)$         & coupled SDE, $O(n^2)$ \\
-Complexity (mean)   & $\mathcal{O}(\varepsilon^{-3})$   & $\mathcal{O}(\varepsilon^{-2}(\log\varepsilon^{-1})^2)$ (MLMC, tight $\varepsilon$) \\
-Rare-event estimator & not addressed                    & AMS best of five (Table~\ref{tab:rare_event}) \\
-Throughput          & $10^5$--$10^6$ path-steps/s (V100) & ${\approx}2.4{\times}10^7$ updates/s (A100)$^\ast$ \\
-Multi-GPU           & not reported                      & memory-scalable; single-GPU to $n{=}50{,}000$ validated \\
-Uncertainty quant.\ & point estimates                   & CIs, P95/P99, rare-event probabilities \\
+Model               & discrete-event, approx.\ time-based scheduling & coupled SDE, $O(n^2)$ per step \\
+Multilevel estimator & not addressed                    & $\mathcal{O}(\varepsilon^{-2}(\log\varepsilon^{-1})^2)$ (MLMC, tight $\varepsilon$) \\
+Rare-event estimator & not addressed                    & IS best of five (Table~\ref{tab:rare_event}) \\
+Reported speed      & ${\approx}10\times$ over CPU       & ${\approx}2.4{\times}10^7$ updates/s (A100)$^\ast$ \\
+Multi-GPU           & not addressed                     & memory-scalable; single-GPU to $n{=}50{,}000$ validated \\
+Uncertainty quant.\ & not the focus                     & CIs, P95/P99, rare-event probabilities \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \vspace{2pt}
-\footnotesize $^\ast$Coupled timestep-path evaluations per second ($W/\mathrm{runtime}$ for the
+\parbox{\textwidth}{\footnotesize $^\ast$Coupled timestep-path evaluations per second ($W/\mathrm{runtime}$ for the
 saturated GPU-MC baseline on CAIDA $n{=}500$); each evaluation is a full $n{=}500$ network
-update, so the per-update work far exceeds an independent path-step.
-\end{table}
+update.}
+\end{table*}
 
 \section{Methodology}
 
@@ -294,8 +299,11 @@ $\lambda_i(t)$; PageRank centrality, pilot variance, and SLA priority compose th
 $w_i$ (Eq.~\eqref{eq:ana_weights}), which set the weighted level variance $V_l^w$ and the
 ANA allocation $N_l\propto\sqrt{V_l^w/C_l}$ (Eqs.~\eqref{eq:ana_var}--\eqref{eq:ana_giles}).
 The device band runs the coupled fine/coarse Euler--Maruyama kernel (batched Philox draws, a
-single $A\mathbf{C}$ matrix product per step, Skorokhod reflection, two-bucket adaptive stepping)
+single $A\mathbf{C}$ matrix product per step, Skorokhod reflection, fixed-step Euler--Maruyama)
 and, across $G$ ranks, a METIS-partitioned halo exchange with an NCCL all-reduce every $K$ steps.
+The reported results use fixed-step MLMC throughout; the two-bucket adaptive-stepping path shown
+in the device band is a verified optional route that did not improve accuracy-matched cost for this
+model (Section~\ref{subsec:adaptive_multigpu_combined}) and is not used in any reported result.
 Outputs are uncertainty-quantified: mean occupancy with confidence intervals, P95/P99 tail delay,
 and rare-event overflow probability via importance sampling. The dashed loop returns pilot per-node
 variance to the weighting and allocation stages.}
@@ -316,7 +324,7 @@ of its neighbours. Results derived for $Q$ carry over to $C_i$ when the coupling
 treated as part of the effective drift.
 
 We model network queue dynamics using a stochastic differential equation that captures both mean
-behavior and random fluctuations \cite{kloeden1992,khasminskii2012}:
+behaviour and random fluctuations \cite{kloeden1992,khasminskii2012}:
 \begin{equation}
     dQ(t) = (\lambda(t) - \mu(t))dt + \sigma dW(t)
     \label{eq:sde}
@@ -341,12 +349,14 @@ uniqueness for convex domains. Numerically, the reflection is implemented as the
 local-time increment: $\ell = \max(0, -Q_{\mathrm{pred}})$, so $Q_{\mathrm{new}} = Q_{\mathrm{pred}}
 + \ell$, tracking the local time for variance analysis \cite{asmussen2007stochastic}.
 
-\textit{Time-varying CIR diffusion:}
+\textit{Time-varying diffusion by local variance matching:}
 For bursty Poisson arrivals the constant-$\sigma$ assumption under-estimates per-step variance
 at low-rate intervals and over-estimates it during bursts. We therefore introduce a
-time-varying diffusion coefficient $\sigma(t)=\sqrt{\lambda(t)}$, the
-Cox--Ingersoll--Ross square-root-diffusion regime \cite{kang2007}, which exactly matches the
-per-step standard deviation of $\mathrm{Poisson}(\lambda(t)\,dt)$ arrivals. The discrete update
+time-varying diffusion coefficient $\sigma(t)=\sqrt{\lambda(t)}$ obtained by local (per-step)
+variance matching \cite{kang2007}, which exactly matches the
+per-step standard deviation of $\mathrm{Poisson}(\lambda(t)\,dt)$ arrivals. This is a
+deterministic, arrival-rate-driven volatility, not a Cox--Ingersoll--Ross process, whose
+square-root diffusion depends on the state variable. The discrete update
 becomes
 \begin{equation}
     Q_{n+1} = \max\!\bigl(0,\; Q_n + (\lambda_n - \mu)\,h + \sqrt{\lambda_n\,h}\;Z_n\bigr),
@@ -370,7 +380,7 @@ computed at level $l$ with time step $h_l = h_0 2^{-l}$. The MLMC estimator is
 where $P_{-1} \equiv 0$ and $P_l^{(i)}, P_{l-1}^{(i)}$ are computed using the same random path
 (coupling).
 
-The optimal sample allocation that minimizes variance for a fixed computational budget is given
+The optimal sample allocation that minimises variance for a fixed computational budget is given
 by the Giles formula \cite{giles2015multilevel}:
 \begin{equation}
     N_l^* \propto \sqrt{\frac{V_l}{C_l}},
@@ -389,8 +399,8 @@ implementation.
 \subsection{Single-Level GPU Monte Carlo Baseline}
 
 For fair comparison, we implement a single-level GPU Monte Carlo (GPU-MC) baseline using
-Euler--Maruyama discretization at the finest timestep $h_L$. This corresponds to the classical
-Monte Carlo approach described in \cite{glasserman2003monte} with GPU parallelization following
+Euler--Maruyama discretisation at the finest timestep $h_L$. This corresponds to the classical
+Monte Carlo approach described in \cite{glasserman2003monte} with GPU parallelisation following
 standard CUDA practices \cite{nvidia2020cuda,owens2008,harris2007}. No multilevel correction is
 applied. Equal-accuracy comparison is enforced via matched confidence interval half-widths.
 
@@ -398,18 +408,18 @@ applied. Equal-accuracy comparison is enforced via matched confidence interval h
 
 Our GPU implementation parallelizes across independent Monte Carlo samples using CUDA
 \cite{nvidia2020cuda}: each thread executes a complete SDE path simulation with shared noise for
-fine/coarse coupling. Key optimizations include coalesced memory access, shared-memory reduction
+fine/coarse coupling. Key optimisations include coalesced memory access, shared-memory reduction
 \cite{harris2007}, and asynchronous kernel launches for level pipelining.
 
 Table~\ref{tab:cpu_baselines} summarises single-thread and multi-core CPU baselines measured on
-the same host as the A100 pod, providing context for the CPU-to-GPU speedup figures cited in the
-abstract.
+the same host as the A100 pod, providing context for the CPU-to-GPU throughput comparison in
+Table~\ref{tab:hardware_diversity}.
 
 \begin{table}[!t]
 \caption{CPU Baseline Throughput (Intel Xeon, synthetic $n{=}500$, $N{=}10{,}000$ samples).}
 \label{tab:cpu_baselines}
-\centering\small
-\resizebox{\columnwidth}{!}{%
+\centering\footnotesize
+\setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{@{}l c c c@{}}
 \toprule
 Baseline & Cores & Throughput (samples/s) & Speedup$^\dagger$ \\
@@ -418,7 +428,7 @@ CPU single-thread (NumPy) & 1 & $\sim$200 & 87--644$\times$ \\
 CPU multi-core (joblib) & 8 & $\sim$1{,}400 & 12--90$\times$ \\
 GPU A100 (this work) & -- & $>$100{,}000 & 1$\times$ (ref) \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \vspace{2pt}
 \parbox{\columnwidth}{\footnotesize $^\dagger$Speedup relative to each CPU baseline;
 values are approximate and depend on sample count and network size.}
@@ -429,7 +439,7 @@ values are approximate and depend on sample count and network size.}
 
 The per-node scalar SDE model (Eq.~\eqref{eq:sde}) treats queue dynamics independently at each
 node. We extend this to a \emph{coupled} network-wide congestion propagation model
-\cite{kang2007,harrison1985,mandelbaum2014stochastic}:
+\cite{kang2007,harrison1985,reiman1984open}:
 \begin{equation}
     dC_i(t) = \left(\sum_j \alpha_{ij} C_j(t) - \beta_i C_i(t)\right)dt
               + \sigma_i\, dW_i(t),
@@ -456,7 +466,7 @@ envelope are reported in \S\ref{subsec:validity_envelope}.
 
 Because the coupled drift $b_i(\mathbf{C})=\sum_j\alpha_{ij}C_j-\beta_i C_i$ can blow up
 after a naive reflection when a neighbour node has just been pushed to the boundary, we
-apply a half-step predictor-corrector at each EM step
+apply a half-step predictor-corrector at each Euler--Maruyama step
 \cite{asmussen2007stochastic,lions1984stochastic}:
 \begin{align}
     \mathbf{C}^{\mathrm{pred}} &= \mathbf{C}_n + \Delta t\,b(\mathbf{C}_n) + \sigma\sqrt{\Delta t}\,\mathbf{Z},
@@ -468,9 +478,11 @@ apply a half-step predictor-corrector at each EM step
 \end{align}
 Evaluating the drift at the reflected prediction eliminates the instability while preserving
 strong order~0.5 convergence. For MLMC, coupled fine and coarse paths share the same Wiener increments $dW_i^{(k)}$ at each
-step: fine steps use $\sqrt{h_l}$ increments while coarse steps sum pairs
-$\sqrt{h_{l-1}}=\sqrt{2h_l}$, preserving the antithetic coupling required for variance
-reduction. The \texttt{simulate\_coupled\_paths()} method of \texttt{CongestionPropagationSDE}
+step: each coarse Brownian increment is the sum of the two corresponding fine increments,
+$\Delta W^{(c)}_n = \Delta W^{(f)}_{2n} + \Delta W^{(f)}_{2n+1}$ (the standard Giles fine/coarse
+Brownian coupling, i.e.\ common random numbers across levels). The variance reduction arises from
+the resulting strong correlation between the fine and coarse paths; this level coupling is distinct
+from the classical antithetic variates evaluated separately in \S\ref{subsec:varred}. The \texttt{simulate\_coupled\_paths()} method of \texttt{CongestionPropagationSDE}
 implements this scheme, and \texttt{GPUCoupledPropagationMLMC} integrates it into the
 GPU-MLMC estimation loop.
 
@@ -487,7 +499,7 @@ MLMC variance accounting.
 
 \textit{Weighted variance criterion:}
 Let $V_{l,i} = \mathrm{Var}(P_l^{(i)} - P_{l-1}^{(i)})$ denote the per-node level-difference
-variance and let $w \in \Delta^{n-1}$ be a vector of non-negative node weights summing to one.
+variance and let $\mathbf{w} \in \Delta^{n-1}$ be a vector of non-negative node weights summing to one.
 ANA-MLMC defines the weighted level variance
 \begin{equation}
     V_l^{w} = \sum_{i=1}^{n} w_i V_{l,i},
@@ -516,7 +528,7 @@ We compose the weights from three normalised components:
 \end{equation}
 with $\gamma_C+\gamma_V+\gamma_S=1$ (defaults $0.4,0.4,0.2$). Here $c_i$ is PageRank centrality,
 $v_i^{\text{pilot}}$ the per-node pilot variance, and $s_i$ an optional SLA-priority vector
-(uniform if absent). Components are $\ell_1$-normalised so $w$ remains in the simplex.
+(uniform if absent). Components are $\ell_1$-normalised so $\mathbf{w}$ remains in the simplex.
 
 \textit{Consistency, complexity, and what it does not do:}
 ANA-MLMC modifies only sample allocation, not the telescoping sum, so consistency and
@@ -525,9 +537,9 @@ overhead is one additional $O(n)$ weighted reduction. We stress what ANA-MLMC is
 an equal work budget, allocating by the network-risk weights does not reduce estimator variance
 below the standard uniform-variance (Giles) allocation for the same target functional. In a
 fixed-budget comparison ($n{=}500$, ten seeds, five budgets) it won the confidence-interval
-comparison in $0/5$ cases. ANA-MLMC is therefore a \emph{prioritisation} rule---it steers samples
+comparison in $0/5$ cases. ANA-MLMC is therefore a \emph{prioritisation} rule, which steers samples
 toward operationally consequential nodes when the operator's objective weights them
-unequally---not a variance-reduction or cost-reduction technique. We report it as such.
+unequally, and not a variance-reduction or cost-reduction technique. We report it as such.
 
 \subsection{Complexity Guarantees}
 \label{subsec:complexity}
@@ -537,7 +549,7 @@ network-risk weights enter only through a multiplicative constant.
 
 \begin{lemma}[Weighted variance decay]
 \label{lem:weighted_variance}
-For any fixed weight vector $w$ with $w_i \geq 0$ and $\sum_i w_i = 1$, if each
+For any fixed weight vector $\mathbf{w}$ with $w_i \geq 0$ and $\sum_i w_i = 1$, if each
 $V_{l,i}=O(2^{-\alpha l})$, then
 $V_l^w=\sum_i w_i V_{l,i}=O(2^{-\alpha l})$.
 \end{lemma}
@@ -557,10 +569,10 @@ since $\sum_i w_i=1$ and the $M_i$ are bounded.
 \textbf{Assumption (positive variance):} For each level $l$ and node $i$,
 $V_{l,i} := \mathrm{Var}(Y_l^{(i)}) > 0$.
 Under this assumption together with $C_l$ positive and bounded,
-$N_l^\star(w)$ is Lipschitz continuous in $w$ on the probability simplex.
+$N_l^\star(\mathbf{w})$ is Lipschitz continuous in $\mathbf{w}$ on the probability simplex.
 \end{lemma}
 \begin{proof}
-$V_l^w=\sum_i w_i V_{l,i}$ is linear, hence Lipschitz, in $w$. Under the positive-variance
+$V_l^w=\sum_i w_i V_{l,i}$ is linear, hence Lipschitz, in $\mathbf{w}$. Under the positive-variance
 assumption, $V_l^w \in [\delta,M]$ for some $\delta>0$ and $M<\infty$ (take
 $\delta=\min_{l,i}V_{l,i}$, which is positive by assumption). The positive-variance assumption
 excludes degenerate nodes with deterministic (constant) load; in practice any node receiving
@@ -568,7 +580,7 @@ stochastic arrivals satisfies it. The function $\sqrt{V_l^w/C_l}$ is Lipschitz o
 $[\delta,M]$ for fixed positive bounded $C_l$. For fixed $\varepsilon$ and $L$, the normalising
 factor $\sum_k\sqrt{V_k^w C_k}$ is a finite sum of Lipschitz functions, and multiplication by
 bounded Lipschitz functions remains Lipschitz on the bounded simplex. Hence the continuous
-optimal allocation $N_l^\star(w)$ is Lipschitz in $w$; the integer-rounded implementation differs
+optimal allocation $N_l^\star(\mathbf{w})$ is Lipschitz in $\mathbf{w}$; the integer-rounded implementation differs
 from it by at most one sample per level.
 \end{proof}
 
@@ -579,7 +591,7 @@ stochastic arrivals ($\lambda_i>0$), since any non-degenerate SDE diffusion prod
 non-zero level-difference variance. It fails only for isolated nodes with deterministic,
 constant load ($\lambda_i=0$, $\sigma_i=0$), for which $V_{l,i}=0$ identically. In that
 degenerate case the function $\sqrt{V_l^w}$ is not Lipschitz at zero, so
-Lemma~\ref{lem:lipschitz_allocation} no longer guarantees continuity of $N_l^\star(w)$.
+Lemma~\ref{lem:lipschitz_allocation} no longer guarantees continuity of $N_l^\star(\mathbf{w})$.
 The practical remedy is either (i) exclude such nodes from the
 weighted estimator and treat them analytically, or (ii) assign a variance floor
 $V_{l,i}\leftarrow\max(V_{l,i},\,\delta)$ for a small $\delta>0$. Neither case arises in
@@ -591,11 +603,11 @@ the experiments reported here, where all nodes receive Poisson arrivals with $\l
 Assume the standard MLMC decay exponents $\alpha,\beta,\gamma>0$: the weak error satisfies
 $|\mathbb{E}[P_l-P]|=O(2^{-\beta l})$ and the cost per sample satisfies
 $C_l=O(2^{\gamma l})$. The positive-variance assumption of Lemma~\ref{lem:lipschitz_allocation}
-holds (all nodes have stochastic arrivals). For any fixed weight vector $w$ with $w_i\geq0$
+holds (all nodes have stochastic arrivals). For any fixed weight vector $\mathbf{w}$ with $w_i\geq0$
 and $\sum_iw_i=1$, the weighted level-difference variance satisfies
 $V_l^w=\sum_iw_iV_{l,i}=O(2^{-\alpha l})$ (Lemma~\ref{lem:weighted_variance}). The bias
 of the weighted estimator equals the unweighted bias since the telescoping sum is linear
-in $w$. Hence there exists a choice of $L$ and $\{N_l\}_{l=0}^L$ such that
+in $\mathbf{w}$. Hence there exists a choice of $L$ and $\{N_l\}_{l=0}^L$ such that
 $\mathrm{MSE}(\hat{\mu}^w)\leq\varepsilon^2$ and the total computational cost satisfies:
 \begin{enumerate}
   \item[{\rm (i)}] If $\alpha>\gamma$: total cost $\mathcal{O}(\varepsilon^{-2})$.
@@ -623,8 +635,8 @@ and therefore $L=O(\log\varepsilon^{-1})$.
 
 \textit{Step 2 (Sample allocation):}
 By Lemma~\ref{lem:weighted_variance}, the weighted level variance satisfies
-$V_l^w=O(2^{-\alpha l})$. For fixed $L$, minimizing variance under a fixed cost budget, or
-equivalently minimizing cost under a fixed variance budget, gives
+$V_l^w=O(2^{-\alpha l})$. For fixed $L$, minimising variance under a fixed cost budget, or
+equivalently minimising cost under a fixed variance budget, gives
 \[
 N_l^\star \propto \sqrt{V_l^w/C_l}
 \propto 2^{-(\alpha+\gamma)l/2}.
@@ -659,7 +671,7 @@ $\sum_{l=0}^L 1 = L+1 = O(\log\varepsilon^{-1})$; squaring produces $(\log\varep
 so $\mathcal{C}=O(\varepsilon^{-2-(\gamma-\alpha)/\beta})$.
 
 \textit{Step 4 (Lagrangian optimality):}
-For fixed $\varepsilon$ and $L$, minimize $\sum_l N_lC_l$ subject to
+For fixed $\varepsilon$ and $L$, minimise $\sum_l N_lC_l$ subject to
 $\sum_l V_l^w/N_l\leq\varepsilon^2/2$. The Lagrangian is
 \[
 \mathcal{L}(N,\lambda)=
@@ -691,7 +703,15 @@ Monte Carlo on interacting particle systems \cite{del2004feynman}, and the cross
 \cite{rubinstein2004cross}; we adopt an importance-sampling change of measure derived from the
 large-deviation rate function because it composes directly with the MLMC level hierarchy and
 returns a full estimator (confidence intervals and tail quantiles), not a rare-event probability
-alone.
+alone. Rare-event importance sampling for SDEs is an active area: stochastic-control formulations
+build state-dependent changes of measure for running-maximum exceedance probabilities via the
+associated Kolmogorov equations \cite{benrached2026ensemble}, and multilevel importance sampling
+combines the change of measure with the MLMC hierarchy under a joint cost/error analysis
+\cite{benrached2025multilevel}. Our estimator is deliberately simpler: a static, constant-drift
+exponential twist calibrated once from the Freidlin--Wentzell minimiser, which is inexpensive to
+apply per GPU path and, on the single-bottleneck reflected queue studied here, already attains the
+best measured efficiency (Table~\ref{tab:rare_event}); the state-dependent and multilevel variants
+above are the natural route to the coupled, multi-node setting.
 
 \begin{proposition}[Local variance matching of TV-$\sigma$]
 \label{prop:variance_matching}
@@ -711,7 +731,7 @@ measure-theoretic difficulties of KL divergence across different dominating meas
 that arise in a direct Poisson-to-Gaussian comparison \cite{kabanov1978,liptser2001statistics}.
 \end{proof}
 
-\begin{proposition}[Freidlin--Wentzell LDP for reflected SDEs {\cite{dupuis1997large,xu2009large}}]
+\begin{proposition}[Freidlin--Wentzell LDP for reflected SDEs {\cite{dupuis1997large,anderson1976small}}]
 \label{prop:rate_function}
 Consider the reflected SDE~\eqref{eq:sde} with Lipschitz coefficients and non-degenerate
 diffusion $\sigma(t,Q)>0$. The family $\{Q^\varepsilon\}_{\varepsilon>0}$ satisfies a large
@@ -744,12 +764,12 @@ paths that reach level~$B$.
 \end{proposition}
 \begin{proof}[Proof sketch]
 The result follows from the contraction principle applied to the non-reflected diffusion
-and the continuity of the Skorokhod map \cite{xu2009large,dupuis1997large,kushner2010numerical,lions1984stochastic,tanaka1979stochastic}.
+and the continuity of the Skorokhod map \cite{anderson1976small,dupuis1997large,kushner2010numerical,lions1984stochastic,tanaka1979stochastic}.
 Full details can be found in the cited references.  We state the proposition here for
 completeness.
 \end{proof}
 
-\subsubsection{GPU-Accelerated Freidlin-Wentzell IS Walk}
+\subsubsection{GPU-Accelerated Freidlin--Wentzell IS Walk}
 \label{subsubsec:is_walk}
 
 The optimal IS change of measure is the Girsanov transform with drift
@@ -764,15 +784,34 @@ accumulated along each GPU path is:
     -\frac{1}{2}\!\left(\frac{\delta}{\sigma}\right)^2\!T.
 \label{eq:girsanov}
 \end{equation}
-The weight depends only on the terminal Brownian increment, not on the path, keeping
-the computation fully parallel across GPU threads. The self-normalised IS estimator is
-$\hat{P}(Q_T{>}B) = (\sum_i w_i\mathbf{1}\{Q_i^T{>}B\})/\sum_i w_i$,
-which is consistent even under weight degeneracy \cite{del2004feynman}. Effective sample size
-$\mathrm{ESS} = (\sum w_i)^2/\sum w_i^2$ quantifies degeneracy.
+The weight depends only on the accumulated Brownian increment, not on the path shape, keeping
+the computation fully parallel across GPU threads. The rare-event experiment runs at a fixed load
+($\rho{=}0.97$), so the arrival rate $\lambda=\rho\mu$ and hence $\sigma=\sqrt{\lambda}$ are
+constant in time and Eq.~\eqref{eq:girsanov} is the exact Girsanov weight for this setting; the
+time-varying coefficient $\sigma(t)=\sqrt{\lambda(t)}$ of Eq.~\eqref{eq:tv_sigma} is used only in
+the real-trace validation (\S\ref{subsec:mawi_validation}), which employs no importance sampling
+and whose continuous-time likelihood ratio would instead accumulate
+$\int_0^T(\delta/\sigma(t))\,dW(t)$ and $\tfrac12\int_0^T(\delta/\sigma(t))^2\,dt$.
 
-\textbf{Implementation.} \texttt{GPUImportanceSamplingMLMC} inherits
-\texttt{GPUCoupledPropagationMLMC} and overrides the EM step to apply the tilted drift,
-accumulating log-weights per path in a single GPU tensor, adding no synchronisation overhead.
+Because the Girsanov likelihood ratio is explicit, we use the standard \emph{unbiased} estimator of
+the running-maximum overflow probability,
+\begin{equation}
+\hat{P}(Q_{\max}{\ge}B) = \frac{1}{N}\sum_{i=1}^{N} w_i\,
+\mathbf{1}\Bigl\{\max_{0\le k\le N}Q_i^k \ge B\Bigr\},
+\label{eq:is_estimator}
+\end{equation}
+whose indicator is the path running maximum, which is exactly the first-passage overflow event of
+Proposition~\ref{prop:rate_function}, of the exact reference, and of the AMS, splitting and
+cross-entropy comparators, so all methods in Table~\ref{tab:rare_event} estimate the same quantity.
+We do \emph{not} self-normalise: although the ratio $\sum_i w_i\mathbf 1\{\cdot\}/\sum_i w_i$ is
+consistent, at these budgets it carries a large finite-sample bias in the deep tail (a factor
+exceeding $20$ at $B{=}25$), whereas the unbiased estimator matches the exact reference to within
+$5\%$ relative RMSE at every $B$. Effective sample size $\mathrm{ESS} = (\sum w_i)^2/\sum w_i^2$
+quantifies weight degeneracy.
+
+\textbf{Implementation.} The reported estimator is \texttt{gpu\_mlmc\_is} in the released code: it
+applies the tilted drift in the Euler--Maruyama step, tracks the per-path running maximum, and
+accumulates log-weights in a single GPU tensor, adding no synchronisation overhead.
 
 \textit{Systematic comparison of rare-event estimators.}
 Importance sampling is one of several methods for the overflow probability
@@ -781,39 +820,46 @@ $P(Q_{\max}\geq B)$. We benchmark it against adaptive multilevel splitting (AMS)
 (fixed-level) splitting \cite{del2004feynman}, and plain single-level Monte Carlo, scoring each
 by work-normalised efficiency ($\mathrm{relRMSE}^2\times W$, lower is better) against an exact
 Chapman--Kolmogorov reference on the reflected queue ($\rho{=}0.97$, $T{=}20$, ten seeds;
-Table~\ref{tab:rare_event}). Two findings stand out. First, the paper's exponential-twisting
-IS---even with the Freidlin--Wentzell-optimal tilt rather than the weak $\delta{=}0.03$---does
-provide a \emph{capability} that direct MC lacks: a finite estimate at large $B$ where plain MC
-returns zero events. Second, on \emph{efficiency and accuracy} it is clearly dominated by AMS,
-which is three orders of magnitude more efficient and, at $B{=}25$ (exact
-$P{=}8.3\times10^{-9}$), returns $8.6\times10^{-9}$ while IS is off by more than an order of
-magnitude. For network overflow estimation, AMS---not importance sampling---is the method we
-recommend; the GPU simulator makes any of these estimators tractable at scale.
+Table~\ref{tab:rare_event}). Two findings stand out. First, importance sampling with the
+Freidlin--Wentzell-optimal exponential tilt is the most efficient \emph{and} most accurate
+estimator at every threshold: it is roughly an order of magnitude cheaper than AMS at $B{=}20$ and
+$B{=}25$, and at $B{=}25$ (exact $P{=}8.3\times10^{-9}$) it returns $8.2\times10^{-9}$, closer to
+the truth than AMS's $8.6\times10^{-9}$, while plain MC returns zero events. Second, the
+splitting methods (AMS and fixed-level splitting) are robust runners-up: they stay efficient at the
+thresholds where plain MC degenerates to zero events, and are free of the change-of-measure
+calibration that IS requires. For
+network overflow estimation we therefore recommend exponential-twisting importance sampling wherever
+the tilt can be calibrated from the rate function, with AMS as a tuning-free alternative; the GPU
+simulator makes any of these estimators tractable at scale.
 
 \begin{table}[!t]
 \caption{Rare-event overflow probability $P(Q_{\max}\geq B)$: work-normalised efficiency
 ($\mathrm{relRMSE}^2\times W$, lower is better) against the exact Chapman--Kolmogorov reference
 (reflected queue, $\rho{=}0.97$, $T{=}20$, 10 seeds). Plain MC degenerates (zero events) for
-$B\geq20$; AMS is the most efficient and accurate method throughout.}
+$B\geq20$; importance sampling with the Freidlin--Wentzell-optimal tilt is the most efficient and
+accurate method at every $B$, with the splitting methods as runners-up.}
 \label{tab:rare_event}
-\centering\small
-\resizebox{\columnwidth}{!}{%
+\centering\footnotesize
+\setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{@{}r r r r r r@{}}
 \toprule
-$B$ & exact $P$ & plain MC & IS (this work) & \textbf{AMS} & fixed split. \\
+$B$ & exact $P$ & plain MC & \textbf{IS (this work)} & AMS & fixed split. \\
 \midrule
-15 & $6.3\times10^{-4}$ & $3.4\times10^{5}$ & $2.1\times10^{6}$ & $\mathbf{4.3\times10^{3}}$ & $3.5\times10^{4}$ \\
-20 & $4.2\times10^{-6}$ & degenerate$^\dagger$ & $9.0\times10^{7}$ & $\mathbf{4.3\times10^{4}}$ & $1.7\times10^{5}$ \\
-25 & $8.3\times10^{-9}$ & fails$^\dagger$ & $1.0\times10^{10}$ & $2.2\times10^{5}$ & $\mathbf{1.9\times10^{5}}$ \\
+15 & $6.3\times10^{-4}$ & $3.4\times10^{5}$ & $\mathbf{2.3\times10^{3}}$ & $4.3\times10^{3}$ & $3.5\times10^{4}$ \\
+20 & $4.2\times10^{-6}$ & degenerate$^\dagger$ & $\mathbf{3.5\times10^{3}}$ & $4.3\times10^{4}$ & $1.7\times10^{5}$ \\
+25 & $8.3\times10^{-9}$ & fails$^\dagger$ & $\mathbf{1.1\times10^{4}}$ & $2.2\times10^{5}$ & $1.9\times10^{5}$ \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \vspace{2pt}
 \footnotesize $^\dagger$Plain MC returns zero events in 70\% ($B{=}20$) / 100\% ($B{=}25$) of
-runs. Efficiencies are BCa bootstrap point estimates over ten seeds; the AMS advantage over
-importance sampling grows from $52\times$ ($B{=}15$: $482\times$) to ${\approx}4.8\times10^{4}$
-at $B{=}25$. At $B{=}25$ fixed-level splitting and AMS are statistically indistinguishable
-(overlapping intervals); both dominate importance sampling by orders of magnitude. Cross-entropy
-is omitted for space (consistently between IS and the splitting methods). Full intervals in
+runs. Efficiencies are BCa bootstrap point estimates over ten seeds; the importance-sampling
+advantage over AMS grows from ${\approx}1.9\times$ ($B{=}15$) to ${\approx}20\times$ at $B{=}25$,
+and over plain MC exceeds four orders of magnitude at $B{=}20$. This advantage is statistically
+significant (non-overlapping BCa intervals) at $B{=}20$ and $B{=}25$; at $B{\le}15$ the point
+estimate still favours importance sampling but the intervals overlap. At $B{=}25$ fixed-level splitting
+and AMS are statistically indistinguishable (overlapping BCa bootstrap intervals); both are the
+runners-up to importance sampling. Cross-entropy is omitted for space (consistently the least
+efficient of the variance-reduction methods at these budgets). Full intervals in
 \texttt{results/significance/pivot\_claims.json}.
 \end{table}
 
@@ -823,7 +869,7 @@ is omitted for space (consistently between IS and the splitting methods). Full i
 \subsection{Adaptive Time Stepping and Multi-GPU Halo Exchange}
 \label{subsec:adaptive_multigpu_combined}
 Standard MLMC uses a fixed step size $h_l = h_0/2^l$ at each level. We also implemented per-path
-adaptive stepping following Hoel et al.~\cite{hoel2016multilevel}, grouping paths by current
+adaptive stepping following Hoel et al.~\cite{hoel2014adaptive}, grouping paths by current
 effective step size into two buckets (full and half step) each dispatched as a single batched
 \texttt{torch.mm} whose matmul count is independent of the number of paths, so heterogeneous
 step sizes incur no SIMT thread divergence; the coarse path keeps its nominal $2h_l$ step to
@@ -835,6 +881,7 @@ fixed-step MLMC in all reported results and retain adaptive stepping only as a v
 code path (full ablation in the supplement).
 
 \subsection{Multi-GPU ANA-MLMC via Halo Exchange}
+\label{subsec:halo_exchange}
 
 The class \texttt{MultiGPUMLMC} in \texttt{parallel\_mc.py} distributes the coupled SDE
 across GPU ranks. Graph partitioning divides the graph into \texttt{world\_size} partitions with
@@ -847,16 +894,16 @@ striped fallback, with METIS as an optional dependency.
 Rank $r$ owns \texttt{local\_nodes\_r}. Each rank maintains \texttt{Q\_global} for all nodes, but
 updates only its local nodes; ghost nodes are boundary nodes owned by remote ranks.
 After each Euler--Maruyama step, ranks exchange boundary state via an
-\emph{asynchronous} collective (\texttt{async\_op=True}); interior-node EM updates for the
+\emph{asynchronous} collective (\texttt{async\_op=True}); interior-node Euler--Maruyama updates for the
 next step proceed concurrently while the all-reduce is in flight, overlapping computation
-and communication and hiding PCIe latency (Item~3A).
+and communication and hiding PCIe latency.
 To further reduce communication frequency, exchanges are performed every
 \texttt{halo\_exchange\_every} $= K$ Euler steps (default $K{=}1$); intermediate steps use
 stale ghost values. For Lipschitz dynamics with constant $L_{\mathrm{lip}}$, the
 ghost-value error grows as $\mathcal{O}(L_{\mathrm{lip}} K h_l)$ per step, so
-$K = \mathcal{O}(1/h_l)$ preserves convergence order (Item~3B).
+$K = \mathcal{O}(1/h_l)$ preserves convergence order.
 The exchange is activated only when \texttt{torch.distributed.is\_initialized()} and
-\texttt{world\_size > 1}. In single-process execution, halo exchange is a no-op, so the behavior
+\texttt{world\_size > 1}. In single-process execution, halo exchange is a no-op, so the behaviour
 is identical to \texttt{GPUCoupledPropagationMLMC}. The entry point is
 {\small\texttt{torchrun -{}-nproc\_per\_node=G parallel\_mc.py -{}-n-nodes N -{}-epsilon E}}.
 
@@ -909,7 +956,7 @@ increments while intra-rank CRN coupling is preserved.
 Runtime overhead comparisons use a paired $t$-test ($n{=}20$ seed pairs). Cross-method
 estimation accuracy is assessed within each method via the MLMC stopping criterion
 ($\mathrm{MSE}\leq\varepsilon^2$); direct cross-method CI/MSE comparisons are not used
-when the two methods estimate different weighted quantities (see Panel~B footnote).
+when the two methods estimate different weighted quantities (see the note to Table~\ref{tab:ana_mlmc}).
 Multi-run results are reported as mean $\pm$ SD. Single-run measurements are noted
 explicitly; multi-seed replication data are in
 \texttt{results/significance/}\linebreak\texttt{significance\_tests.json}.
@@ -919,14 +966,14 @@ operations on CUDA~12.1, with an automatic PyCUDA fallback. Source code is avail
 \url{https://github.com/pdwi2020/gpu-mlmc-congestion}.
 
 We evaluate our framework on both synthetic and real-world topologies. Synthetic experiments use
-Erd\H{o}s--Renyi networks with 100 nodes, connectivity $p=0.15$, base arrival rate
+Erd\H{o}s--R\'enyi networks with 100 nodes, connectivity $p=0.15$, base arrival rate
 $\lambda=1.0$, service rate $\mu=1.2$, and noise $\sigma=0.1$, satisfying the stability
 condition $\mu>\lambda$. Real-world validation uses CAIDA AS-rel2 topology data subgraphed to
 500 nodes \cite{hofstad2016}. Baseline GPU-MC reproduction is conducted on the same CAIDA
 subgraph setting to isolate algorithmic differences under controlled computational settings.
 
-Baseline single-level GPU-MC and GPU-MLMC comparisons were executed on an NVIDIA A100 80\,GB PCIe
-under identical discretization, random seed policy, and time horizon settings, with each method
+Baseline single-level GPU-MC and GPU-MLMC comparisons were executed on an NVIDIA A100 40\,GB PCIe
+under identical discretisation, random seed policy, and time horizon settings, with each method
 run to the same accuracy target (matched confidence-interval half-width). The resulting
 accuracy-matched work is reported in Table~\ref{tab:crossover} and discussed below.
 
@@ -942,7 +989,7 @@ wall-clock conflates the algorithm with the hardware it happens to run on. For p
 context, a CPU-MLMC estimate of the mean at $n{=}500$, $\varepsilon{=}0.02$ completes in
 ${\approx}0.15$\,s per estimate on a commodity 8-core CPU (post-warmup; the same code path timed
 on CPU and GPU, \texttt{results/baselines/device\_matched/}), confirming that at this size the
-mean estimand is inexpensive on either device---the GPU advantage is a large-$n$ and tight-$\varepsilon$
+mean estimand is inexpensive on either device; the GPU advantage is a large-$n$ and tight-$\varepsilon$
 phenomenon, not an $n{=}500$ one. The decisive comparison is therefore \emph{accuracy-matched}:
 how much work does each method need to reach $\mathrm{MSE}\leq\varepsilon^2$ for the same estimand? Table~\ref{tab:crossover} reports
 this for single-level GPU-MC and GPU-MLMC across accuracy targets at $n{=}500$ (A100, three
@@ -950,24 +997,25 @@ seeds). The mean queue occupancy is a low-variance, near-deterministic functiona
 networks ($\mathrm{Var}\,{\sim}\,10^{-7}$), so at practical targets a few thousand single-level
 samples already meet the confidence-interval half-width, and MLMC's per-level pilot overhead
 then makes it \emph{more} expensive. MLMC's asymptotic advantage (Theorem~\ref{thm:complexity})
-materialises only below a measured crossover near $\varepsilon\approx7\times10^{-4}$ (variance-calibrated; $2\times10^{-4}$ at the model's default $\sigma$), beyond
-which it reduces work---up to $2.2\times$ at $\varepsilon{=}10^{-4}$---and, at still tighter
-targets, remains GPU-memory-feasible where single-level MC exhausts device memory (the $10^6$
-overflow samples at $\varepsilon{\leq}5\times10^{-5}$ require ${\approx}38$\,GB). The headline
-mean-estimand ``work reduction'' is thus target-dependent, not a fixed factor; earlier drafts
-that compared MLMC against a single-level baseline run to a \emph{fixed} $10^6$-sample budget,
-rather than to the accuracy target, overstated it. For a near-deterministic mean the honest
+materialises only below a measured crossover near $\varepsilon\approx7\times10^{-4}$ (variance-calibrated; $1.5\times10^{-4}$ at the model's default $\sigma$), beyond
+which it reduces work, by up to $2.2\times$ at $\varepsilon{=}10^{-4}$. This advantage is one of
+computational work, not memory: direct measurement of the isolated per-estimator peak GPU memory
+shows single-level MC and MLMC with comparable, small footprints (both under $1.5$\,GB at
+$\varepsilon{=}5\times10^{-5}$, single-level MC no larger than MLMC; \texttt{results/mem\_crossover/}),
+so multilevel methods confer no memory-capacity advantage for this estimand. The headline
+mean-estimand ``work reduction'' is thus target-dependent, not a fixed factor; comparing MLMC against a single-level baseline run
+to a \emph{fixed} $10^6$-sample budget, rather than to the accuracy target, overstates it. For a near-deterministic mean the honest
 finding is that single-level GPU-MC is the method of choice at operational tolerances; MLMC's
-value here is confined to very tight tolerances and memory feasibility. The high-variance
-estimands---tail quantiles and rare-event probabilities---tell a different and more favourable
+value here is confined to a modest work reduction (up to $2.2\times$) at very tight tolerances. The high-variance
+estimands (tail quantiles and rare-event probabilities) tell a different and more favourable
 story for variance reduction (\S\ref{subsec:rare_event}).
 
 \textit{Variance-calibration procedure.}
 The two blocks of Table~\ref{tab:crossover} report the crossover at the model's nominal
 $\sigma_0{=}0.1$ and at the variance-calibrated $\sigma{=}0.433$; we obtain the latter by the
 following procedure, applying Eq.~\eqref{eq:sigma_calib} at the operating point. (i) We simulate
-the exact discrete-event (CTMC) reference---the continuous-time Markov jump process whose
-diffusion limit is the coupled SDE---at the $n{=}500$ operating point and measure its per-node
+the exact discrete-event (CTMC) reference, the continuous-time Markov jump process whose
+diffusion limit is the coupled SDE, at the $n{=}500$ operating point and measure its per-node
 steady-state variance $\mathrm{Var}_{\mathrm{DES}}$.
 (ii) We measure the SDE's per-node variance $\mathrm{Var}_{\mathrm{SDE}}$ at the nominal
 $\sigma_0{=}0.1$ under the identical grid and horizon. (iii) The SDE understates the exact
@@ -979,14 +1027,13 @@ and~\ref{tab:topology_matrix}); its utilisation dependence $\sigma(\rho)$ is cha
 the full load range in \S\ref{subsec:validity_envelope}. The mean estimand is unaffected by the
 calibration, so the left block of Table~\ref{tab:crossover} remains valid at $\sigma_0$.
 
-\begin{table}[!t]
+\begin{table*}[!t]
 \caption{Accuracy-matched work to reach $\mathrm{MSE}\leq\varepsilon^2$ for the mean queue
-occupancy, single-level GPU-MC vs.\ GPU-MLMC (A100 80\,GB PCIe, Barab\'{a}si--Albert $n{=}500$,
+occupancy, single-level GPU-MC vs.\ GPU-MLMC (A100 40\,GB PCIe, Barab\'{a}si--Albert $n{=}500$,
 three seeds). Both methods are floor-limited at loose targets because the estimand is nearly
 deterministic; MLMC overtakes single-level MC only below $\varepsilon\approx7\times10^{-4}$ once $\sigma$ is calibrated to the exact discrete-event variance.}
 \label{tab:crossover}
 \centering\small
-\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}l r r l r r l@{}}
 \toprule
 & \multicolumn{3}{c}{Default $\sigma{=}0.1$} & \multicolumn{3}{c}{Calibrated $\sigma{=}0.433$} \\
@@ -994,29 +1041,31 @@ deterministic; MLMC overtakes single-level MC only below $\varepsilon\approx7\ti
 $\varepsilon$ & $W_{\mathrm{MC}}$ & $W_{\mathrm{MLMC}}$ & ratio [95\% CI] & $W_{\mathrm{MC}}$ & $W_{\mathrm{MLMC}}$ & ratio \\
 \midrule
 $2\times10^{-3}$ & $8{,}000$   & $23{,}000$  & $0.35$ $[0.35,0.35]$ & $8{,}000$   & $23{,}363$  & $0.34$ \\
-$1\times10^{-3}$ & $8{,}000$   & $23{,}237$  & $0.34$ $[0.34,0.35]$ & $15{,}733$  & $25{,}933$  & $0.61$ \\
-$5\times10^{-4}$ & $13{,}440$  & $25{,}433$  & $0.53$ $[0.46,0.65]$ & $62{,}613$  & $39{,}407$  & $\mathbf{1.59}$ \\
-$2\times10^{-4}$ & $83{,}467$  & $46{,}530$  & $\mathbf{1.79}$ $[1.50,2.35]$ & $390{,}773$ & $179{,}373$ & $\mathbf{2.18}$ \\
-$1\times10^{-4}$ & $333{,}547$ & $153{,}113$ & $\mathbf{2.18}$ $[1.63,3.03]$ & --- & --- & --- \\
+$1\times10^{-3}$ & $8{,}000$   & $23{,}000$  & $0.35$ $[0.35,0.35]$ & $15{,}733$  & $25{,}933$  & $0.61$ \\
+$5\times10^{-4}$ & $8{,}000$   & $23{,}237$  & $0.34$ $[0.34,0.35]$ & $62{,}613$  & $39{,}407$  & $\mathbf{1.59}$ \\
+$2\times10^{-4}$ & $20{,}907$  & $27{,}073$  & $0.77$ $[0.67,0.95]$ & $390{,}773$ & $179{,}373$ & $\mathbf{2.18}$ \\
+$1\times10^{-4}$ & $83{,}467$  & $46{,}530$  & $\mathbf{1.79}$ $[1.41,2.35]$ & $1{,}562{,}987$ & $716{,}987$ & $\mathbf{2.18}$ \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \vspace{2pt}
-\footnotesize A ratio $>1$ means MLMC is cheaper. Intervals are BCa bootstrap confidence
+\parbox{\textwidth}{\footnotesize A ratio $>1$ means MLMC is cheaper. Intervals are BCa bootstrap confidence
 intervals on the \emph{ratio} across paired seeds; where the interval excludes~1 the crossover is
 statistically significant rather than sampling noise. \textbf{Calibration.} An exact
 discrete-event (CTMC) reference shows the default $\sigma{=}0.1$ understates the true
 per-node variance by ${\approx}19\times$ at $n{=}500$; the right-hand block repeats the
 measurement at the variance-matched $\sigma{=}0.433$. The crossover moves from
-$\varepsilon\approx2\times10^{-4}$ to $\varepsilon\approx7\times10^{-4}$---a ${\approx}3.5\times$
-looser target---so the multilevel advantage begins earlier than the default parameterisation
-suggests, while the qualitative conclusion is unchanged. Raw data in
-\texttt{results/pod\_run/crossover\_pod/} and \texttt{results/pod\_run\_calibrated/}.
-\end{table}
+$\varepsilon\approx1.5\times10^{-4}$ at the default noise level to $\varepsilon\approx7\times10^{-4}$
+under calibration (a ${\approx}5\times$ looser target), so the multilevel advantage begins earlier
+than the default parameterisation suggests, while the qualitative conclusion is unchanged. Raw data:
+default block \texttt{results/sigma01\_rerun/}; calibrated block
+\texttt{results/pod\_run\_calibrated/} and \texttt{results/crossover\_calibrated\_refix/} (the
+$\varepsilon{=}10^{-4}$ calibrated point).}
+\end{table*}
 
 \subsection{Empirical Validation}
 
-The framework's value is in its uncertainty-aware outputs---confidence intervals and tail-delay
-estimates (P95, P99)---delivered at GPU throughput on real topologies, not in a blanket
+The framework's value is in its uncertainty-aware outputs (confidence intervals and tail-delay
+estimates at P95 and P99) delivered at GPU throughput on real topologies, not in a blanket
 work-reduction factor for the mean (Table~\ref{tab:crossover}).
 
 \begin{table}[!t]
@@ -1025,12 +1074,12 @@ work-reduction factor for the mean (Table~\ref{tab:crossover}).
 \textbf{Note: ANA-MLMC and the uniform-weight baseline estimate \emph{different weighted
 quantities}.} ANA estimates $\sum_i w_i\mathbb{E}[Q_i]$ with centrality/SLA weights; the
 baseline uses $w_i{=}1/n$. The ``Cost ratio'' and ``Runtime ratio'' columns compare sample
-budgets and wall-clock times for these two distinct objectives — they are \emph{not}
+budgets and wall-clock times for these two distinct objectives, so they are \emph{not}
 a head-to-head accuracy comparison. ANA-MLMC is a prioritisation technique, not a
 cost-reduction technique.}
 \label{tab:ana_mlmc}
-\centering\small
-\resizebox{\columnwidth}{!}{%
+\centering\footnotesize
+\setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{@{}l r r r r@{}}
 \toprule
 $\varepsilon$ & Baseline samples & ANA samples & Sample ratio & Runtime ratio \\
@@ -1040,7 +1089,7 @@ $\varepsilon$ & Baseline samples & ANA samples & Sample ratio & Runtime ratio \\
 0.010 & 77{,}500 & $81{,}490\pm65$    & $1.05\times$ & $1.08\times$ \\
 0.005 & 77{,}500 & $100{,}870\pm280$  & $1.30\times$ & $1.05\times$ \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \vspace{2pt}
 \footnotesize Budget increases at tight $\varepsilon$ reflect concentration on
 high-centrality/high-variance nodes. A paired $t$-test on 20 per-seed runtime pairs
@@ -1048,15 +1097,15 @@ confirms ANA adds negligible overhead: $t{=}0.55$, $p{=}0.59$.
 \end{table}
 
 The accuracy-matched comparison (Table~\ref{tab:crossover}) shows that for the mean queue
-occupancy the two methods are floor-limited at loose targets---where single-level GPU-MC is
-cheaper---and that MLMC becomes the more efficient estimator only below
+occupancy the two methods are floor-limited at loose targets, where single-level GPU-MC is
+cheaper, and that MLMC becomes the more efficient estimator only below
 $\varepsilon\approx7\times10^{-4}$ under variance calibration (up to $2.2\times$ at $\varepsilon{=}2\times10^{-4}$). This resolves
-the tension flagged in review between a large nominal ``work reduction'' and a small wall-clock
+the apparent tension between a large nominal ``work reduction'' and a small wall-clock
 gain: the former arose from comparing against a single-level baseline run to a \emph{fixed}
 sample budget rather than to the accuracy target. Under the accuracy-matched metric there is no
 order-of-magnitude reduction for the mean; the genuine variance-reduction gains appear for the
-high-variance estimands of \S\ref{subsec:rare_event}, where the appropriate method is adaptive
-multilevel splitting rather than MLMC of the mean.
+high-variance estimands of \S\ref{subsec:rare_event}, where the appropriate methods are
+change-of-measure importance sampling and splitting rather than MLMC of the mean.
 
 \subsection{Classical Variance Reduction as a Baseline}
 \label{subsec:varred}
@@ -1067,7 +1116,7 @@ plain MC, antithetic variates, control variates against the unreflected linear r
 mean is available in closed form, so the estimator stays unbiased), and randomised
 quasi-Monte Carlo using Owen-scrambled Sobol points under a Brownian-bridge time ordering.
 Sharing one grid removes discretisation bias from the comparison, isolating variance-reduction
-efficiency. Each arm is charged for what it costs---an antithetic pair and the control-variate
+efficiency. Each arm is charged for what it costs: an antithetic pair and the control-variate
 companion are two path integrations each. Table~\ref{tab:varred} reports the result.
 
 The finding at the model's default $\sigma{=}0.1$ is decisive and, we believe, explains the
@@ -1075,10 +1124,10 @@ inflated speedups reported in the literature for this class of estimand. A singl
 pair attains a relative RMSE of $3.2\times10^{-7}$, and the \emph{deterministic} fluid limit
 $0.749727$ agrees with the $20{,}000$-pair Monte Carlo reference $0.749729$ to
 $2.7\times10^{-6}$ relative; the reflection binds on only $0.14\%$ of updates. At this
-parameterisation the mean queue occupancy is therefore not a Monte Carlo problem at all---it is
+parameterisation the mean queue occupancy is therefore not a Monte Carlo problem at all; it is
 available in closed form, and \emph{every} method comparison conducted there is measuring
 sampling noise in a quantity that is deterministic to six significant figures. This is the
-mechanism behind the discarded fixed-budget ``work reduction'' factor, and it is an independent
+mechanism behind inflated fixed-budget ``work reduction'' factors, and it is an independent
 argument for the variance calibration of Table~\ref{tab:crossover}.
 
 Once $\sigma$ is calibrated the estimand becomes genuinely stochastic (the reflection binds on
@@ -1089,8 +1138,8 @@ overshoots and the comparison is floor-limited rather than favourable.
 
 Randomised QMC behaves differently, and the difference is practical rather than asymptotic. Its
 smallest useful point set here is $N{=}128$, which costs $5.1\times10^{4}$ timestep-path
-evaluations---already more than plain MC needs for any target looser than
-$\varepsilon\approx10^{-3}$---so at operational tolerances QMC offers no benefit at all despite a
+evaluations, already more than plain MC needs for any target looser than
+$\varepsilon\approx10^{-3}$, so at operational tolerances QMC offers no benefit at all despite a
 better convergence rate, simply because one cannot buy a fraction of a point set. Its advantage
 appears only under tight targets, reaching $35.8\times$ at $\varepsilon{=}5\times10^{-4}$, where
 it overtakes antithetic sampling. The fitted rate is $-1.17$ with a bootstrap $95\%$ interval
@@ -1108,13 +1157,13 @@ pseudo-random; the realised quasi-random fraction is recorded with the data.
 The practical consequence is stated plainly: for mean-type functionals of this model, antithetic
 variates dominate the multilevel estimator, whose accuracy-matched advantage peaks near
 $2.2\times$ (Table~\ref{tab:crossover}). These techniques are complementary rather than
-competing---antithetic sampling reduces the variance constant while MLMC alters the cost of
-discretisation, and only MLMC remains memory-feasible at the tightest targets---but a
+competing (antithetic sampling reduces the variance constant while MLMC alters the cost of
+discretisation), but a
 practitioner estimating a mean should reach for antithetic sampling first. The multilevel and
 splitting machinery earns its place on the high-variance tail estimands of
 \S\ref{subsec:rare_event}, where antithetic cancellation does not apply.
 
-\begin{table}[tb]
+\begin{table*}[!t]
 \caption{Classical variance reduction on the coupled congestion SDE (Erd\H{o}s--R\'enyi
 $n{=}200$, $T{=}20$, shared time grid, CPU). Work is accuracy-matched under
 $\mathrm{Var}(N)=cN^{r}$; $r{=}-1$ exactly for the i.i.d.\ arms, whose per-sample variance is
@@ -1122,7 +1171,6 @@ measured directly from a $20{,}000$-sample batch, and fitted only for QMC, where
 quantity in question.}
 \label{tab:varred}
 \centering\small
-\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}l r r r r@{}}
 \toprule
 Method & rate $r$ & rel.\ RMSE (1 unit) & $\varepsilon{=}5\times10^{-3}$ & $\varepsilon{=}5\times10^{-4}$ \\
@@ -1139,17 +1187,17 @@ Antithetic        & $-1$ (exact) & $5.04\times10^{-3}$ & $\mathbf{30.3\times}$ &
 Control variates  & $-1$ (exact) & $6.86\times10^{-3}$ & $16.4\times$ & $16.4\times$ \\
 Randomised QMC    & $-1.17$ $[-1.36,-0.98]$ & --- & floor & $\mathbf{35.8\times}$ \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \vspace{2pt}
-\footnotesize ``Floor'' means the smallest purchasable sample unit already overshoots that
-target, so no ratio is meaningful---one antithetic pair, or one $N{=}128$ Sobol point set. The
+\parbox{\textwidth}{\footnotesize ``Floor'' means the smallest purchasable sample unit already overshoots that
+target, so no ratio is meaningful: one antithetic pair, or one $N{=}128$ Sobol point set. The
 floor matters: extrapolating $\mathrm{Var}=cN^{r}$ below it reports a $5\times10^{8}\times$
 speedup for antithetic sampling at $\sigma{=}0.1$, and a QMC advantage at loose targets that
 cannot be realised because a whole point set must be bought. QMC's rate is fitted over
 $N\in[128,2048]$ and is not extrapolated below that range, which is why no single-unit RMSE is
 quoted for it; its intervals are percentile bootstrap intervals over Sobol randomisations. Raw
-data in \texttt{results/baselines/qmc/}.
-\end{table}
+data in \texttt{results/baselines/qmc/}.}
+\end{table*}
 
 \subsection{Generality Across Topologies and Traffic}
 \label{subsec:topology_matrix}
@@ -1157,8 +1205,8 @@ data in \texttt{results/baselines/qmc/}.
 The conclusions above are drawn from particular networks, so we tested whether they survive a
 change of topology and of offered-load pattern. Four topologies (Erd\H{o}s--R\'enyi,
 Barab\'{a}si--Albert, Watts--Strogatz and random-regular, $n{=}200$) were crossed with four
-spatial traffic patterns---homogeneous, two-state bursty (MMPP-2), heavy-tailed Pareto, and
-degree-proportional hot-spot---each normalised to the same mean offered load, over three seeds:
+spatial traffic patterns (homogeneous, two-state bursty MMPP-2, heavy-tailed Pareto, and
+degree-proportional hot-spot), each normalised to the same mean offered load, over three seeds:
 48 measured cells. Each cell reports the per-path variance, the antithetic and control-variate
 gains, the MLMC level variances $V_\ell$ and their decay exponent, and the accuracy-matched
 crossover. The results appear in Table~\ref{tab:topology_matrix}.
@@ -1169,7 +1217,7 @@ $1.19\times$ across all 48 cells ($3.67$--$4.36\times10^{-3}$). Second, \emph{th
 pattern does matter, and in a consistent direction}: heterogeneous per-node load roughly halves
 the antithetic gain, from ${\approx}31\times$ under homogeneous or degree-proportional load to
 ${\approx}16$--$17\times$ under bursty or heavy-tailed load. The mechanism is visible in the
-reflection statistics---heterogeneous load puts more nodes near the reflecting boundary, and the
+reflection statistics: heterogeneous load puts more nodes near the reflecting boundary, and the
 boundary is precisely the nonlinearity that antithetic cancellation cannot remove. Practitioners
 should therefore expect the variance-reduction gains reported in
 \S\ref{subsec:varred} to be halved under bursty traffic, though still an order of magnitude
@@ -1180,11 +1228,11 @@ $\min_\ell V_\ell$ is strictly positive everywhere ($\geq8.4\times10^{-7}$), so 
 positive-variance hypothesis of Lemma~\ref{lem:lipschitz_allocation} holds throughout the
 matrix rather than only at the configuration where it was originally checked. We note the scope
 limit: these are \emph{spatial} load distributions at fixed rate, so time-varying arrival
-processes---diurnal or on--off traffic---are not covered by this sweep.
+processes (diurnal or on--off traffic) are not covered by this sweep.
 
 \textit{Behaviour under heterogeneous and near-saturated load.}
 We repeated the entire matrix with per-node utilisation $\rho_i=\lambda_i/\beta_i$ spread across
-$[0.30, 0.99]$---lightly loaded and near-saturated nodes coexisting in one network---for a
+$[0.30, 0.99]$, with lightly loaded and near-saturated nodes coexisting in one network, for a
 further 48 measured cells. The estimator does not destabilise. Per-path variance rises by $44\%$
 ($9.26\times10^{-4}\to1.33\times10^{-3}$), which is expected, but the multilevel structure
 \emph{improves} rather than degrades: the level-variance exponent rises from $1.24$ to $1.43$,
@@ -1192,8 +1240,8 @@ the crossover shifts by only $7\%$, and MLMC's advantage at $\varepsilon{=}10^{-
 $4.07\times$ to $4.40\times$. Critically, $\min_\ell V_\ell$ remains strictly positive in all 48
 stress cells ($\geq8.7\times10^{-7}$): the positive-variance hypothesis on which
 Lemma~\ref{lem:lipschitz_allocation} and hence Theorem~\ref{thm:complexity} rest is not
-threatened by heterogeneous or near-saturated load, which was the specific failure mode raised in
-review. Data in \texttt{results/topology\_matrix\_stress/}.
+threatened by heterogeneous or near-saturated load, the regime in which it would be expected to
+fail first. Data in \texttt{results/topology\_matrix\_stress/}.
 
 \begin{table}[tb]
 \caption{Topology $\times$ traffic matrix ($n{=}200$, calibrated $\sigma{=}0.433$, three seeds
@@ -1201,8 +1249,8 @@ per cell, 48 cells). Ratios $>1$ favour the named method. MLMC is reported at
 $\varepsilon{=}10^{-3}$, below the measured crossover; at looser targets both arms sit on the
 pilot floor and the ratio measures only the ratio of pilot costs.}
 \label{tab:topology_matrix}
-\centering\small
-\resizebox{\columnwidth}{!}{%
+\centering\footnotesize
+\setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{@{}l r r r r r@{}}
 \toprule
 Traffic & Antithetic & CV & MLMC & $\beta_{\mathrm{var}}$ & crossover $\varepsilon$ \\
@@ -1212,7 +1260,7 @@ Degree hot-spot   & $31.4\times$ & $16.1\times$ & $4.25\times$ & $+1.29$ & $4.2\
 Bursty (MMPP-2)   & $16.3\times$ & $8.0\times$  & $3.87\times$ & $+1.19$ & $4.0\times10^{-3}$ \\
 Heavy-tailed      & $17.5\times$ & $8.5\times$  & $3.90\times$ & $+1.20$ & $4.0\times10^{-3}$ \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \vspace{2pt}
 \footnotesize Values are means over the four topologies and three seeds; the four graph families
 agree to within a few percent within each row, which is why topology is not broken out
@@ -1225,7 +1273,7 @@ Tail-delay quantification accuracy is shown in Fig.~\ref{fig:tail_delay}.
 \begin{figure}[tb]
 \centering
 \includegraphics[width=0.95\columnwidth]{tail_delay_validation_a100.png}
-\caption{Tail-delay validation on a synthetic Erd\H{o}s--Renyi network ($n=500$,
+\caption{Tail-delay validation on a synthetic Erd\H{o}s--R\'enyi network ($n=500$,
 $\varepsilon=0.02$). GPU-MLMC estimates P95 and P99 queue occupancy with $<0.2\%$ relative error
 versus a tight GPU-MC reference ($\varepsilon=0.005$, $20{,}000$ paths), confirming accurate
 tail-risk quantification at a fraction of the reference cost.}
@@ -1341,15 +1389,15 @@ A100 80\,GB PCIe   & cuda & 14.045 & 196.1 & 14.0  \\
 The coupled SDE is a heavy-traffic diffusion limit and should not be presented as uniformly
 valid, so we measured where it holds. The reference is a calendar-queue discrete-event
 simulation of the continuous-time Markov jump process whose diffusion limit \emph{is} the
-coupled SDE---the exact model the approximation approximates, rather than a second,
+coupled SDE: the exact model the approximation approximates, rather than a second,
 independently calibrated simulator whose disagreements would confound approximation error with
 configuration mismatch. Sweeping per-node utilisation $\rho=\lambda/\beta$ over
 $[0.30,0.95]$ at $n{=}200$ with three seeds gives Table~\ref{tab:validity_envelope}.
 
-The outcome separates two questions that the original validation had run together. The
+The outcome separates two questions that are easily run together. The
 approximation's \emph{mean} is uniformly accurate: the error sits between $3.1\%$ and $3.3\%$
-across the entire range, with no degradation at light load. The concern raised in review about
-light-load error does not reproduce against an exact reference, and we think the ns-3 P95 error
+across the entire range, with no degradation at light load. Light-load error in the mean does not
+appear against an exact reference, and we think the ns-3 P95 error
 at $\rho{=}0.5$ reported in \S\ref{subsec:ns3_validation} is better read as a statement about
 the tail than about the mean.
 
@@ -1366,8 +1414,8 @@ Tables~\ref{tab:crossover}, \ref{tab:varred} and~\ref{tab:topology_matrix}.
 
 The practical statement is therefore sharper than a single recommended band. For \emph{mean}
 occupancy the model is usable across $\rho\in[0.30,0.95]$ at a constant $\sigma$. For
-\emph{variance, tail quantiles or overflow probabilities}---the estimands this paper's
-rare-event machinery targets---a constant $\sigma$ is not valid anywhere in that range, and
+\emph{variance, tail quantiles or overflow probabilities}, the estimands this paper's
+rare-event machinery targets, a constant $\sigma$ is not valid anywhere in that range, and
 $\sigma$ must be calibrated to the operating utilisation. Reporting tail risk from an
 uncalibrated constant-$\sigma$ model understates it by roughly an order of magnitude in variance.
 
@@ -1376,7 +1424,7 @@ uncalibrated constant-$\sigma$ model understates it by roughly an order of magni
 $\sigma_0{=}0.1$). The mean is uniformly accurate; the variance deficit worsens with load and
 sets the required calibration.}
 \label{tab:validity_envelope}
-\centering\small
+\centering
 \begin{tabular}{@{}r r r r@{}}
 \toprule
 $\rho$ & mean error (\%) & $\mathrm{Var}_{\mathrm{SDE}}/\mathrm{Var}_{\mathrm{DES}}$ & required $\sigma(\rho)$ \\
@@ -1392,9 +1440,9 @@ $\rho$ & mean error (\%) & $\mathrm{Var}_{\mathrm{SDE}}/\mathrm{Var}_{\mathrm{DE
 \bottomrule
 \end{tabular}
 \vspace{2pt}
-\footnotesize The bold entry is the value used throughout this paper, obtained independently
+\parbox{\columnwidth}{\footnotesize The bold entry is the value used throughout this paper, obtained independently
 from the $n{=}500$ variance comparison; its agreement here is a consistency check, not a fit.
-Data in \texttt{results/validity\_envelope/}.
+Data in \texttt{results/validity\_envelope/}.}
 \end{table}
 
 \subsection{ns-3 Bottleneck Validation}
@@ -1412,10 +1460,10 @@ For $\rho>0.9$, the diffusion approximation systematically underestimates tail p
 because the queue length visits near-integer values where the Gaussian increment is a poor
 model for Poisson arrivals.  We address this with the \texttt{hybrid\_step()} method
 (Section~\ref{subsec:spatial}, \texttt{QueueDynamicsSDE.hybrid\_step()}): when
-$Q_i(t) \geq \theta_{\mathrm{sat}}$ (default $\theta_{\mathrm{sat}}=10$), the EM step is
+$Q_i(t) \geq \theta_{\mathrm{sat}}$ (default $\theta_{\mathrm{sat}}=10$), the Euler--Maruyama step is
 replaced by a G/D/1 DES update (Poisson arrivals, Bernoulli service) that correctly handles
 the discrete-state near-saturation regime.  For $Q_i < \theta_{\mathrm{sat}}$, the standard
-TV-$\sigma$ EM step is used.  Coupling is preserved by sharing the Poisson draw between fine
+TV-$\sigma$ Euler--Maruyama step is used.  Coupling is preserved by sharing the Poisson draw between fine
 and coarse paths. We do not make an accuracy claim for the hybrid scheme: the validity-envelope
 experiment (\S\ref{subsec:validity_envelope}) identifies the underlying defect as a systematic
 variance deficit that is corrected by calibrating $\sigma$ to the operating utilisation
@@ -1426,8 +1474,7 @@ is preferred on modelling grounds.
 \begin{table}[!t]
 \caption{TV-$\sigma$ SDE vs.\ ns-3 M/D/1 Bottleneck Simulator.}
 \label{tab:ns3_bottleneck}
-\centering\scriptsize
-\resizebox{\columnwidth}{!}{%
+\centering\footnotesize
 \begin{tabular}{@{}c c c c c c c@{}}
 \toprule
 $\rho$ & DES P95 & SDE P95 & P95 err & DES P99 & SDE P99 & P99 err \\
@@ -1437,7 +1484,7 @@ $\rho$ & DES P95 & SDE P95 & P95 err & DES P99 & SDE P99 & P99 err \\
 0.8 & 6.5 & 5.99 & 7.8\% & 8.5 & 9.41 & 10.7\% \\
 0.9 & 12.9 & 12.46 & 3.4\% & 14.7 & 18.97 & 29.1\% \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \end{table}
 
 \begin{figure}[!t]
@@ -1452,7 +1499,7 @@ reference. P95 error is below 8\%, validating the heavy-traffic operating point.
 \section{Discussion}
 \label{sec:discussion}
 
-Table~\ref{tab:capability} summarizes practical capabilities across deterministic,
+Table~\ref{tab:capability} summarises practical capabilities across deterministic,
 Monte Carlo, and MLMC-based simulation frameworks. The proposed MLMC + GPU approach is the only
 configuration that simultaneously supports efficient tail-risk estimation and uncertainty
 quantification on real-world topology subgraphs.
@@ -1507,11 +1554,9 @@ multi-GPU benefit on PCIe hardware is \emph{memory capacity}: with $G$ GPUs each
 $n/G$ adjacency matrix columns, graphs too large for a single device are handled transparently.
 A 5,000-node distributed run on the same 4$\times$RTX\,3090 pod (1,250 nodes/GPU) completed
 in 3.82\,s post-warmup without out-of-memory errors, confirming the memory-capacity benefit
-at production-scale graph sizes. We previously projected a maximum supportable graph size per
-GPU count from an analytical memory model; that table has been removed, since it was a
-modelled rather than measured quantity. \textbf{The headline memory result is measured, not
+at production-scale graph sizes. \textbf{The headline memory result is measured, not
 modelled: the largest single-GPU configuration we ran is $n{=}50{,}000$ at 30.9\,GB peak on a
-single 80\,GB A100} (Table~\ref{tab:large_scale})---this is the memory ceiling we report, and we
+single 80\,GB A100} (Table~\ref{tab:large_scale}). This is the memory ceiling we report, and we
 quote no projected figure beyond it.
 
 \textit{Single-GPU kernel bottleneck.}
@@ -1520,7 +1565,7 @@ device-side kernel time) locates the single-GPU bottleneck and confirms it is no
 multilevel machinery might have placed it. At $n{=}500$, kernel launch/dispatch dominates
 ($65\%$ of traced device time) and the degree-normalised drift matrix multiply accounts for
 $28\%$; by $n{=}5{,}000$ the matmul becomes the primary cost at $49\%$ as the launch overhead is
-amortised over larger kernels---the same workload-saturation trend the roofline analysis
+amortised over larger kernels, the same workload-saturation trend the roofline analysis
 predicts. Critically, the Skorokhod reflection and the MLMC level-difference bookkeeping are
 \emph{negligible} throughout ($<1.5\%$ and $<0.8\%$ respectively, falling below $0.2\%$ at
 $n{=}5{,}000$), so neither the reflected-boundary treatment nor the multilevel telescoping is a
@@ -1549,7 +1594,7 @@ the halo overhead to 23.5\% with only 2.9\% estimator bias, making it the recomm
 operating point.  $K{=}4$ extends runtime reduction to 38\% but introduces 7.9\% bias;
 $K{=}8$ reaches 46\% reduction at the cost of 15.3\% bias, which is unsuitable for
 tight accuracy targets.  The bias grows monotonically, consistent with the bounded staleness
-error $\mathcal{O}(L_{\mathrm{lip}}\,K\,h_l)$ derived in Section~\ref{subsec:multigpu_scaling}.
+error $\mathcal{O}(L_{\mathrm{lip}}\,K\,h_l)$ derived in Section~\ref{subsec:halo_exchange}.
 
 \subsubsection{Scalability Model on the Measured Range}
 \label{subsec:scaling_model}
@@ -1573,10 +1618,9 @@ at $n{=}1000$ the all-reduce term already exceeds the compute term by $G{=}4$, w
 claim memory scalability rather than strong-scaling speedup.
 
 \emph{On extrapolation beyond the measured range.}
-An earlier version of this section projected~\eqref{eq:scaling_model} to 8 and 16 GPUs and
-compared PCIe against an NVLink interconnect analytically. We have removed those projections
-rather than defend them. We had no 8-GPU or NVLink hardware, the extrapolation was unverifiable
-at exactly the point where the communication term dominates, and multi-GPU execution is in any
+We do not project~\eqref{eq:scaling_model} to 8 or 16 GPUs, nor compare PCIe against an NVLink
+interconnect analytically: we had no 8-GPU or NVLink hardware, such an extrapolation would be
+unverifiable at exactly the point where the communication term dominates, and multi-GPU execution is in any
 case peripheral to this paper's thesis, which concerns estimator choice. Every performance
 number in this paper is therefore measured on hardware we ran; where we could not measure, we
 report nothing.
@@ -1604,7 +1648,7 @@ GPUs & $n$ & Time (s) & Efficiency & Mem/GPU (MB) & Estimate \\
 
 \textit{Communication overlap effectiveness.}
 The all-reduce is implemented as an asynchronous NCCL collective
-(\texttt{async\_op=True}), allowing interior-node EM updates for the next step to proceed
+(\texttt{async\_op=True}), allowing interior-node Euler--Maruyama updates for the next step to proceed
 concurrently with the in-flight reduce.  To quantify how effectively this overlap
 \emph{hides} latency, we ran a blocking vs.\ overlapped benchmark at $G{=}2$ (RTX\,A5000
 PCIe) and $G{=}4$ (RTX\,3090 PCIe), both at $n{=}2{,}000$, $\varepsilon{=}0.05$, 5 reps
@@ -1621,12 +1665,12 @@ single-step lookahead.
 \centering
 \includegraphics[width=0.95\columnwidth]{multi_gpu_scaling.png}
 \caption{Multi-GPU scaling on 4$\times$RTX\,3090 (PCIe, post-NCCL-warmup).
-\emph{Left:} weak-scaling efficiency stays near-ideal through two GPUs (99\%) and drops to
-43\% at four GPUs as PCIe all-reduce latency grows. \emph{Centre:} under strong scaling at
+\emph{Top:} weak-scaling efficiency stays near-ideal through two GPUs (99\%) and drops to
+43\% at four GPUs as PCIe all-reduce latency grows. \emph{Middle:} under strong scaling at
 $n{=}1{,}000$, the measured NCCL speedup falls \emph{below} the ideal-linear line
-(0.82$\times$ at $G{=}2$, 0.65$\times$ at $G{=}4$)---the problem is communication-bound at this
+(0.82$\times$ at $G{=}2$, 0.65$\times$ at $G{=}4$); the problem is communication-bound at this
 size, so wall time \emph{increases} with GPU count (cf.\ Table~\ref{tab:multigpu_scaling});
-a net wall-clock speedup requires $n{\gtrsim}5{,}000$. \emph{Right:} all world sizes yield
+a net wall-clock speedup requires $n{\gtrsim}5{,}000$. \emph{Bottom:} all world sizes yield
 statistically indistinguishable estimates ($\mathrm{CV}{<}0.3\%$), confirming distributed
 correctness.}
 \label{fig:multigpu_scaling}
@@ -1638,12 +1682,12 @@ correctness.}
 Table~\ref{tab:large_scale} reports MLMC runtime on a single A100 80\,GB PCIe across
 the full targeted $(n,\varepsilon)$ matrix.  Two claims are validated.
 
-\emph{Claim 1 --- efficiency recovers at large $n$ (fixed $\varepsilon{=}0.05$):}
+\emph{Claim 1: efficiency recovers at large $n$ (fixed $\varepsilon{=}0.05$):}
 Runtime grows sub-quadratically from 0.035\,s ($n{=}1{,}000$) to 5.79\,s ($n{=}50{,}000$),
 confirming GPU workload saturation as $n$ grows. The $n{=}50{,}000$ run uses 30.9\,GB peak
 memory, well within the 80\,GB A100 budget.
 
-\emph{Claim 2 --- $\mathcal{O}(\varepsilon^{-2})$ complexity slope (fixed $n{=}1{,}000$):}
+\emph{Claim 2: $\mathcal{O}(\varepsilon^{-2})$ complexity slope (fixed $n{=}1{,}000$):}
 Runtime scales as 0.035\,s, 0.129\,s, 0.547\,s, 3.58\,s for
 $\varepsilon\in\{0.05,0.01,0.005,0.002\}$, giving log-log slopes of ${\approx}1.94$,
 consistent with Theorem~\ref{thm:complexity} case~(i).
@@ -1690,12 +1734,12 @@ tested GPUs (T4 to A100; geometric mean ${\approx}37\times$) on the hardware-div
 (A100 14.05, T4 2.07 Mpath/s vs.\ M2 Air 0.18 Mpath/s). ns-3 validation places the TV-$\sigma$ SDE in the appropriate operating
 regime: at $\rho=0.7$ and $\rho=0.8$, P99 error stays below 15\%, and at $\rho=0.8$ both P95 and
 P99 errors are below 11\%; the $\rho=0.9$ P99 error reflects near-saturation heavy-tail effects.
-The measured validity envelope (\S\ref{subsec:validity_envelope}) refines this recommendation
+The measured validity envelope (\S\ref{subsec:validity_envelope}) refines this picture
 and partly overturns it: against an exact jump-process reference the \emph{mean} is accurate to
-${\approx}3\%$ all the way down to $\rho{=}0.30$, so the earlier blanket advice to prefer
-discrete-event simulation below $\rho{=}0.7$ was too conservative for mean estimation. The real
-restriction is on second-order quantities---at a constant $\sigma$ the model understates variance
-everywhere in the range, by $8\times$ at $\rho{=}0.3$ and $29\times$ at $\rho{=}0.95$---so tail
+${\approx}3\%$ all the way down to $\rho{=}0.30$, so blanket advice to prefer
+discrete-event simulation below $\rho{=}0.7$ would be too conservative for mean estimation. The real
+restriction is on second-order quantities. At a constant $\sigma$ the model understates variance
+everywhere in the range, by $8\times$ at $\rho{=}0.3$ and $29\times$ at $\rho{=}0.95$, so tail
 and overflow estimates require $\sigma$ calibrated to the operating utilisation. The formal proof in Theorem~\ref{thm:complexity} establishes that ANA-MLMC inherits the
 $\mathcal{O}(\varepsilon^{-2})$ regime when the weighted variance decay exceeds cost growth.
 
@@ -1724,17 +1768,17 @@ accuracy-matched comparison of the estimators that apply to it.
 \textbf{The framework.} A SIMT-efficient coupled-SDE simulator produces confidence intervals,
 tail-delay quantiles, and rare-event overflow probabilities at GPU throughput, validated against
 ns-3 (P95 error below 8\% for $\rho\geq0.8$) and a real MAWI backbone trace. Multi-GPU execution
-is memory-scalable---enabling networks larger than a single device's memory with statistically
-indistinguishable estimates across world sizes---rather than strong-scaling: on PCIe hardware
+is memory-scalable (enabling networks larger than a single device's memory with statistically
+indistinguishable estimates across world sizes) rather than strong-scaling: on PCIe hardware
 weak-scaling efficiency is near-ideal through two GPUs and communication-bound by four.
 
 \textbf{The measured comparison.} Whether variance reduction pays off is estimand-dependent, and
 we report it honestly. For the near-deterministic mean queue occupancy, single-level Monte Carlo
 is the method of choice at operational tolerances; MLMC reduces work only below a measured
-crossover ($\varepsilon\approx7\times10^{-4}$ at $n{=}500$; Table~\ref{tab:crossover}), where it
-also remains GPU-memory-feasible as single-level MC does not. For rare-event overflow
-probabilities, adaptive multilevel splitting is the most efficient of five methods evaluated
-against exact references---by three orders of magnitude---and accurate to $10^{-9}$ where direct
+crossover ($\varepsilon\approx7\times10^{-4}$ at $n{=}500$; Table~\ref{tab:crossover}). For rare-event overflow
+probabilities, unbiased importance sampling with the Freidlin--Wentzell-optimal tilt is the most
+efficient and accurate of five methods evaluated against exact references (an order of magnitude
+cheaper than adaptive multilevel splitting in the deep tail) and accurate to $10^{-9}$ where direct
 MC returns zero events (Table~\ref{tab:rare_event}). Network-aware allocation (ANA-MLMC) is a
 node-prioritisation tool, not a variance reducer: at equal work budget it does not improve on
 standard Giles allocation. The complexity analysis (Lemma~\ref{lem:weighted_variance},
@@ -1742,19 +1786,28 @@ Lemma~\ref{lem:lipschitz_allocation}, Theorem~\ref{thm:complexity}) characterise
 tight-$\varepsilon$ regime where the multilevel advantage is realised.
 
 Future work includes extending the comparison to non-Gaussian noise models and Jackson-network
-flow-balance coupling, and a GPU-native adaptive-multilevel-splitting implementation for the
-coupled network, given that AMS is the efficient rare-event estimator on the single-bottleneck
-model studied here.
+flow-balance coupling, and extending the change-of-measure importance sampler (the most efficient
+rare-event estimator on the single-bottleneck model studied here) from a static
+constant-drift tilt to the state-dependent, stochastic-control tilts developed for SDE running-maximum
+rare events \cite{benrached2026ensemble} and to a multilevel importance-sampling construction
+\cite{benrached2025multilevel} for the coupled network.
 
 \section*{Reproducibility and Data Availability}
 
-Code: \url{https://github.com/pdwi2020/gpu-mlmc-congestion}.
-The repository includes a \texttt{Dockerfile} and end-to-end reproduction scripts.
-MAWI trace-derived CSV data will be deposited on Zenodo upon acceptance.
-A self-contained Google Colab notebook reproduces key results on a free T4 GPU in under 10 minutes.
+Code, the MAWI trace-derived arrival series and validation summaries, and the result files behind
+every table are available at \url{https://github.com/pdwi2020/gpu-mlmc-congestion}.
+The repository includes a \texttt{Dockerfile} and end-to-end reproduction scripts, and a
+self-contained Google Colab notebook reproduces key results on a free T4 GPU in under 10 minutes.
 
 \bibliographystyle{IEEEtran}
 \bibliography{main}
+
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.1in,clip]{a1.png}}]{Paritosh Dwivedi}
+is an M.Tech.\ student in Computer Science and Engineering (AI/ML) at the School of Computer
+Science and Engineering, Vellore Institute of Technology, Vellore, India. His research
+interests include GPU-accelerated scientific computing, stochastic simulation, and network
+performance modelling.
+\end{IEEEbiography}
 
 \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.1in,clip]{AK.png}}]{Anindita Kundu}
 has completed her B.Tech in Computer Science and Engineering in the year 2008, from Narula
@@ -1771,13 +1824,6 @@ Engineering, Vellore Institute of Technology, Vellore as an Associate Professor.
 research interests include Robotic Path Planning, Internet of Things, Stochastic Simulation
 and Opportunistic Networks. She has published works in several International Conferences and
 Journals of repute, and has also published multiple patents.
-\end{IEEEbiography}
-
-\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.1in,clip]{a1.png}}]{Paritosh Dwivedi}
-is an M.Tech.\ student in Computer Science and Engineering (AI/ML) at the School of Computer
-Science and Engineering, Vellore Institute of Technology, Vellore, India. His research
-interests include GPU-accelerated scientific computing, stochastic simulation, and network
-performance modelling.
 \end{IEEEbiography}
 
 \EOD
