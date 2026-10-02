@@ -1,0 +1,12 @@
+# git_sha=unknown
+# timestamp_utc=2026-08-05T13:47:10.323361+00:00
+# device=cuda (NVIDIA H100 NVL)
+# torch=2.4.0 numpy=1.26.4 python=3.11.9
+# config={"L_max": 4, "T": 1.0, "adaptive_rtol": 0.001, "base_dt": 0.1, "decay_rate": 0.5, "epsilon": 5e-05, "influence_strength": 0.1, "is_n_paths": 5000, "is_strength": 1.0, "is_target_node": null, "is_threshold_k": 4.0, "multi_gpu_world_size": 2, "n_nodes": 500, "noise_intensity": 0.1, "pilot_samples": 50, "quick": false, "reference_L_max_bonus": 1, "reference_epsilon_factor": 5.0, "reference_pilot_samples": 200, "rungs": ["R0", "R1"], "seeds": [0, 1, 2], "topologies": ["ba"]}
+topology_requested,topology_used,rung,rung_label,estimand_family,seed,status,estimate,variance,ci_half_width,work_units,wall_s,reference,achieved_mse,samples_per_level,comparable,comparable_note
+ba,ba,R0,single-level GPU MC baseline,uniform_mean,0,ok,0.06180192530155182,2.0332545238680447e-09,8.837795836875354e-05,400960.0,0.17188975028693676,0.06277477194089442,9.464305836802026e-07,[2506],True,
+ba,ba,R0,single-level GPU MC baseline,uniform_mean,1,ok,0.0617462582886219,2.78952691946926e-09,0.00010351740332117543,285120.0,0.1472687516361475,0.06277490349020809,1.058110950746287e-06,[1782],True,
+ba,ba,R0,single-level GPU MC baseline,uniform_mean,2,ok,0.06181950122117996,2.5440248402302405e-09,9.885730454836112e-05,314560.0,0.14816741831600666,0.06277336517814547,9.098564483978928e-07,[1966],True,
+ba,ba,R1,"+ MLMC, uniform Giles allocation",uniform_mean,0,ok,0.06169369490817189,1.3741865409405257e-09,7.265590828676724e-05,132440.0,0.2062300741672516,0.06277477194089442,1.1687275506801561e-06,"[6176, 524, 352, 150, 66]",True,
+ba,ba,R1,"+ MLMC, uniform Giles allocation",uniform_mean,1,ok,0.061858367058448493,1.1038224201525146e-09,6.511749666852077e-05,174400.0,0.20962954871356487,0.06277490349020809,8.400390307426123e-07,"[8410, 712, 421, 168, 98]",True,
+ba,ba,R1,"+ MLMC, uniform Giles allocation",uniform_mean,2,ok,0.06182326329872012,1.280238543058052e-09,7.012833695320993e-05,152500.0,0.20974205806851387,0.06277336517814547,9.026935812875763e-07,"[7357, 627, 340, 159, 86]",True,

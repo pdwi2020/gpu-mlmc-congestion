@@ -1,7 +1,7 @@
 {
   "provenance": {
-    "git_sha": "62fcb097a72743d8f80f70d8e100d3b0e5bfb92f",
-    "timestamp_utc": "2026-07-23T22:19:51.350052+00:00",
+    "git_sha": "4c270834644fd247184389a375e62b6c45edeb78",
+    "timestamp_utc": "2026-09-08T20:25:39.294661+00:00",
     "python": "3.14.3",
     "numpy": "2.3.4",
     "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
@@ -31,6 +31,7 @@
       "budget": 50000,
       "out": "/Users/paritoshdwivedi/projects/GPU-Acc-Net-Prop-Congestion-Multi-Monte-Carlo/results/rare_event_comparators",
       "device": "cpu",
+      "self_normalised": false,
       "quick": false
     }
   },
@@ -43,19 +44,19 @@
       "work_mean": 10000000.0,
       "work_norm_efficiency": 9653.494779350387,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.058222258301248074,
+      "wall_s_mean": 0.10090889548882842,
       "ess_mean": 50000.0,
       "ref": 0.028399003017115926
     },
     {
       "B": 10.0,
       "method": "gpu_mlmc_is",
-      "mean_estimate": 0.029082134635609668,
-      "rel_rmse": 0.07358138982796208,
+      "mean_estimate": 0.02837244275981598,
+      "rel_rmse": 0.009783322680159285,
       "work_mean": 10000000.0,
-      "work_norm_efficiency": 54142.20929014523,
+      "work_norm_efficiency": 957.1340266411905,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.18944378340056572,
+      "wall_s_mean": 0.33955512490356343,
       "ess_mean": 531.745805744591,
       "ref": 0.028399003017115926
     },
@@ -67,7 +68,7 @@
       "work_mean": 877714.5,
       "work_norm_efficiency": 1044.7142868616331,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.02034705829937593,
+      "wall_s_mean": 0.03407229970907792,
       "ess_mean": 2500.0,
       "ref": 0.028399003017115926
     },
@@ -79,7 +80,7 @@
       "work_mean": 15000000.0,
       "work_norm_efficiency": 31527.119342023998,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.10095857910018821,
+      "wall_s_mean": 0.16795995009597392,
       "ess_mean": 1021.9013752198683,
       "ref": 0.028399003017115926
     },
@@ -91,7 +92,7 @@
       "work_mean": 2126870.7,
       "work_norm_efficiency": 6900.077582276614,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.03926198739973188,
+      "wall_s_mean": 0.06835017901612446,
       "ess_mean": 2500.0,
       "ref": 0.028399003017115926
     },
@@ -103,19 +104,19 @@
       "work_mean": 10000000.0,
       "work_norm_efficiency": 336856.3295641769,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.05870069580014388,
+      "wall_s_mean": 0.10044694150565192,
       "ess_mean": 50000.0,
       "ref": 0.0006341026683676603
     },
     {
       "B": 15.0,
       "method": "gpu_mlmc_is",
-      "mean_estimate": 0.0008276322165088315,
-      "rel_rmse": 0.45683653701246596,
+      "mean_estimate": 0.0006296181912947717,
+      "rel_rmse": 0.015282683737387644,
       "work_mean": 10000000.0,
-      "work_norm_efficiency": 2086996.215495422,
+      "work_norm_efficiency": 2335.6042221701277,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.12427632079998148,
+      "wall_s_mean": 0.19897672089282423,
       "ess_mean": 61.956978423662534,
       "ref": 0.0006341026683676603
     },
@@ -127,7 +128,7 @@
       "work_mean": 1068903.0,
       "work_norm_efficiency": 4328.051876311035,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.03149521269988327,
+      "wall_s_mean": 0.05404372930061072,
       "ess_mean": 2500.0,
       "ref": 0.0006341026683676603
     },
@@ -139,7 +140,7 @@
       "work_mean": 16000000.0,
       "work_norm_efficiency": 751323.856571161,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.1042926999998599,
+      "wall_s_mean": 0.1805446628248319,
       "ess_mean": 66.21950755647865,
       "ref": 0.0006341026683676603
     },
@@ -151,7 +152,7 @@
       "work_mean": 1719972.2,
       "work_norm_efficiency": 34641.23740172476,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.03575989989985828,
+      "wall_s_mean": 0.06214760412694886,
       "ess_mean": 2500.0,
       "ref": 0.0006341026683676603
     },
@@ -163,19 +164,19 @@
       "work_mean": 10000000.0,
       "work_norm_efficiency": 137540913.61078006,
       "frac_nondegenerate": 0.3,
-      "wall_s_mean": 0.05820327480068954,
+      "wall_s_mean": 0.10050749572692438,
       "ess_mean": 50000.0,
       "ref": 4.247501142726173e-06
     },
     {
       "B": 20.0,
       "method": "gpu_mlmc_is",
-      "mean_estimate": 1.3918928686254188e-05,
-      "rel_rmse": 2.9942678198677495,
+      "mean_estimate": 4.2391771040562734e-06,
+      "rel_rmse": 0.01865595286226306,
       "work_mean": 10000000.0,
-      "work_norm_efficiency": 89656397.77095567,
+      "work_norm_efficiency": 3480.4457719898123,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.12487878329993692,
+      "wall_s_mean": 0.23717846262734382,
       "ess_mean": 18.634456600416378,
       "ref": 4.247501142726173e-06
     },
@@ -187,7 +188,7 @@
       "work_mean": 1239457.2,
       "work_norm_efficiency": 42871.54023153161,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.04554922899988014,
+      "wall_s_mean": 0.20812670439481734,
       "ess_mean": 2500.0,
       "ref": 4.247501142726173e-06
     },
@@ -199,7 +200,7 @@
       "work_mean": 17000000.0,
       "work_norm_efficiency": 74931835.28371254,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.11116974589931487,
+      "wall_s_mean": 0.19288153318921103,
       "ess_mean": 17.974866646761285,
       "ref": 4.247501142726173e-06
     },
@@ -211,7 +212,7 @@
       "work_mean": 1462372.9,
       "work_norm_efficiency": 166027.14266421561,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.031225412400090136,
+      "wall_s_mean": 0.05805913748918101,
       "ess_mean": 2500.0,
       "ref": 4.247501142726173e-06
     },
@@ -223,19 +224,19 @@
       "work_mean": 10000000.0,
       "work_norm_efficiency": Infinity,
       "frac_nondegenerate": 0.0,
-      "wall_s_mean": 0.0583315372994548,
+      "wall_s_mean": 0.10070292929885909,
       "ess_mean": 50000.0,
       "ref": 8.29109774195764e-09
     },
     {
       "B": 25.0,
       "method": "gpu_mlmc_is",
-      "mean_estimate": 1.9446813012372336e-07,
-      "rel_rmse": 32.35545961272024,
+      "mean_estimate": 8.241745401264122e-09,
+      "rel_rmse": 0.03307556920695542,
       "work_mean": 10000000.0,
-      "work_norm_efficiency": 10468757667.503706,
+      "work_norm_efficiency": 10939.932783640974,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.12523994160073926,
+      "wall_s_mean": 0.2180908958078362,
       "ess_mean": 9.324903290987015,
       "ref": 8.29109774195764e-09
     },
@@ -247,7 +248,7 @@
       "work_mean": 1378289.9,
       "work_norm_efficiency": 220007.9972026343,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.05905027490007342,
+      "wall_s_mean": 0.1035724291112274,
       "ess_mean": 2500.0,
       "ref": 8.29109774195764e-09
     },
@@ -259,7 +260,7 @@
       "work_mean": 18000000.0,
       "work_norm_efficiency": 6062758022.658962,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.11869031249989348,
+      "wall_s_mean": 0.20676387498388066,
       "ess_mean": 9.895650311236754,
       "ref": 8.29109774195764e-09
     },
@@ -271,7 +272,7 @@
       "work_mean": 1266094.4,
       "work_norm_efficiency": 192123.19508516876,
       "frac_nondegenerate": 1.0,
-      "wall_s_mean": 0.02673146649940463,
+      "wall_s_mean": 0.046126591693609956,
       "ess_mean": 2500.0,
       "ref": 8.29109774195764e-09
     }

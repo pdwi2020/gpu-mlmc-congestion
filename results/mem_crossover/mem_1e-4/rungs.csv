@@ -1,0 +1,8 @@
+# git_sha=unknown
+# timestamp_utc=2026-08-05T14:06:37.870391+00:00
+# device=cuda (NVIDIA H100 NVL)
+# torch=2.4.0 numpy=1.26.4 python=3.11.9
+# config={"L_max": 4, "T": 1.0, "adaptive_rtol": 0.001, "base_dt": 0.1, "decay_rate": 0.5, "epsilon": 0.0001, "influence_strength": 0.1, "is_n_paths": 5000, "is_strength": 1.0, "is_target_node": null, "is_threshold_k": 4.0, "multi_gpu_world_size": 2, "n_nodes": 500, "noise_intensity": 0.433, "pilot_samples": 50, "quick": false, "reference_L_max_bonus": 1, "reference_epsilon_factor": 5.0, "reference_pilot_samples": 200, "rungs": ["R0", "R1"], "seeds": [0], "topologies": ["ba"]}
+topology_requested,topology_used,rung,rung_label,estimand_family,seed,status,estimate,variance,ci_half_width,work_units,wall_s,reference,achieved_mse,samples_per_level,comparable,comparable_note
+ba,ba,R0,single-level GPU MC baseline,uniform_mean,0,ok,0.2675383388996124,8.092727844198284e-09,0.0001763175565863265,1879040.0,0.3449670560657978,0.27185280667617917,1.8614632195032782e-05,[11744],True,
+ba,ba,R1,"+ MLMC, uniform Giles allocation",uniform_mean,0,ok,0.2675951845012605,5.6877236719005255e-09,0.0001478146010010278,619910.0,0.15790339559316635,0.27185280667617917,1.812734658435903e-05,"[28949, 2454, 1648, 700, 308]",True,

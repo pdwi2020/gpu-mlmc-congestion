@@ -1,0 +1,16 @@
+{
+  "source": "mawi-samplepoint-F-202401011400 (3914211pkts, 5flows, 24bins)",
+  "n_flows": 5,
+  "n_steps": 24,
+  "n_mlmc_paths": 500,
+  "mu": 1.5,
+  "sigma": 0.2,
+  "runtime_s": 0.1,
+  "per_flow": [
+    {"flow": 0, "arrivals_p99": 1.9765, "queue_mean_peak": 1.94, "queue_p95": 2.8720, "queue_p99": 3.2320, "queue_ci95": [0.798, 3.074]},
+    {"flow": 1, "arrivals_p99": 1.7588, "queue_mean_peak": 0.65, "queue_p95": 1.0562, "queue_p99": 1.2499, "queue_ci95": [0.166, 1.129]},
+    {"flow": 2, "arrivals_p99": 2.2835, "queue_mean_peak": 7.59, "queue_p95": 8.5671, "queue_p99": 8.9743, "queue_ci95": [6.401, 8.786]},
+    {"flow": 3, "arrivals_p99": 1.2376, "queue_mean_peak": 0.10, "queue_p95": 0.1425, "queue_p99": 0.2786, "queue_ci95": [0.000, 0.195]},
+    {"flow": 4, "arrivals_p99": 1.3865, "queue_mean_peak": 0.20, "queue_p95": 0.3223, "queue_p99": 0.5126, "queue_ci95": [0.000, 0.393]}
+  ]
+}

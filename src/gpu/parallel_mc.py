@@ -1139,9 +1139,24 @@ class GPUCoupledPropagationMLMC:
 
         if use_gpu:
             data = _torch.tensor(pooled, device=self._device)
-            weights = _torch.ones(n, device=self._device)
-            idx = _torch.multinomial(weights, num_samples=B * n, replacement=True).view(B, n)
-            boot_q = _torch.quantile(data[idx], quantile, dim=1)
+            # Uniform bootstrap resampling (weights are all equal). The original
+            # code drew all B*n resample indices in a single torch.multinomial
+            # call; num_samples=B*n overflows int32 indexing once B*n exceeds
+            # ~2**31 (large n at tight epsilon), which surfaces as a CUDA
+            # "illegal memory access". Draw uniform indices with torch.randint in
+            # chunks instead: numerically equivalent, no int32/category limit, and
+            # bounded to a fixed per-chunk memory budget. This affects only the
+            # (diagnostic) bootstrap CI width, never the point estimate or work.
+            max_elems = 1 << 27  # ~134M indices/chunk (well below 2**31)
+            chunk = max(1, min(B, max_elems // max(n, 1)))
+            q_parts = []
+            drawn = 0
+            while drawn < B:
+                cb = min(chunk, B - drawn)
+                idx = _torch.randint(0, n, (cb, n), device=self._device)
+                q_parts.append(_torch.quantile(data[idx], quantile, dim=1))
+                drawn += cb
+            boot_q = _torch.cat(q_parts)
             lo = float(_torch.quantile(boot_q, alpha / 2).item())
             hi = float(_torch.quantile(boot_q, 1.0 - alpha / 2).item())
         else:

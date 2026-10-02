@@ -644,6 +644,12 @@ def run_one_unit(rung: str, topology: str, seed: int, cfg: dict, device: torch.d
     if family == "ana_weighted" and ref_key not in references:
         references[ref_key] = compute_ana_reference(adjacency, seed, cfg, device)
 
+    # Measurement-only: isolate this estimator's peak GPU memory from the shared
+    # reference computed above by resetting the peak counter after the reference.
+    # Does not affect the estimate or work_units.
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+        torch.cuda.reset_peak_memory_stats()
     started = time.perf_counter()
     if rung == "R0":
         sim = build_sim(rung, adjacency, seed, cfg, device)
@@ -682,6 +688,12 @@ def run_one_unit(rung: str, topology: str, seed: int, cfg: dict, device: torch.d
     else:
         raise ValueError(f"unknown rung {rung!r}")
     wall_s = payload.get("wall_s", time.perf_counter() - started)
+    peak_mem_gb = None
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+        peak_mem_gb = torch.cuda.max_memory_allocated() / 1e9
+        print(f"[PEAK_MEM] rung={rung} eps={cfg['epsilon']} sigma={cfg['noise_intensity']} "
+              f"seed={seed} peak_mem_gb={peak_mem_gb:.3f}", flush=True)
 
     reference = references.get(ref_key)
     achieved_mse = ((payload["estimate"] - reference) ** 2
@@ -706,7 +718,7 @@ def run_one_unit(rung: str, topology: str, seed: int, cfg: dict, device: torch.d
         "components_active": components_active(rung),
         "comparable": comparable, "comparable_note": comparable_note,
         "reference": reference, "achieved_mse": achieved_mse,
-        "wall_s": wall_s, "status": payload.get("status", "ok"),
+        "wall_s": wall_s, "peak_mem_gb": peak_mem_gb, "status": payload.get("status", "ok"),
         **{k: v for k, v in payload.items() if k not in ("status", "wall_s")},
     }
 
